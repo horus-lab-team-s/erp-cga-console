@@ -1,0 +1,144 @@
+/* ============================================================================
+   Jetons du design system — § 10 du dossier de design.
+
+   Palette mesurée sur le logo du cabinet. DEUX teintes de marque seulement :
+   l'indigo porte l'institution, le magenta porte l'action. Aucune troisième
+   couleur de marque.
+
+   Interdits (§ 10.7) : pas de mode sombre, pas de dégradé, pas d'animation
+   spectaculaire, pas de photo de banque d'images, pas de troisième couleur de
+   marque. Icônes linéaires à trait fin, jeu unique et cohérent.
+
+   L'absence de mode sombre est une décision produit, pas un oubli : ces écrans
+   sont denses, imprimés et relus en réunion. Ne pas ajouter de bloc
+   prefers-color-scheme ici.
+   ========================================================================= */
+
+:root {
+  /* ── Marque ─────────────────────────────────────────────────────────── */
+  --brand-indigo-900: #2e1b4d; /* barre latérale, en-têtes sombres, pied de page */
+  --brand-indigo-700: #492f79; /* titres, liens de tableau, actions secondaires */
+  --brand-indigo-100: #ede9f5; /* ligne sélectionnée, en-têtes de colonne */
+  --brand-magenta-600: #8c2d86; /* action principale unique de la vue, onglet actif */
+  --brand-magenta-100: #f7e9f6; /* survol de ligne, badges d'accent */
+
+  /* ── Encre et surfaces ──────────────────────────────────────────────── */
+  --ink-900: #1a1523; /* texte courant, montants */
+  --ink-500: #6b6480; /* texte secondaire, en-têtes de colonne, légendes */
+  --ink-300: #9a94a8; /* texte désactivé */
+  --line-300: #c9c4d6; /* bordure appuyée, cadre de maquette */
+  --line-200: #e5e1ec; /* filets, bordures, séparateurs */
+  --line-100: #f1eef7; /* séparateur de ligne de tableau */
+  --surface: #ffffff; /* tableaux, cartes, panneaux */
+  --surface-alt: #faf9fc; /* fond d'application, alternance de lignes */
+
+  /* ── Gravité — § 9. La couleur ne porte JAMAIS seule l'information. ─── */
+  --success: #1e7a4c; /* conforme, déclaré, payé */
+  --success-100: #e6f2ec;
+  --warning: #b4690e; /* anomalie majeure, pièce manquante */
+  --warning-100: #fbf0e2;
+  --danger: #b3261e; /* anomalie bloquante, échéance dépassée */
+  --danger-100: #f9e7e5;
+
+  /* --warning présente un contraste de 4,3:1 sur blanc. Il ne sert JAMAIS de
+     couleur de texte à 13 px sur fond blanc : fond plein avec texte blanc, ou
+     texte sur --warning-100. Voir § 10.8. */
+
+  /* ── Focus — § 10.8 ─────────────────────────────────────────────────── */
+  --focus: var(--brand-magenta-600);
+  --focus-largeur: 2px;
+  --focus-decalage: 2px;
+
+  /* ── Typographie — § 10.2 ───────────────────────────────────────────── */
+  /* Poppins est géométrique et large : superbe en grand, coûteuse en espace et
+     moins lisible à 13 px. Elle reste cantonnée aux titres de page et aux
+     grands chiffres. */
+  --police-titre: "Poppins", system-ui, sans-serif;
+  --police-texte: "Inter", system-ui, sans-serif;
+  --police-mono: ui-monospace, Menlo, monospace;
+
+  --taille-titre-page: 24px;
+  --taille-grand-chiffre: 32px;
+  --taille-titre-section: 16px;
+  --taille-texte: 14px;
+  --taille-tableau: 13px;
+  --taille-entete-colonne: 12px;
+  --taille-legende: 12px;
+  --interlettrage-entete: 0.04em;
+
+  /* ── Espacement base 4 — § 10.3 ─────────────────────────────────────── */
+  --espace-1: 4px;
+  --espace-2: 8px;
+  --espace-3: 12px;
+  --espace-4: 16px;
+  --espace-6: 24px;
+  --espace-8: 32px;
+  --espace-12: 48px;
+  --espace-16: 64px;
+  --espace-24: 96px;
+
+  /* ── Rayons — § 10.3 ────────────────────────────────────────────────── */
+  --rayon: 8px; /* cartes, panneaux, modales, boutons */
+  --rayon-petit: 4px; /* éléments de moins de 28 px de haut */
+  --rayon-pilule: 999px; /* badges et pastilles */
+
+  /* Ombres quasi inexistantes. Dans les tableaux, la séparation se fait par
+     filet --line-200, JAMAIS par ombre portée. */
+  --ombre-modale: 0 4px 18px rgb(46 27 77 / 22%);
+
+  /* ── Navigation — § 10.6 ────────────────────────────────────────────── */
+  --barre-laterale-largeur: 240px;
+  --barre-laterale-repliee: 64px;
+  --entete-hauteur: 56px;
+  --survol-sombre: rgb(255 255 255 / 8%);
+
+  /* ── Densité — § 10.4 · espace COLLABORATEUR (défaut) ───────────────── */
+  --ligne-tableau: 36px;
+  --entete-tableau: 30px;
+  --hauteur-controle: 32px;
+  --ecart-champs: var(--espace-3);
+  --marge-carte: var(--espace-4);
+  --marge-page: var(--espace-6);
+  --largeur-contenu: 100%;
+}
+
+/* ── Densité — espace ADHÉRENT et mobile ──────────────────────────────────
+   La hauteur de frappe de 44 px est IMPÉRATIVE sur tout écran tactile.
+   Appliquer sur un conteneur : <div data-espace="adherent">                 */
+[data-espace="adherent"] {
+  --ligne-tableau: 52px;
+  --hauteur-controle: 44px;
+  --hauteur-action-principale: 52px;
+  --hauteur-action-secondaire: 48px;
+  --ecart-champs: var(--espace-4);
+  --marge-carte: 20px;
+  --marge-page: var(--espace-4);
+  --largeur-contenu: 640px;
+}
+
+/* ── Exposition à Tailwind v4 ───────────────────────────────────────────── */
+@theme inline {
+  --color-brand-indigo-900: var(--brand-indigo-900);
+  --color-brand-indigo-700: var(--brand-indigo-700);
+  --color-brand-indigo-100: var(--brand-indigo-100);
+  --color-brand-magenta-600: var(--brand-magenta-600);
+  --color-brand-magenta-100: var(--brand-magenta-100);
+  --color-ink-900: var(--ink-900);
+  --color-ink-500: var(--ink-500);
+  --color-ink-300: var(--ink-300);
+  --color-line-300: var(--line-300);
+  --color-line-200: var(--line-200);
+  --color-line-100: var(--line-100);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-success: var(--success);
+  --color-success-100: var(--success-100);
+  --color-warning: var(--warning);
+  --color-warning-100: var(--warning-100);
+  --color-danger: var(--danger);
+  --color-danger-100: var(--danger-100);
+
+  --font-titre: var(--police-titre);
+  --font-texte: var(--police-texte);
+  --radius-cga: var(--rayon);
+}

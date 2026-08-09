@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+/* Base de l'application. Voir app/styles/tokens.css pour les jetons du § 10. */
+
+body {
+  margin: 0;
+  background: var(--surface-alt);
+  color: var(--ink-900);
+  font-family: var(--police-texte);
+  font-size: var(--taille-texte);
+}
+
+/* Chiffres tabulaires OBLIGATOIRES sur tout montant, date, numéro de compte, NIU
+   et délai — § 10.2. Sans cela une balance devient illisible. */
+.tabulaire,
+[data-tabulaire] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus clavier visible sur TOUT élément interactif — § 10.8. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-largeur) solid var(--focus);
+  outline-offset: var(--focus-decalage);
+}
+
+/* Interdit : le magenta comme couleur de lien à l'intérieur d'un tableau, trop
+   bruyant à cette densité. Les liens de tableau sont en indigo, soulignés au
+   survol — § 10.5. */
+a {
+  color: var(--brand-indigo-700);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--brand-magenta-600);
+  text-decoration: underline;
+}
+
+table a,
+[data-tableau] a {
+  color: var(--brand-indigo-700);
+}
+
+table a:hover,
+[data-tableau] a:hover {
+  color: var(--brand-indigo-700);
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--police-mono);
+  font-size: 11.5px;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+  border-radius: var(--rayon-petit);
+  padding: 2px 5px;
+}
+
+/* Faible bande passante et coupures de réseau : aucune animation coûteuse, et
+   respect strict de la préférence système. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
