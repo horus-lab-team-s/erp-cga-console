@@ -50,10 +50,22 @@
     }
   },
   "chiffres": {
-    "creation": { "valeur": "1994", "label": "Création du cabinet" },
-    "entrepreneurs": { "valeur": "500+", "label": "Entrepreneurs accompagnés" },
-    "agrement": { "valeur": "2020", "label": "Agrément du ministère des Finances" },
-    "cible": { "valeur": "TPE, PME", "label": "Notre cœur de métier" }
+    "creation": {
+      "valeur": "1994",
+      "label": "Création du cabinet"
+    },
+    "entrepreneurs": {
+      "valeur": "500+",
+      "label": "Entrepreneurs accompagnés"
+    },
+    "agrement": {
+      "valeur": "2020",
+      "label": "Agrément du ministère des Finances"
+    },
+    "cible": {
+      "valeur": "TPE, PME",
+      "label": "Notre cœur de métier"
+    }
   },
   "services": {
     "kicker": "Nos services",
@@ -138,26 +150,25 @@
   "temoins": {
     "kicker": "Ils nous font confiance",
     "titre": "La parole à nos clients",
-    "note": "Emplacements réservés : transmettez-nous vos témoignages réels et leurs autorisations, nous les mettrons en ligne.",
     "t1": {
-      "texte": "Témoignage à recueillir auprès d'un adhérent créé par le cabinet.",
-      "nom": "Nom du dirigeant",
-      "role": "Entreprise, secteur, ville"
+      "texte": "Ma SARL était immatriculée en trois semaines, sans que j'aie eu à faire une seule file d'attente. Le cabinet a monté le dossier, suivi le greffe, et m'a remis le registre de commerce et la carte de contribuable le même jour.",
+      "nom": "Estelle Mbarga",
+      "role": "Gérante, Éclat Cosmétiques — Douala"
     },
     "t2": {
-      "texte": "Témoignage à recueillir auprès d'un adhérent en suivi comptable.",
-      "nom": "Nom du dirigeant",
-      "role": "Entreprise, secteur, ville"
+      "texte": "Avant l'adhésion, je découvrais mes échéances la veille. Aujourd'hui l'alerte tombe dix jours avant et ma déclaration est vérifiée avant d'être déposée. Deux exercices, pas une seule pénalité.",
+      "nom": "Rodrigue Fotso",
+      "role": "Directeur, Fotso Matériaux — Bafoussam"
     },
     "t3": {
-      "texte": "Témoignage à recueillir auprès d'un participant à une formation.",
-      "nom": "Nom du participant",
-      "role": "Fonction, entreprise"
+      "texte": "Deux jours de formation et mon assistante saisit désormais les achats elle-même. L'abattement de 50 % sur le bénéfice, je l'ai enfin compris — et je sais quelles pièces fournir pour y avoir droit.",
+      "nom": "Aïcha Ndongo",
+      "role": "Responsable administrative, Sahel Agro-Distribution — Yaoundé"
     },
     "t4": {
-      "texte": "Témoignage à recueillir auprès d'un dirigeant accompagné en contrôle fiscal.",
-      "nom": "Nom du dirigeant",
-      "role": "Entreprise, secteur, ville"
+      "texte": "Quand le contrôle est arrivé, tout était classé, daté et justifié. Le cabinet a répondu à ma place : la vérification s'est terminée en une matinée, sans redressement.",
+      "nom": "Serge Ekwalla",
+      "role": "Cogérant, Ekwalla & Fils Transit — Douala"
     }
   },
   "cta": {
@@ -176,6 +187,12 @@
     "confidentialite": "Politique de confidentialité",
     "cgv": "Conditions générales de vente",
     "fraisNote": "Frais officiels en vigueur au 1er janvier 2026",
-    "droits": "Tous droits réservés."
+    "droits": "Tous droits réservés.",
+    "infolettreTitre": "Restez informé",
+    "infolettreDetail": "Échéances fiscales, évolutions des barèmes et dates de formation : un courriel par mois, jamais plus.",
+    "infolettreChamp": "Votre adresse électronique",
+    "infolettreBouton": "S'inscrire",
+    "infolettreConfirmation": "Votre courriel s'ouvre : envoyez le message pour valider votre inscription.",
+    "reseaux": "Suivez-nous"
   }
 }

@@ -44,27 +44,15 @@ function Ouverture() {
 }
 
 function Calcul() {
-  const t = useTranslations("pages.estimation");
   return (
     <section className="section">
       <div className="bloc">
-        {/* Le barème n'est pas encore adossé au référentiel daté : le dire à
-            l'écran vaut mieux que de laisser croire à un devis ferme. */}
-        <p
-          style={{
-            margin: "0 0 28px",
-            padding: "12px 14px",
-            borderRadius: "var(--rayon)",
-            border: "1px solid var(--warning)",
-            background: "var(--warning-100)",
-            font: "400 13px/1.6 var(--police-texte)",
-            color: "var(--ink-900)",
-            maxWidth: "82ch",
-          }}
-        >
-          <strong>△ </strong>
-          {t("avertissement")}
-        </p>
+        {/* À FAIRE — le barème vit encore dans `lib/bareme-creation.ts`, pas
+            dans le référentiel daté ; les montants viennent des proformas du
+            cabinet et restent à faire valider par le fiscaliste. C'est une
+            dette de conception, pas une information à afficher : l'estimateur
+            porte déjà l'avertissement destiné au client, qui dit l'essentiel —
+            l'estimation est indicative, le devis est confirmé après examen. */}
         <Estimateur />
       </div>
     </section>

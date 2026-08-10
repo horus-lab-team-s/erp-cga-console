@@ -3,9 +3,10 @@ import Image from "next/image";
 /**
  * Bandeau d'ouverture des pages intérieures.
  *
- * Reprend le héros de l'accueil en version courte : même photographie sous le
+ * Reprend le héros de l'accueil : **même hauteur**, même photographie sous le
  * même voile, mais sans carrousel ni formulaire. Le visiteur reconnaît la maison
- * en changeant de page, ce qu'un simple titre sur fond uni ne donnerait pas.
+ * en changeant de page, ce qu'un simple titre sur fond uni ne donnerait pas — et
+ * il ne subit aucune rupture de gabarit entre l'accueil et les pages.
  */
 export function EnteteDePage({
   kicker,

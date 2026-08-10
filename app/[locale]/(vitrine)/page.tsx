@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
+import { EtapesProgression } from "@/app/components/vitrine/EtapesProgression";
 import { Heros } from "@/app/components/vitrine/Heros";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
 import { RubanTemoignages } from "@/app/components/vitrine/RubanTemoignages";
@@ -59,11 +60,11 @@ function Services() {
   const t = useTranslations("vitrine.services");
 
   return (
-    <section className="section">
+    <section className="section section--centre">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>
-        <p className="chapeau">{t("detail")}</p>
+        <p className="chapeau chapeau--une-ligne">{t("detail")}</p>
 
         <div className="grille grille--3">
           {SERVICES_VITRINE.map((service) => (
@@ -120,11 +121,11 @@ function CeQueChangeLAdhesion() {
   const t = useTranslations("vitrine.cga");
 
   return (
-    <section className="section section-cga">
+    <section className="section section-cga section--centre">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>
-        <p className="chapeau">
+        <p className="chapeau chapeau--deux-lignes">
           {t("detail1")} {t("detail2")}
         </p>
 
@@ -153,52 +154,18 @@ function CeQueChangeLAdhesion() {
 
 // ── Comment ça se passe ───────────────────────────────────────────────────────
 
-const ETAPES = ["etape1", "etape2", "etape3"] as const;
-
 function Etapes() {
   const t = useTranslations("vitrine.etapes");
 
   return (
-    <section className="section">
+    <section className="section section--centre">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>
 
-        <div className="grille grille--3">
-          {ETAPES.map((cle, index) => (
-            <article key={cle} className="etape">
-              <div className="etape__entete">
-                <span className="etape__rang" aria-hidden="true">
-                  {index + 1}
-                </span>
-                {/* L'indicateur de progression du dessin : il situe l'étape dans
-                    le parcours, il ne mesure rien de dynamique. */}
-                <span className="etape__barre" aria-hidden="true">
-                  <span
-                    className="etape__progression"
-                    style={{ width: `${((index + 1) / ETAPES.length) * 100}%` }}
-                  />
-                </span>
-                <span className="etape__compte">
-                  {index + 1} / {ETAPES.length}
-                </span>
-              </div>
-              <h3 style={{ margin: 0, font: "600 17px/1.35 var(--police-titre)", color: "var(--ink-900)" }}>
-                {t(`${cle}.titre`)}
-              </h3>
-              <p
-                style={{
-                  margin: 0,
-                  font: "400 14px/1.65 var(--police-texte)",
-                  color: "var(--ink-500)",
-                  textWrap: "pretty",
-                }}
-              >
-                {t(`${cle}.detail`)}
-              </p>
-            </article>
-          ))}
-        </div>
+        {/* Les trois cartes vivent dans un composant client : elles s'allument
+            au passage du lecteur, ce qu'un rendu serveur ne peut pas faire. */}
+        <EtapesProgression />
       </div>
     </section>
   );

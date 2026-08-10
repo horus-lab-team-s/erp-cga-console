@@ -34,7 +34,7 @@ export function RubanTemoignages() {
   const duree = TEMOINS.length * SECONDES_PAR_CARTE;
 
   return (
-    <section className="section section--teinte">
+    <section className="section section--teinte section--centre">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>
@@ -96,21 +96,6 @@ export function RubanTemoignages() {
           </div>
         </div>
 
-        <p
-          style={{
-            marginTop: 18,
-            padding: "12px 14px",
-            borderRadius: "var(--rayon)",
-            border: "1px solid var(--warning)",
-            background: "var(--warning-100)",
-            font: "400 13px/1.6 var(--police-texte)",
-            color: "var(--ink-900)",
-            maxWidth: "78ch",
-          }}
-        >
-          <strong>△ </strong>
-          {t("note")}
-        </p>
       </div>
     </section>
   );

@@ -36,6 +36,56 @@
   background: var(--surface);
 }
 
+/* ── Sections centrées ──────────────────────────────────────────────────
+   Plusieurs sections du site sont composées sur un axe central : le kicker, le
+   titre et le chapeau sont alignés au milieu, le chapeau prenant toute la
+   largeur de lecture pour tenir sur une ligne en grand écran et se replier
+   naturellement sur deux ou trois en petit. */
+
+.section--centre {
+  text-align: center;
+}
+
+.section--centre .chapeau {
+  margin-inline: auto;
+  /* Pas de limite en caractères ici : c'est la largeur du bloc qui décide du
+     nombre de lignes, une sur écran large, deux ou trois sur mobile. */
+  max-width: none;
+}
+
+/* Deux chapeaux ont un nombre de lignes voulu. Il ne se décrète pas : il se
+   règle par la largeur de ligne disponible et l'échelle du texte.
+
+   « Une ligne sur PC » : au-delà de 1100 px on interdit le retour à la ligne et
+   on lie la taille du texte à la largeur de la fenêtre, si bien que la phrase
+   se réduit avec elle et ne peut jamais déborder. En dessous, elle se replie
+   d'elle-même sur deux ou trois lignes. */
+.chapeau--une-ligne {
+  max-width: none;
+}
+
+@media (min-width: 1100px) {
+  .chapeau--une-ligne {
+    white-space: nowrap;
+    font-size: clamp(12.5px, 1.15vw, 15.5px);
+  }
+}
+
+/* « Deux lignes sur PC » : le bloc fait environ 160 caractères de large et la
+   phrase en compte 260, elle tient donc sur deux lignes. `balance` les répartit
+   à égalité au lieu de laisser une ligne veuve. */
+.chapeau--deux-lignes {
+  max-width: none;
+  text-wrap: balance;
+}
+
+/* Le corps des sections centrées revient au fer à gauche : un paragraphe long
+   centré se lit mal, les débuts de ligne ne s'alignent plus. */
+.section--centre .grille,
+.section--centre .etapes {
+  text-align: left;
+}
+
 /* ── Titres ─────────────────────────────────────────────────────────────── */
 
 .kicker {
@@ -1016,10 +1066,71 @@
 
 /* ── Étapes ─────────────────────────────────────────────────────────────── */
 
+.etapes {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  margin-top: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Rail continu derrière les trois pastilles : c'est lui qui donne le sentiment
+   d'avancer. Il se remplit à mesure que les étapes entrent dans l'écran. */
+.etapes__rail {
+  position: absolute;
+  /* Aligné sur l'axe des pastilles : 24 px de rembourrage + la moitié des
+     40 px de la pastille. Bornes calées sur le centre des colonnes extrêmes. */
+  top: 44px;
+  left: 16.66%;
+  right: 16.66%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line-200);
+  overflow: hidden;
+}
+
+.etapes__rail span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brand-magenta-600);
+  transition: width 0.6s ease;
+}
+
+@media (max-width: 900px) {
+  .etapes__rail {
+    display: none;
+  }
+}
+
 .etape {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 24px 20px 20px;
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: transform 0.4s ease, border-color 0.4s ease, opacity 0.4s ease;
+  opacity: 0.55;
+}
+
+/* Une étape « atteinte » se révèle : c'est la lecture qui fait progresser. */
+.etape[data-atteinte="true"] {
+  opacity: 1;
+  border-color: var(--brand-magenta-600);
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .etape {
+    opacity: 1;
+    transition: none;
+  }
+  .etape[data-atteinte="true"] {
+    transform: none;
+  }
 }
 
 .etape__entete {
@@ -1035,10 +1146,18 @@
   height: 40px;
   flex: none;
   border-radius: 50%;
-  background: var(--brand-magenta-600);
-  color: #fff;
+  background: var(--line-200);
+  color: var(--ink-500);
   font: 600 17px/1 var(--police-titre);
   font-variant-numeric: tabular-nums;
+  transition: background 0.4s ease, color 0.4s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.etape[data-atteinte="true"] .etape__rang {
+  background: var(--brand-magenta-600);
+  color: #fff;
 }
 
 .etape__barre {
@@ -1352,6 +1471,15 @@
   isolation: isolate;
   background: var(--brand-indigo-900);
   overflow: hidden;
+  /* Même gabarit que la bannière d'accueil : le visiteur ne doit pas sentir de
+     rupture de hauteur en changeant de page. */
+  height: 100vh;
+  min-height: 800px;
+  /* Grille et non flex : `.bloc` doit garder son comportement de bloc et
+     s'étirer jusqu'à sa largeur maximale. En élément flex il se rétracterait à
+     la largeur de son texte et le titre casserait n'importe où. */
+  display: grid;
+  align-items: center;
   /* Réserve la barre utilitaire (38) et la barre de navigation (16 + 72). */
   padding-top: 126px;
 }
@@ -1359,7 +1487,6 @@
 .entete-page__contenu {
   position: relative;
   z-index: 2;
-  padding-block: clamp(36px, 5vw, 64px);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1527,4 +1654,120 @@
   font: 600 18px/1.25 var(--police-titre);
   color: var(--ink-900);
   font-variant-numeric: tabular-nums;
+}
+
+
+/* ── Pied : infolettre et réseaux ─────────────────────────────────────────
+   Une bande dédiée, séparée de la grille de liens par un filet : rester en
+   lien avec le cabinet n'est pas de la navigation, cela se distingue. */
+
+.pied-vitrine__lien {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  margin-top: 34px;
+  padding-top: 28px;
+  border-top: 1px solid rgb(255 255 255 / 14%);
+}
+
+@media (max-width: 760px) {
+  .pied-vitrine__lien {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infolettre__detail {
+  margin: 0 0 14px;
+  max-width: 46ch;
+  font: 400 13.5px/1.7 var(--police-texte);
+  color: rgb(255 255 255 / 72%);
+}
+
+.infolettre__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.infolettre__champ {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid rgb(255 255 255 / 26%);
+  /* Carré, comme la barre de navigation. */
+  border-radius: 0;
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+  font: 400 14px/1.4 var(--police-texte);
+}
+
+.infolettre__champ::placeholder {
+  color: rgb(255 255 255 / 55%);
+}
+
+.infolettre__champ:focus-visible {
+  outline: 2px solid var(--brand-magenta-600);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.infolettre__bouton {
+  flex: 0 0 auto;
+  border-radius: 0;
+}
+
+/* La zone d'annonce garde sa place même vide : confirmer l'envoi ne doit pas
+   décaler le pied de page sous le curseur. */
+.infolettre__confirmation {
+  margin: 10px 0 0;
+  min-height: 1.5em;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: rgb(255 255 255 / 78%);
+}
+
+.reseaux {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reseaux__lien {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  color: #fff;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.reseaux__lien:hover,
+.reseaux__lien:focus-visible {
+  background: var(--brand-magenta-600);
+  border-color: var(--brand-magenta-600);
+  transform: translateY(-2px);
+}
+
+.reseaux__numero {
+  margin: 12px 0 0;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: rgb(255 255 255 / 72%);
+}
+
+/* Étiquette réservée aux lecteurs d'écran : le champ a un intitulé même quand
+   seul l'indice de saisie est visible. */
+.visuellement-masque {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

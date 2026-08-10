@@ -10,18 +10,21 @@ export function IconeVitrine({
   nom,
   taille = 18,
   epaisseur = 1.7,
+  plein = false,
 }: {
   nom: NomIcone;
   taille?: number;
   epaisseur?: number;
+  /** Les logos de marque se reconnaissent à leur silhouette : ils se remplissent. */
+  plein?: boolean;
 }) {
   return (
     <svg
       viewBox="0 0 24 24"
       width={taille}
       height={taille}
-      fill="none"
-      stroke="currentColor"
+      fill={plein ? "currentColor" : "none"}
+      stroke={plein ? "none" : "currentColor"}
       strokeWidth={epaisseur}
       strokeLinecap="round"
       strokeLinejoin="round"

@@ -15,6 +15,11 @@ import { IconeVitrine } from "./IconeVitrine";
  * propre bouton** vers une page différente : la création, l'adhésion, le
  * cabinet. C'est ce qui distingue ce carrousel d'un diaporama décoratif.
  *
+ * Le défilement ne se met **pas** en pause au survol de la bannière : celle-ci
+ * occupe tout l'écran, la souris est donc presque toujours dessus et le
+ * carrousel n'avancerait jamais. Seule une interaction réelle l'arrête — saisir
+ * le formulaire — parce qu'on ne déplace pas le décor sous quelqu'un qui écrit.
+ *
  * Trois éléments sont posés par-dessus la photographie et gardent des fonds
  * fixes, sans jeton de thème : le formulaire, les cartes de chiffres et les
  * puces. Basculer en sombre ne doit pas changer ce qui se marie avec l'image.
@@ -42,20 +47,17 @@ export function Heros() {
   const [index, setIndex] = useState(0);
   const [enPause, setEnPause] = useState(false);
 
+  // `index` fait partie des dépendances : choisir une vue à la main relance le
+  // décompte au lieu de la remplacer aussitôt par la suivante.
   useEffect(() => {
     if (enPause) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const minuterie = window.setInterval(() => setIndex((i) => (i + 1) % VUES.length), CADENCE);
-    return () => window.clearInterval(minuterie);
-  }, [enPause]);
+    const minuterie = window.setTimeout(() => setIndex((i) => (i + 1) % VUES.length), CADENCE);
+    return () => window.clearTimeout(minuterie);
+  }, [enPause, index]);
 
   return (
-    <section
-      className="heros"
-      aria-roledescription="carrousel"
-      onMouseEnter={() => setEnPause(true)}
-      onMouseLeave={() => setEnPause(false)}
-    >
+    <section className="heros" aria-roledescription="carrousel">
       {/* Les trois vues sont montées en permanence et se fondent l'une dans
           l'autre : les recharger à chaque passage ferait clignoter le fond sur
           connexion lente. */}
@@ -123,10 +125,7 @@ export function Heros() {
             className="heros__puce"
             aria-current={i === index}
             aria-label={t(`${vue.cle}.titre`)}
-            onClick={() => {
-              setIndex(i);
-              setEnPause(true);
-            }}
+            onClick={() => setIndex(i)}
           />
         ))}
       </div>

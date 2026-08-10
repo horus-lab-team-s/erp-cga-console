@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { IconeVitrine } from "./IconeVitrine";
+import { Infolettre } from "./Infolettre";
 
 /**
  * Pied de page.
@@ -8,7 +10,35 @@ import { Link } from "@/i18n/navigation";
  * Il porte l'agrément ministériel en toutes lettres : c'est ce qui distingue un
  * centre de gestion agréé d'un cabinet ordinaire, et un visiteur qui compare deux
  * prestataires le cherche.
+ *
+ * Il porte aussi les deux façons de rester en lien : l'infolettre, qui aboutit
+ * dans la boîte du cabinet, et les comptes publics.
  */
+
+/**
+ * Comptes publics du cabinet. Le numéro WhatsApp est écrit deux fois : sans
+ * espaces pour `wa.me`, qui n'accepte rien d'autre, et lisiblement à l'écran.
+ */
+const RESEAUX = [
+  {
+    cle: "facebook",
+    icone: "facebook",
+    libelle: "Facebook",
+    href: "https://web.facebook.com/CGABroadRangeConsulting/?locale=fr_FR",
+  },
+  {
+    cle: "linkedin",
+    icone: "linkedin",
+    libelle: "LinkedIn",
+    href: "https://cm.linkedin.com/company/cga-broad-range-consulting",
+  },
+  {
+    cle: "whatsapp",
+    icone: "whatsappPlein",
+    libelle: "WhatsApp",
+    href: "https://wa.me/237699902184",
+  },
+] as const;
 export function PiedVitrine() {
   const t = useTranslations("vitrine.pied");
   const nav = useTranslations("vitrine.nav");
@@ -94,6 +124,37 @@ export function PiedVitrine() {
                 {commun("agences.bafoussam.ville")} {commun("agences.bafoussam.quartier")}
               </li>
             </ul>
+          </div>
+        </div>
+
+        <div className="pied-vitrine__lien">
+          <Infolettre />
+
+          <div>
+            <h2 className="pied-vitrine__titre">{t("reseaux")}</h2>
+            <ul className="reseaux" aria-label={t("reseaux")}>
+              {RESEAUX.map((reseau) => (
+                <li key={reseau.cle}>
+                  <a
+                    className="reseaux__lien"
+                    href={reseau.href}
+                    target="_blank"
+                    /* `noreferrer` autant que `noopener` : on n'envoie pas
+                       l'adresse de la page consultée à un tiers. */
+                    rel="noopener noreferrer"
+                    aria-label={reseau.libelle}
+                    title={reseau.libelle}
+                  >
+                    <IconeVitrine nom={reseau.icone} taille={19} plein />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="reseaux__numero">
+              <a href="https://wa.me/237699902184" target="_blank" rel="noopener noreferrer">
+                +237 699 902 184
+              </a>
+            </p>
           </div>
         </div>
 

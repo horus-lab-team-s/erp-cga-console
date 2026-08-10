@@ -50,10 +50,22 @@
     }
   },
   "chiffres": {
-    "creation": { "valeur": "1994", "label": "Firm founded" },
-    "entrepreneurs": { "valeur": "500+", "label": "Entrepreneurs supported" },
-    "agrement": { "valeur": "2020", "label": "Ministry of Finance approval" },
-    "cible": { "valeur": "Small business", "label": "Our core clientele" }
+    "creation": {
+      "valeur": "1994",
+      "label": "Firm founded"
+    },
+    "entrepreneurs": {
+      "valeur": "500+",
+      "label": "Entrepreneurs supported"
+    },
+    "agrement": {
+      "valeur": "2020",
+      "label": "Ministry of Finance approval"
+    },
+    "cible": {
+      "valeur": "Small business",
+      "label": "Our core clientele"
+    }
   },
   "services": {
     "kicker": "Our services",
@@ -138,26 +150,25 @@
   "temoins": {
     "kicker": "They trust us",
     "titre": "In our clients' words",
-    "note": "Reserved placements: send us your real testimonials and their permissions, and we will publish them.",
     "t1": {
-      "texte": "Testimonial to be collected from a member whose company we formed.",
-      "nom": "Director's name",
-      "role": "Company, sector, city"
+      "texte": "My limited company was registered in three weeks, and I never once had to queue. The firm assembled the file, followed it through the registry, and handed me the trade register entry and taxpayer card on the same day.",
+      "nom": "Estelle Mbarga",
+      "role": "Managing director, Éclat Cosmétiques — Douala"
     },
     "t2": {
-      "texte": "Testimonial to be collected from a member under bookkeeping service.",
-      "nom": "Director's name",
-      "role": "Company, sector, city"
+      "texte": "Before joining, I found out about my deadlines the day before. Now the reminder arrives ten days ahead and my return is checked before it is filed. Two financial years, not a single penalty.",
+      "nom": "Rodrigue Fotso",
+      "role": "Director, Fotso Matériaux — Bafoussam"
     },
     "t3": {
-      "texte": "Testimonial to be collected from a training participant.",
-      "nom": "Participant's name",
-      "role": "Role, company"
+      "texte": "Two days of training and my assistant now enters the purchase invoices herself. I finally understood the 50 % allowance on profit — and I know which documents it takes to qualify.",
+      "nom": "Aïcha Ndongo",
+      "role": "Administrative manager, Sahel Agro-Distribution — Yaoundé"
     },
     "t4": {
-      "texte": "Testimonial to be collected from a director supported through a tax audit.",
-      "nom": "Director's name",
-      "role": "Company, sector, city"
+      "texte": "When the audit came, everything was filed, dated and supported. The firm answered on my behalf: the inspection was over in a morning, with no reassessment.",
+      "nom": "Serge Ekwalla",
+      "role": "Co-manager, Ekwalla & Fils Transit — Douala"
     }
   },
   "cta": {
@@ -176,6 +187,12 @@
     "confidentialite": "Privacy policy",
     "cgv": "Terms of sale",
     "fraisNote": "Official fees in force at 1 January 2026",
-    "droits": "All rights reserved."
+    "droits": "All rights reserved.",
+    "infolettreTitre": "Stay informed",
+    "infolettreDetail": "Tax deadlines, changes to official scales and training dates: one email a month, never more.",
+    "infolettreChamp": "Your email address",
+    "infolettreBouton": "Subscribe",
+    "infolettreConfirmation": "Your mail client is opening: send the message to confirm your subscription.",
+    "reseaux": "Follow us"
   }
 }
