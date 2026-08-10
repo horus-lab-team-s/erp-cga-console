@@ -67,3 +67,53 @@ export function lireModificateur(): string {
 export function modificateurParDefaut(): string {
   return "Ctrl";
 }
+
+// ── Thème clair / sombre ──────────────────────────────────────────────────────
+
+const CLE_THEME = "cga.theme";
+
+export type Theme = "clair" | "sombre";
+
+const abonnesTheme = new Set<() => void>();
+let cacheTheme: Theme | null = null;
+
+/**
+ * Le thème est appliqué sur `<html data-theme>` par un script inline exécuté avant
+ * le premier rendu — voir `app/[locale]/layout.tsx`. On lit donc l'attribut, et non
+ * `localStorage` : c'est lui qui fait foi à l'écran, et cela évite toute divergence
+ * entre ce que React croit et ce que l'utilisateur voit.
+ */
+export function souscrireTheme(rappel: () => void) {
+  abonnesTheme.add(rappel);
+  const surStockage = (evenement: StorageEvent) => {
+    if (evenement.key === CLE_THEME) {
+      cacheTheme = evenement.newValue === "sombre" ? "sombre" : "clair";
+      document.documentElement.dataset.theme = cacheTheme;
+      abonnesTheme.forEach((f) => f());
+    }
+  };
+  window.addEventListener("storage", surStockage);
+  return () => {
+    abonnesTheme.delete(rappel);
+    window.removeEventListener("storage", surStockage);
+  };
+}
+
+export function lireTheme(): Theme {
+  if (cacheTheme === null) {
+    cacheTheme = document.documentElement.dataset.theme === "sombre" ? "sombre" : "clair";
+  }
+  return cacheTheme;
+}
+
+/** Valeur rendue côté serveur : le clair, faute de savoir. */
+export function themeParDefaut(): Theme {
+  return "clair";
+}
+
+export function basculerTheme() {
+  cacheTheme = lireTheme() === "sombre" ? "clair" : "sombre";
+  document.documentElement.dataset.theme = cacheTheme;
+  window.localStorage.setItem(CLE_THEME, cacheTheme);
+  abonnesTheme.forEach((f) => f());
+}

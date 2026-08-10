@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
-import { BandeauVerdict, type Severite } from "../../../components/Gravite";
-import { EtatErreur } from "../../../components/Tableau";
-import { DonneesExtraites } from "../../../components/conformite/DonneesExtraites";
-import { ListeConstats } from "../../../components/conformite/ListeConstats";
-import { Visionneuse } from "../../../components/conformite/Visionneuse";
-import { EnteteTravail } from "../../../components/coquille/EnteteTravail";
-import { ErreurApi, controlerPieceDemonstration, type ReponseControle } from "../../../lib/api";
-import { montantFcfa } from "../../../lib/formats";
+import { BandeauVerdict, type Severite } from "@/app/components/Gravite";
+import { EtatErreur } from "@/app/components/Tableau";
+import { DonneesExtraites } from "@/app/components/conformite/DonneesExtraites";
+import { ListeConstats } from "@/app/components/conformite/ListeConstats";
+import { Visionneuse } from "@/app/components/conformite/Visionneuse";
+import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { ErreurApi, controlerPieceDemonstration, type ReponseControle } from "@/app/lib/api";
+import { montantFcfa } from "@/app/lib/formats";
 
 /**
  * E02 · Détail d'une pièce et rapport de conformité — fiche au § 8.2.

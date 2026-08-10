@@ -1,0 +1,191 @@
+{
+  "nav": {
+    "services": "Nos services",
+    "adherent": "Devenir adhérent",
+    "formations": "Formations",
+    "cabinet": "Le cabinet",
+    "contact": "Contactez-nous",
+    "estimation": "Estimation"
+  },
+  "heros": {
+    "slide1": {
+      "kicker": "Créer son entreprise au Cameroun",
+      "titre": "Votre entreprise immatriculée, sans faire la queue",
+      "detail": "Statuts, enregistrement, RCCM, NIU et publication : nous montons votre dossier et le déposons au guichet unique. Vous suivez chaque étape depuis votre téléphone.",
+      "image": "/images/heros/reunion-equipe.jpg",
+      "alt": "Réunion de travail autour d'une table"
+    },
+    "slide2": {
+      "kicker": "Centre de gestion agréé",
+      "titre": "Une comptabilité tenue, des impôts sous contrôle",
+      "detail": "Nous contrôlons chaque facture avant de la comptabiliser, et nous vous disons ce qu'elle vous coûte si elle est irrégulière. Avant le redressement, pas après.",
+      "image": "/images/heros/mains-levees.jpg",
+      "alt": "Assemblée, mains levées"
+    },
+    "slide3": {
+      "kicker": "Depuis 1994",
+      "titre": "Trois agences, plus de 500 entrepreneurs accompagnés",
+      "detail": "Douala Akwa, Yaoundé Elig-Essono, Bafoussam Quartier Haoussa. Un interlocuteur qui connaît votre dossier et répond sur WhatsApp.",
+      "image": "/images/heros/rue-commercante.jpg",
+      "alt": "Rue commerçante animée à Douala"
+    }
+  },
+  "chiffres": {
+    "titre": "Le cabinet en quatre chiffres",
+    "creation": { "valeur": "1994", "label": "Création du cabinet" },
+    "entrepreneurs": { "valeur": "500+", "label": "Entrepreneurs accompagnés" },
+    "agrement": { "valeur": "2020", "label": "Agrément du ministère des Finances" },
+    "cible": { "valeur": "TPE, PME", "label": "Notre cœur de métier" }
+  },
+  "services": {
+    "kicker": "Nos services",
+    "titre": "De la première idée à la déclaration annuelle",
+    "detail": "Cabinet comptable, d'audit et de conseil, nous apportons une assistance comptable, fiscale et de gestion aux TPE et PME camerounaises.",
+    "creation": {
+      "titre": "Création d'entreprise",
+      "detail": "ETS, SARL, SARLU, SAS, SCI, SA. Statuts, enregistrement, RCCM, NIU et publication : nous déposons pour vous au guichet unique.",
+      "prix": "dès 300 000 FCFA",
+      "action": "Estimer"
+    },
+    "adhesion": {
+      "titre": "Adhésion et suivi comptable",
+      "detail": "Tenue de vos comptes, déclarations mensuelles et annuelles, contrôle de vos pièces avant dépôt.",
+      "prix": "dès 12 500 FCFA par mois",
+      "action": "Adhérer"
+    },
+    "ponctuel": {
+      "titre": "Prestations ponctuelles",
+      "detail": "Déclaration statistique et fiscale, régularisation d'un exercice, assistance en cas de contrôle, business plan.",
+      "prix": "dès 100 000 FCFA",
+      "action": "Demander un devis"
+    },
+    "domiciliation": {
+      "titre": "Domiciliation commerciale",
+      "detail": "Une adresse professionnelle à Douala, réception et réexpédition de votre courrier.",
+      "prix": "dès 180 000 FCFA par an",
+      "action": "Demander un devis"
+    },
+    "formations": {
+      "titre": "Formations",
+      "detail": "TVA, liasse fiscale, paie et cotisations sociales, tenue de caisse. En agence ou dans vos locaux.",
+      "prix": "dès 75 000 FCFA par personne",
+      "action": "Voir le calendrier"
+    },
+    "conseil": {
+      "titre": "Conseil et mise en relation",
+      "detail": "Avocats, notaires et experts-comptables partenaires, recherche de financement, accompagnement bancaire.",
+      "prix": "sur devis",
+      "action": "Nous appeler"
+    }
+  },
+  "cga": {
+    "kicker": "Comprendre le centre de gestion agréé",
+    "titre": "Ce que l'adhésion change pour votre entreprise",
+    "detail": "Un centre de gestion agréé n'est pas un cabinet comptable ordinaire : c'est une association agréée par le ministre des Finances, partenaire de l'administration fiscale. L'adhésion ouvre des avantages réels, en contrepartie d'une comptabilité tenue avec rigueur.",
+    "action": "Découvrir l'adhésion",
+    "avantage1": {
+      "titre": "Un abattement sur votre bénéfice",
+      "detail": "L'adhésion à un centre agréé ouvre droit à un abattement sur le bénéfice déclaré. Le montant et les conditions dépendent de votre régime."
+    },
+    "avantage2": {
+      "titre": "Un contrôle sur pièces, pas sur place",
+      "detail": "L'administration privilégie le contrôle documentaire pour les adhérents d'un centre agréé. Votre activité n'est pas interrompue."
+    },
+    "avantage3": {
+      "titre": "Un précompte réduit sur vos achats",
+      "detail": "Le taux de précompte appliqué à vos achats est réduit pour les adhérents. Votre trésorerie respire."
+    },
+    "avantage4": {
+      "titre": "Des erreurs vues avant l'administration",
+      "detail": "Nous contrôlons chaque facture à sa réception et chiffrons ce qu'une irrégularité vous coûterait. Une facture sans NIU se fait corriger en une semaine ; découverte au contrôle, elle est perdue."
+    }
+  },
+  "etapes": {
+    "kicker": "Comment ça se passe",
+    "titre": "Trois étapes, et vous suivez tout en ligne",
+    "etape1": {
+      "titre": "Vous estimez et vous validez",
+      "detail": "Quatre questions dans l'estimateur, le montant s'affiche, décomposé entre frais officiels et honoraires. Vous réglez par virement ou par Orange Money."
+    },
+    "etape2": {
+      "titre": "Nous montons et déposons le dossier",
+      "detail": "Vous photographiez vos pièces depuis votre téléphone. Nous rédigeons les statuts, vous les relisez, nous déposons au guichet unique."
+    },
+    "etape3": {
+      "titre": "Vous recevez vos documents",
+      "detail": "RCCM, NIU, attestation de conformité fiscale, numéros CNPS. Huit semaines au maximum après validation de vos statuts."
+    }
+  },
+  "faq": {
+    "kicker": "Questions fréquentes",
+    "titre": "Ce qu'on nous demande le plus",
+    "q1": {
+      "question": "Que comprennent exactement vos prix ?",
+      "reponse": "Deux masses distinctes : les frais officiels que nous avançons et reversons aux administrations, et nos honoraires. L'estimateur les affiche séparément, et votre proforma reprend le détail ligne à ligne."
+    },
+    "q2": {
+      "question": "Combien de temps prend une création d'entreprise ?",
+      "reponse": "Huit semaines au maximum après relecture et approbation de vos statuts, et après paiement. Hors Douala et Yaoundé, comptez deux semaines de plus : le dépôt se fait au guichet unique de la région."
+    },
+    "q3": {
+      "question": "Dois-je verser le capital avant l'immatriculation ?",
+      "reponse": "Oui pour les sociétés à capital : il est déposé sur un compte bloqué, puis libéré dès l'obtention du RCCM."
+    },
+    "q4": {
+      "question": "Faut-il être une grande entreprise pour adhérer ?",
+      "reponse": "Non, c'est même l'inverse. Le centre de gestion agréé s'adresse aux très petites et moyennes entreprises, y compris celles au régime de l'impôt général synthétique."
+    },
+    "q5": {
+      "question": "Comment vous transmettre mes factures ?",
+      "reponse": "Par WhatsApp, depuis l'application, par courriel, ou en agence. Vous les photographiez au moment où vous les recevez ; le reste est notre affaire."
+    },
+    "q6": {
+      "question": "Que se passe-t-il si ma dénomination est refusée ?",
+      "reponse": "Nous présentons la deuxième proposition sans frais supplémentaires. C'est pourquoi nous vous en demandons trois dès le départ."
+    }
+  },
+  "temoins": {
+    "kicker": "Ils nous font confiance",
+    "titre": "La parole à nos clients",
+    "note": "Emplacements réservés. Ces témoignages sont des exemples de mise en page : transmettez-nous vos témoignages réels et leurs autorisations, nous les mettrons en ligne.",
+    "t1": {
+      "citation": "Nous envoyions nos factures en vrac à la fin du trimestre. Aujourd'hui je les photographie le jour même et je sais tout de suite si une pièce pose problème.",
+      "auteur": "Dirigeante",
+      "entreprise": "Commerce général, Douala"
+    },
+    "t2": {
+      "citation": "Le cabinet a repéré qu'un de mes fournisseurs n'était plus immatriculé. Sans eux, je l'apprenais au contrôle, deux ans plus tard.",
+      "auteur": "Gérant",
+      "entreprise": "BTP, Douala Bonabéri"
+    },
+    "t3": {
+      "citation": "La création s'est faite sans que je me déplace une seule fois au guichet. J'ai reçu mon RCCM et mon NIU par courrier.",
+      "auteur": "Fondatrice",
+      "entreprise": "Agroalimentaire, Yaoundé"
+    },
+    "t4": {
+      "citation": "Ce que j'apprécie, c'est de savoir combien une erreur va me coûter avant de la commettre, pas après.",
+      "auteur": "Directeur administratif",
+      "entreprise": "Santé, Yaoundé"
+    }
+  },
+  "hesitez": {
+    "titre": "Vous hésitez ?",
+    "detail": "Estimez gratuitement le coût de votre création, ou parlez-en directement avec un expert. Sans engagement et sans inscription."
+  },
+  "cta": {
+    "titre": "Parlons de votre projet dès aujourd'hui",
+    "detail": "Écrivez-nous sur WhatsApp au 699 902 184, appelez le +237 233 424 847, ou passez à notre bureau de Douala Akwa."
+  },
+  "pied": {
+    "description": "Cabinet comptable, d'audit et de conseil agréé par le ministre des Finances, arrêté n° 00000048/MINFI/DGI du 28 janvier 2020. Assistance comptable, fiscale et de gestion aux TPE et PME.",
+    "creer": "Créer",
+    "gerer": "Gérer",
+    "leCabinet": "Le cabinet",
+    "nousTrouver": "Nous trouver",
+    "mentions": "Mentions légales",
+    "confidentialite": "Politique de confidentialité",
+    "cgv": "Conditions générales de vente",
+    "droits": "Tous droits réservés."
+  }
+}

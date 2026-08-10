@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { EtatErreur } from "../../components/Tableau";
-import { BoiteReception } from "../../components/collecte/BoiteReception";
-import { EnteteTravail } from "../../components/coquille/EnteteTravail";
-import { ErreurApi, controlerToutLeFlux, type ReponseControle } from "../../lib/api";
+import { EtatErreur } from "@/app/components/Tableau";
+import { BoiteReception } from "@/app/components/collecte/BoiteReception";
+import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { ErreurApi, controlerToutLeFlux, type ReponseControle } from "@/app/lib/api";
 
 export const metadata: Metadata = { title: "Pièces justificatives — Plateforme CGA" };
 

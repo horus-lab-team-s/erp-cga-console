@@ -1,5 +1,5 @@
-import type { FactureAControler } from "../../lib/api";
-import { dateCourte, montantFcfa } from "../../lib/formats";
+import type { FactureAControler } from "@/app/lib/api";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
 
 /**
  * Visionneuse de document — § 8.2, colonne gauche, environ 45 %.

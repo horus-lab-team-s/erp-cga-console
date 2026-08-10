@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { ReponseControle } from "../../lib/api";
-import { CANAUX, STATUTS_PIECE, metaCollecte, type Canal } from "../../lib/collecte-demo";
-import { dateCourte, montantFcfa } from "../../lib/formats";
+import type { ReponseControle } from "@/app/lib/api";
+import { CANAUX, STATUTS_PIECE, metaCollecte, type Canal } from "@/app/lib/collecte-demo";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { BadgeGravite, type Severite } from "../Gravite";
 import { PastilleStatut, type Statut } from "../Montant";
 import { ApercuPiece } from "./ApercuPiece";

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ENTREPRISES, ENTREPRISES_RECENTES, type Entreprise } from "../../lib/donnees-demo";
+import { ENTREPRISES, ENTREPRISES_RECENTES, type Entreprise } from "@/app/lib/donnees-demo";
 import { Icone } from "./Icone";
 
 /**

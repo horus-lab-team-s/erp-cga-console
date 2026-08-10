@@ -1,0 +1,14 @@
+{
+  "connexion": {
+    "titre": "Accéder à votre espace",
+    "detail": "Une seule porte d'entrée pour le cabinet, les entreprises clientes et les souscripteurs. Votre espace s'ouvre selon votre profil.",
+    "identifiant": "Adresse électronique",
+    "motDePasse": "Mot de passe",
+    "seSouvenir": "Rester connecté sur cet appareil",
+    "oublie": "Mot de passe oublié",
+    "valider": "Se connecter",
+    "sansCompte": "Pas encore de compte ?",
+    "sansCompteDetail": "Les comptes sont créés par invitation. Si vous avez souscrit une prestation, le lien vous est envoyé dès le paiement confirmé.",
+    "demarrer": "Souscrire une prestation"
+  }
+}

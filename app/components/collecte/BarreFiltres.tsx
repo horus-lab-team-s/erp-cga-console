@@ -1,6 +1,6 @@
 "use client";
 
-import type { Canal } from "../../lib/collecte-demo";
+import type { Canal } from "@/app/lib/collecte-demo";
 import { APPARENCE, type Severite } from "../Gravite";
 import type { Statut } from "../Montant";
 

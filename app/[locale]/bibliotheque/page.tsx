@@ -7,9 +7,9 @@
  * `Docs/Bibliotheque de composants CGA.html`.
  */
 
-import { BadgeGravite, BandeauVerdict, type Severite } from "../components/Gravite";
-import { Montant, PastilleStatut, type Statut } from "../components/Montant";
-import { dateCourte, dateLongue, montantFcfa, periode, taux } from "../lib/formats";
+import { BadgeGravite, BandeauVerdict, type Severite } from "@/app/components/Gravite";
+import { Montant, PastilleStatut, type Statut } from "@/app/components/Montant";
+import { dateCourte, dateLongue, montantFcfa, periode, taux } from "@/app/lib/formats";
 
 const COULEURS = [
   ["brand-indigo-900", "#2E1B4D", "barre latérale, en-têtes sombres"],

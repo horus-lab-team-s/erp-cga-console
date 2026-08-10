@@ -1,4 +1,4 @@
-import { ICONES } from "../../lib/navigation";
+import { ICONES } from "@/app/lib/navigation";
 
 /**
  * Icône linéaire à trait fin, jeu unique — § 10.7.

@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
-import { UTILISATEUR } from "../../lib/donnees-demo";
+import { UTILISATEUR } from "@/app/lib/donnees-demo";
 import {
   lireModificateur,
   modificateurParDefaut,
   souscrirePlateforme,
-} from "../../lib/preferences";
+} from "@/app/lib/preferences";
 import { Icone } from "./Icone";
 
 export type Miette = { libelle: string; href?: string };

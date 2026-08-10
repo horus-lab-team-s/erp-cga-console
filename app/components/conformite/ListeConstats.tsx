@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import type { Constat } from "../../lib/api";
-import { montantFcfa } from "../../lib/formats";
+import type { Constat } from "@/app/lib/api";
+import { montantFcfa } from "@/app/lib/formats";
 import { APPARENCE, type Severite } from "../Gravite";
 
 /**

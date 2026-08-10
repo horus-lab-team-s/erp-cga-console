@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
-import { COMPTEURS, UTILISATEUR, type Entreprise } from "../../lib/donnees-demo";
-import { NAVIGATION, NAVIGATION_ADMINISTRATION, type EntreeNav } from "../../lib/navigation";
-import { basculerRepli, lireRepli, repliParDefaut, souscrireRepli } from "../../lib/preferences";
+import { COMPTEURS, UTILISATEUR, type Entreprise } from "@/app/lib/donnees-demo";
+import { NAVIGATION, NAVIGATION_ADMINISTRATION, type EntreeNav } from "@/app/lib/navigation";
+import { basculerRepli, lireRepli, repliParDefaut, souscrireRepli } from "@/app/lib/preferences";
 import { Icone } from "./Icone";
 import { SelecteurEntreprise } from "./SelecteurEntreprise";
 

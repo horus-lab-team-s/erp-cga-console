@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { dateCourte, montantFcfa } from "../../lib/formats";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { APPARENCE, BadgeGravite } from "../Gravite";
 import { PastilleStatut } from "../Montant";
 import type { LignePiece } from "./BoiteReception";

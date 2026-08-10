@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { BadgeGravite } from "../../components/Gravite";
-import { Montant, PastilleStatut } from "../../components/Montant";
+import { BadgeGravite } from "@/app/components/Gravite";
+import { Montant, PastilleStatut } from "@/app/components/Montant";
 import {
   Cellule,
   EnteteTableau,
@@ -10,8 +10,8 @@ import {
   LigneTableau,
   Panneau,
   type Colonne,
-} from "../../components/Tableau";
-import { EnteteTravail } from "../../components/coquille/EnteteTravail";
+} from "@/app/components/Tableau";
+import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import {
   ANOMALIES,
   DOSSIERS_INCOMPLETS,
@@ -20,8 +20,8 @@ import {
   PERIODE_COURANTE,
   UTILISATEUR,
   type Indicateur,
-} from "../../lib/donnees-demo";
-import { dateCourte, dateLongue, montantFcfa } from "../../lib/formats";
+} from "@/app/lib/donnees-demo";
+import { dateCourte, dateLongue, montantFcfa } from "@/app/lib/formats";
 
 export const metadata: Metadata = {
   title: "Tableau de bord — Plateforme CGA",

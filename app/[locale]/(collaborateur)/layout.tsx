@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { Coquille } from "../components/coquille/Coquille";
-import "../styles/coquille.css";
+import { Coquille } from "@/app/components/coquille/Coquille";
+import "@/app/styles/coquille.css";
 
 /**
  * E00 · Coquille de l'espace collaborateur.

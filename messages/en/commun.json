@@ -1,0 +1,57 @@
+{
+  "cabinet": {
+    "nom": "CGA Broad Range Consulting Group",
+    "nomCourt": "CGA Broad Range",
+    "signature": "Together we achieve more",
+    "metiers": "Accounting and tax support · Legal support · Training",
+    "agrement": "Approved by the Minister of Finance, order no. 00000048/MINFI/DGI of 28 January 2020",
+    "agrementCourt": "Approval no. 00000048/MINFI/DGI",
+    "telephone": "+237 233 424 847",
+    "mobile": "+237 699 902 184",
+    "whatsapp": "+237 699 902 184",
+    "courriel": "contact@cga-brcgroup.com",
+    "siteWeb": "www.cga-brcgroup.com",
+    "boitePostale": "P.O. Box 7761 Douala"
+  },
+  "agences": {
+    "douala": { "ville": "Douala", "quartier": "Akwa", "adresse": "P.O. Box 7761 Douala" },
+    "yaounde": { "ville": "Yaoundé", "quartier": "Elig-Essono", "adresse": "Yaoundé" },
+    "bafoussam": { "ville": "Bafoussam", "quartier": "Haoussa district", "adresse": "Bafoussam" }
+  },
+  "actions": {
+    "espaceClient": "Client area",
+    "seConnecter": "Sign in",
+    "nousJoindre": "Get in touch",
+    "etreRappele": "Request a call back",
+    "estimerProjet": "Estimate my project",
+    "prendreRendezVous": "Book an appointment",
+    "ecrireWhatsapp": "Message us on WhatsApp",
+    "demanderDevis": "Request a quote",
+    "enSavoirPlus": "Find out more",
+    "decouvrir": "Explore",
+    "retourAccueil": "Back to home",
+    "ouvrirMenu": "Open menu",
+    "fermerMenu": "Close menu",
+    "precedent": "Previous",
+    "suivant": "Next"
+  },
+  "theme": {
+    "basculer": "Switch theme",
+    "clair": "Light theme",
+    "sombre": "Dark theme"
+  },
+  "langue": {
+    "choisir": "Choose language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "unites": {
+    "fcfa": "FCFA",
+    "parMois": "per month",
+    "parAn": "per year",
+    "parPersonne": "per person",
+    "semaines": "weeks",
+    "des": "from",
+    "surDevis": "on request"
+  }
+}

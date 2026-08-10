@@ -1,0 +1,14 @@
+{
+  "connexion": {
+    "titre": "Access your workspace",
+    "detail": "A single door for the firm, client companies and subscribers. Your workspace opens according to your profile.",
+    "identifiant": "Email address",
+    "motDePasse": "Password",
+    "seSouvenir": "Stay signed in on this device",
+    "oublie": "Forgotten password",
+    "valider": "Sign in",
+    "sansCompte": "No account yet?",
+    "sansCompteDetail": "Accounts are created by invitation. If you have paid for a service, the link is sent to you as soon as payment is confirmed.",
+    "demarrer": "Order a service"
+  }
+}

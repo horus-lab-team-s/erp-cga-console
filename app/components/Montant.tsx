@@ -2,7 +2,7 @@
  * Montants et pastilles de statut — § 4 et § 6 du dossier de design.
  */
 
-import { montant, montantFcfa } from "../lib/formats";
+import { montant, montantFcfa } from "@/app/lib/formats";
 
 /**
  * Montant aligné à droite, chiffres tabulaires, négatif entre parenthèses et en

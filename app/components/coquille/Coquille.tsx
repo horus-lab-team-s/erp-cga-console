@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-import type { Entreprise } from "../../lib/donnees-demo";
+import type { Entreprise } from "@/app/lib/donnees-demo";
 import { BarreLaterale } from "./BarreLaterale";
 
 /**
