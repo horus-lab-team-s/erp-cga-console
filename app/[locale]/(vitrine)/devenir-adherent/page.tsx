@@ -62,7 +62,7 @@ const AVANTAGES = [
 function Avantages() {
   const t = useTranslations("vitrine.cga");
   return (
-    <section className="section section-cga">
+    <section className="section section-cga section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>
@@ -98,7 +98,7 @@ function Formules() {
   const conditions = t.raw("conditions") as { libelle: string; valeur: string }[];
 
   return (
-    <section className="section">
+    <section id="formules" className="section">
       <div className="bloc">
         <span className="kicker">{t("formulesKicker")}</span>
         <h2 className="titre-section">{t("formulesTitre")}</h2>

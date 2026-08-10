@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -22,6 +23,11 @@ import { IconeVitrine } from "./IconeVitrine";
  * c'est la première question que pose tout prospect, et la proforma du cabinet
  * la fait apparaître ligne à ligne.
  *
+ * La forme peut être imposée par l'adresse (`?forme=SARL`) : les liens du pied
+ * de page et du méga-menu s'en servent pour amener le visiteur sur un formulaire
+ * déjà rempli plutôt que sur un questionnaire vierge. Un code inconnu est
+ * ignoré, on retombe sur la valeur par défaut.
+ *
  * ⚠️ Le barème vit encore côté client — voir `lib/bareme-creation.ts` pour
  * pourquoi c'est provisoire et où il doit aller.
  */
@@ -29,7 +35,11 @@ export function Estimateur() {
   const t = useTranslations("pages.estimation");
   const commun = useTranslations("commun");
 
-  const [codeForme, setCodeForme] = useState("SARL");
+  const parametres = useSearchParams();
+  const formeDemandee = parametres.get("forme");
+  const [codeForme, setCodeForme] = useState(() =>
+    FORMES.some((f) => f.code === formeDemandee) ? (formeDemandee as string) : "SARL",
+  );
   const [capital, setCapital] = useState(1_000_000);
   const [associes, setAssocies] = useState(2);
   const [ville, setVille] = useState("Douala");

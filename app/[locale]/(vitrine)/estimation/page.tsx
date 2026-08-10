@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
@@ -53,7 +54,12 @@ function Calcul() {
             dette de conception, pas une information à afficher : l'estimateur
             porte déjà l'avertissement destiné au client, qui dit l'essentiel —
             l'estimation est indicative, le devis est confirmé après examen. */}
-        <Estimateur />
+        {/* `useSearchParams` sort son composant de la prégénération : la limite
+            Suspense confine ce coût à l'estimateur, et la page — bannière,
+            en-tête, pied — reste servie en HTML statique. */}
+        <Suspense fallback={null}>
+          <Estimateur />
+        </Suspense>
       </div>
     </section>
   );

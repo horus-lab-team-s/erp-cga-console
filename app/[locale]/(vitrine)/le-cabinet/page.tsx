@@ -51,7 +51,7 @@ function Histoire() {
   const t = useTranslations("pages.cabinet");
   const jalons = t.raw("histoire") as { annee: string; titre: string; detail: string }[];
   return (
-    <section className="section">
+    <section id="histoire" className="section">
       <div className="bloc">
         <span className="kicker">{t("histoireKicker")}</span>
         <h2 className="titre-section">{t("histoireTitre")}</h2>
@@ -96,7 +96,7 @@ function Equipe() {
     photo: string;
   }[];
   return (
-    <section className="section section--teinte">
+    <section id="equipe" className="section section--teinte">
       <div className="bloc">
         <span className="kicker">{t("equipeKicker")}</span>
         <h2 className="titre-section">{t("equipeTitre")}</h2>
@@ -156,7 +156,7 @@ function Agences() {
     photo: string;
   }[];
   return (
-    <section className="section">
+    <section id="agences" className="section">
       <div className="bloc">
         <span className="kicker">{t("agencesKicker")}</span>
         <h2 className="titre-section">{t("agencesTitre")}</h2>
@@ -195,7 +195,7 @@ function Partenaires() {
   const t = useTranslations("pages.cabinet");
   const partenaires = t.raw("partenaires") as { titre: string; detail: string }[];
   return (
-    <section className="section section--teinte">
+    <section id="partenaires" className="section section--teinte">
       <div className="bloc">
         <span className="kicker">{t("partenairesKicker")}</span>
         <h2 className="titre-section">{t("partenairesTitre")}</h2>

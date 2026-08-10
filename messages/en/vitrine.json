@@ -9,7 +9,16 @@
   },
   "megaMenu": {
     "hesitez": "Still unsure?",
-    "hesitezDetail": "Estimate the cost of your formation free of charge, or talk it through with an adviser."
+    "hesitezDetail": "Estimate the cost of your formation free of charge, or talk it through with an adviser.",
+    "creerTitre": "Set up",
+    "formes": {
+      "SARL": "Set up a SARL",
+      "SARLU": "Set up a SARLU",
+      "SA": "Set up a SA",
+      "SAS": "Set up a SAS",
+      "SCI": "Set up a SCI",
+      "ETS": "Set up an ETS"
+    }
   },
   "heros": {
     "slide1": {
@@ -100,6 +109,12 @@
       "detail": "VAT, tax return pack, payroll and social contributions, cash records. In our offices or on your premises.",
       "prix": "from 75,000 FCFA per person",
       "action": "See the calendar"
+    },
+    "juridique": {
+      "titre": "Legal assistance",
+      "detail": "Articles of association, shareholders' agreements, leases, employment contracts and registry follow-up. Our lawyers secure the deeds that bind your company.",
+      "prix": "On quotation",
+      "action": "Learn more"
     },
     "conseil": {
       "titre": "Advice and introductions",
@@ -193,6 +208,16 @@
     "infolettreChamp": "Your email address",
     "infolettreBouton": "Subscribe",
     "infolettreConfirmation": "Your mail client is opening: send the message to confirm your subscription.",
-    "reseaux": "Follow us"
+    "reseaux": "Follow us",
+    "creerTitre": "Set up",
+    "gererTitre": "Manage",
+    "cabinetTitre": "The firm",
+    "suiviComptable": "Bookkeeping",
+    "declarationAnnuelle": "Annual return",
+    "domiciliation": "Registered office",
+    "notreHistoire": "Our story",
+    "notreEquipe": "Our team",
+    "nosPartenaires": "Our partners",
+    "contactezNous": "Contact us"
   }
 }

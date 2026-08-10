@@ -121,7 +121,7 @@ function CeQueChangeLAdhesion() {
   const t = useTranslations("vitrine.cga");
 
   return (
-    <section className="section section-cga section--centre">
+    <section className="section section-cga section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("kicker")}</span>
         <h2 className="titre-section">{t("titre")}</h2>

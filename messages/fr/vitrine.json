@@ -9,7 +9,16 @@
   },
   "megaMenu": {
     "hesitez": "Vous hésitez ?",
-    "hesitezDetail": "Estimez gratuitement le coût de votre création, ou parlez-en directement avec un expert."
+    "hesitezDetail": "Estimez gratuitement le coût de votre création, ou parlez-en directement avec un expert.",
+    "creerTitre": "Créer",
+    "formes": {
+      "SARL": "Créer une SARL",
+      "SARLU": "Créer une SARLU",
+      "SA": "Créer une SA",
+      "SAS": "Créer une SAS",
+      "SCI": "Créer une SCI",
+      "ETS": "Créer une ETS"
+    }
   },
   "heros": {
     "slide1": {
@@ -100,6 +109,12 @@
       "detail": "TVA, liasse fiscale, paie et cotisations sociales, tenue de caisse. En agence ou dans vos locaux.",
       "prix": "dès 75 000 FCFA par personne",
       "action": "Voir le calendrier"
+    },
+    "juridique": {
+      "titre": "Assistance juridique",
+      "detail": "Statuts, pactes d'associés, baux, contrats de travail et suivi du greffe. Nos juristes sécurisent les actes qui engagent votre société.",
+      "prix": "Sur devis",
+      "action": "En savoir plus"
     },
     "conseil": {
       "titre": "Conseil et mise en relation",
@@ -193,6 +208,16 @@
     "infolettreChamp": "Votre adresse électronique",
     "infolettreBouton": "S'inscrire",
     "infolettreConfirmation": "Votre courriel s'ouvre : envoyez le message pour valider votre inscription.",
-    "reseaux": "Suivez-nous"
+    "reseaux": "Suivez-nous",
+    "creerTitre": "Créer",
+    "gererTitre": "Gérer",
+    "cabinetTitre": "Le cabinet",
+    "suiviComptable": "Suivi comptable",
+    "declarationAnnuelle": "Déclaration annuelle",
+    "domiciliation": "Domiciliation",
+    "notreHistoire": "Notre histoire",
+    "notreEquipe": "Notre équipe",
+    "nosPartenaires": "Nos partenaires",
+    "contactezNous": "Contactez-nous"
   }
 }

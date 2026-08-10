@@ -43,6 +43,9 @@ export const ICONES_VITRINE = {
   formations: "M3 8l9-4 9 4-9 4zM7 11v5c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-5",
   conseil:
     "M16 20v-1.5A3.5 3.5 0 0012.5 15h-5A3.5 3.5 0 004 18.5V20M10 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7",
+  // Balance de la justice : le fléau, le pied, et les deux plateaux suspendus.
+  juridique:
+    "M12 3v17M7 20h10M5 7l7-2 7 2M5 7l-2.5 6a2.6 2.6 0 005 0zM19 7l-2.5 6a2.6 2.6 0 005 0z",
 
   // ── Avantages de l'adhésion ─────────────────────────────────────────────
   abattement: "M12 3v18M8 7h6.5a2.5 2.5 0 010 5h-5a2.5 2.5 0 000 5H17",

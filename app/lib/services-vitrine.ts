@@ -1,7 +1,13 @@
 import type { NomIcone } from "./icones-vitrine";
 
 /**
- * Les six services du cabinet, tels que dessinés dans les maquettes.
+ * Les sept services du cabinet.
+
+ * Six viennent des maquettes ; **l'assistance juridique** a été ajoutée à la
+ * demande du cabinet. Elle n'est pas un ajout cosmétique : créer une société,
+ * c'est rédiger des statuts et traiter avec le greffe, donc du droit — les
+ * juristes du cabinet interviennent déjà. Elle relève aussi des prestations
+ * ponctuelles, d'où le renvoi croisé entre les deux fiches.
  *
  * Une seule déclaration alimente trois surfaces : le méga-menu de l'en-tête, la
  * section Services de l'accueil et le pied de page. Les dupliquer garantirait
@@ -55,6 +61,13 @@ export const SERVICES_VITRINE: ServiceVitrine[] = [
     accent: false,
   },
   {
+    cle: "juridique",
+    href: "/contact",
+    icone: "juridique",
+    image: "/images/services/juridique.jpg",
+    accent: false,
+  },
+  {
     cle: "conseil",
     href: "/contact",
     icone: "conseil",
@@ -62,6 +75,30 @@ export const SERVICES_VITRINE: ServiceVitrine[] = [
     accent: false,
   },
 ];
+
+/**
+ * Les formes juridiques proposées à la création, dans l'ordre du pied de page.
+ *
+ * `codeBareme` renvoie à `FORMES` dans `bareme-creation.ts` et sert à
+ * pré-sélectionner l'estimateur. **La SA n'y figure pas** : le barème du cabinet
+ * n'a pas de ligne pour elle. Plutôt que d'inventer des montants, son lien mène
+ * à la page Création, où le visiteur est invité à nous joindre.
+ */
+export const FORMES_JURIDIQUES = [
+  { cle: "SARL", codeBareme: "SARL" },
+  { cle: "SARLU", codeBareme: "SARLU" },
+  { cle: "SA", codeBareme: null },
+  { cle: "SAS", codeBareme: "SAS" },
+  { cle: "SCI", codeBareme: "SCI" },
+  { cle: "ETS", codeBareme: "ETS" },
+] as const;
+
+/** Où mène une forme : l'estimateur pré-rempli, ou la page Création à défaut. */
+export function lienForme(forme: (typeof FORMES_JURIDIQUES)[number]) {
+  return forme.codeBareme
+    ? `/estimation?forme=${forme.codeBareme}`
+    : "/creer-mon-entreprise";
+}
 
 /** Les six entrées de la barre, dans l'ordre du dessin. */
 export const ENTREES_NAV = [

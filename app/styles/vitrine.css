@@ -211,6 +211,60 @@
   background: none;
   border: 0;
   cursor: pointer;
+  /* Ancre du repère de position. */
+  position: relative;
+}
+
+/* Repère de l'entrée courante.
+
+   Il n'existe que là : aucune pastille neutre n'est rendue sur les autres
+   entrées. Un point sur chacune ne repérerait rien.
+
+   Il se trace de gauche à droite à l'arrivée sur la page, puis respire
+   doucement — assez pour attirer l'œil une fois, pas assez pour agiter la
+   barre pendant toute la lecture. */
+.nav-vitrine__repere {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--brand-indigo-700),
+    var(--brand-magenta-600)
+  );
+  transform-origin: left center;
+  animation:
+    repere-trace 0.42s cubic-bezier(0.2, 0.7, 0.3, 1),
+    repere-souffle 3.2s ease-in-out 0.42s infinite;
+}
+
+@keyframes repere-trace {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes repere-souffle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-vitrine__repere {
+    animation: none;
+  }
 }
 
 .nav-vitrine__lien:hover {
@@ -228,18 +282,7 @@
 
 /* Pastille de 6 px devant chaque entrée : discrète au repos, magenta et pulsée
    sur l'entrée active. C'est le seul repère de position dans la pilule. */
-.nav-vitrine__point {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--line-300);
-  flex: none;
-}
 
-.nav-vitrine__lien[aria-current="page"] .nav-vitrine__point {
-  background: var(--brand-magenta-600);
-  animation: pulsation 2.2s ease-in-out infinite;
-}
 
 /* `cgaPoint` du dessin : la pastille de l'entrée active respire. */
 @keyframes pulsation {
@@ -255,9 +298,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-vitrine__lien[aria-current="page"] .nav-vitrine__point {
-    animation: none;
-  }
 }
 
 .pilule .bouton,
@@ -328,7 +368,7 @@
   box-shadow: 0 20px 44px rgb(0 0 0 / 30%);
   padding: 24px;
   display: flex;
-  gap: 28px;
+  gap: 24px;
   z-index: 50;
   animation: monte 0.25s ease;
 }
@@ -1656,6 +1696,148 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+/* ── Filigrane de marque ──────────────────────────────────────────────────
+   Le logo posé en très grand derrière certaines sections. Il signe la page sans
+   se disputer la lecture : à 4 % d'opacité on le devine, on ne le lit pas.
+
+   Le fichier employé est le **tracé blanc**, utilisé comme masque et non comme
+   image. Le logo couleur est un JPEG sur fond blanc : en fond de section il
+   plaquerait un rectangle blanc. Un masque ne retient que la silhouette, qu'on
+   peint ensuite de la couleur voulue — sombre sur fond clair, blanche sur fond
+   sombre. Un seul fichier sert les deux thèmes. */
+
+.section--filigrane {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.section--filigrane::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: -60px;
+  width: min(560px, 52vw);
+  aspect-ratio: 288 / 162;
+  transform: translateY(-50%);
+  background-color: var(--ink-900);
+  -webkit-mask-image: url("/marque/cga-logo-blanc.png");
+  mask-image: url("/marque/cga-logo-blanc.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  opacity: 0.045;
+  pointer-events: none;
+}
+
+/* Sur fond indigo, la silhouette se peint en blanc et supporte un peu plus
+   d'opacité : le contraste y est plus faible qu'entre encre et surface claire. */
+.section-cga.section--filigrane::before {
+  background-color: #fff;
+  opacity: 0.07;
+}
+
+/* En thème sombre, les sections claires ne le sont plus : l'encre du filigrane
+   disparaîtrait dans le fond. On repasse au blanc. */
+[data-theme="sombre"] .section--filigrane::before {
+  background-color: #fff;
+  opacity: 0.05;
+}
+
+/* Sur petit écran le filigrane passe derrière le texte au lieu de le longer :
+   il gênerait plus qu'il ne signerait. On le retire. */
+@media (max-width: 760px) {
+  .section--filigrane::before {
+    display: none;
+  }
+}
+
+/* ── Méga-menu : colonne des formes juridiques ────────────────────────────
+   Celui qui vient créer sait déjà quelle société il veut. Lui faire relire les
+   sept fiches de service pour trouver « SARL » est une perte de temps. */
+
+.mega__formes {
+  flex: none;
+  width: 176px;
+  padding-inline: 20px 0;
+  border-left: 1px solid var(--line-200);
+}
+
+.mega__formes-titre {
+  margin: 0 0 12px;
+  font: 600 11px/1 var(--police-texte);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.mega__formes-liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.mega__formes-liste a {
+  display: block;
+  padding: 7px 10px;
+  font: 500 13px/1.3 var(--police-texte);
+  color: var(--ink-900);
+  text-decoration: none;
+  /* Carré, comme tout le reste de la barre. */
+  border-radius: 0;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.mega__formes-liste a:hover,
+.mega__formes-liste a:focus-visible {
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+  text-decoration: none;
+}
+
+/* Sous 1180 px les trois régions ne tiennent plus de front : l'encart d'appel
+   passe à la ligne plutôt que d'étrangler les fiches. */
+@media (max-width: 1180px) {
+  .mega {
+    flex-wrap: wrap;
+  }
+
+  .mega__aparte {
+    width: 100%;
+  }
+}
+
+/* Raccourcis de formes dans le tiroir : deux colonnes de cibles larges, la
+   liste verticale du méga-menu ferait défiler pour rien sur un téléphone. */
+.tiroir__formes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tiroir__forme {
+  display: block;
+  padding: 12px 10px;
+  min-height: 44px;
+  border: 1px solid var(--line-200);
+  font: 500 13.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+  text-decoration: none;
+}
+
+.tiroir__forme:hover,
+.tiroir__forme:focus-visible {
+  border-color: var(--brand-magenta-600);
+  color: var(--brand-magenta-600);
+  text-decoration: none;
+}
 
 /* ── Pied : infolettre et réseaux ─────────────────────────────────────────
    Une bande dédiée, séparée de la grille de liens par un filet : rester en

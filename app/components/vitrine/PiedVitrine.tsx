@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { FORMES_JURIDIQUES, lienForme } from "@/app/lib/services-vitrine";
 import { IconeVitrine } from "./IconeVitrine";
 import { Infolettre } from "./Infolettre";
 
@@ -42,6 +43,7 @@ const RESEAUX = [
 export function PiedVitrine() {
   const t = useTranslations("vitrine.pied");
   const nav = useTranslations("vitrine.nav");
+  const mega = useTranslations("vitrine.megaMenu");
   const commun = useTranslations("commun");
   const annee = 2026;
 
@@ -72,38 +74,41 @@ export function PiedVitrine() {
             </p>
           </div>
 
+          {/* Créer — les six formes, chacune vers l'estimateur pré-rempli. */}
           <div>
-            <h2 className="pied-vitrine__titre">{t("creer")}</h2>
+            <h2 className="pied-vitrine__titre">{t("creerTitre")}</h2>
             <ul className="pied-vitrine__liste">
-              <li>
-                <Link href="/creer-mon-entreprise">{nav("services")}</Link>
-              </li>
-              <li>
-                <Link href="/estimation">{nav("estimation")}</Link>
-              </li>
+              {FORMES_JURIDIQUES.map((forme) => (
+                <li key={forme.cle}>
+                  <Link href={lienForme(forme)}>{mega(`formes.${forme.cle}`)}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Gérer — la vie de l'entreprise une fois créée. Suivi comptable et
+              déclaration annuelle sont deux volets de l'adhésion : ils pointent
+              sur les formules, pas sur des pages qui n'existent pas. */}
           <div>
-            <h2 className="pied-vitrine__titre">{t("gerer")}</h2>
+            <h2 className="pied-vitrine__titre">{t("gererTitre")}</h2>
             <ul className="pied-vitrine__liste">
               <li>
                 <Link href="/devenir-adherent">{nav("adherent")}</Link>
               </li>
               <li>
+                <Link href="/devenir-adherent#formules">{t("suiviComptable")}</Link>
+              </li>
+              <li>
+                <Link href="/devenir-adherent#formules">{t("declarationAnnuelle")}</Link>
+              </li>
+              <li>
+                <Link href="/contact">{t("domiciliation")}</Link>
+              </li>
+              <li>
                 <Link href="/formations">{nav("formations")}</Link>
               </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="pied-vitrine__titre">{t("leCabinet")}</h2>
-            <ul className="pied-vitrine__liste">
               <li>
-                <Link href="/le-cabinet">{nav("cabinet")}</Link>
-              </li>
-              <li>
-                <Link href="/contact">{nav("contact")}</Link>
+                <Link href="/estimation">{nav("estimation")}</Link>
               </li>
               <li>
                 <Link href="/connexion">{commun("actions.espaceClient")}</Link>
@@ -111,17 +116,24 @@ export function PiedVitrine() {
             </ul>
           </div>
 
+          {/* Le cabinet — les quatre sections de la page, atteintes par ancre. */}
           <div>
-            <h2 className="pied-vitrine__titre">{t("nousTrouver")}</h2>
+            <h2 className="pied-vitrine__titre">{t("cabinetTitre")}</h2>
             <ul className="pied-vitrine__liste">
               <li>
-                {commun("agences.douala.ville")} {commun("agences.douala.quartier")}
+                <Link href="/le-cabinet#histoire">{t("notreHistoire")}</Link>
               </li>
               <li>
-                {commun("agences.yaounde.ville")} {commun("agences.yaounde.quartier")}
+                <Link href="/le-cabinet#equipe">{t("notreEquipe")}</Link>
               </li>
               <li>
-                {commun("agences.bafoussam.ville")} {commun("agences.bafoussam.quartier")}
+                <Link href="/le-cabinet#agences">{t("nousTrouver")}</Link>
+              </li>
+              <li>
+                <Link href="/le-cabinet#partenaires">{t("nosPartenaires")}</Link>
+              </li>
+              <li>
+                <Link href="/contact">{t("contactezNous")}</Link>
               </li>
             </ul>
           </div>
