@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { BandeauAppel } from "@/app/components/vitrine/BandeauAppel";
 import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
 import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
 import "@/app/styles/vitrine.css";
@@ -26,6 +27,9 @@ export default async function LayoutVitrine({
     <div className="vitrine">
       <EnteteVitrine />
       <main>{children}</main>
+      {/* Bandeau d'appel et pied sont communs aux huit pages : la maquette les
+          place hors du commutateur de page. */}
+      <BandeauAppel />
       <PiedVitrine />
     </div>
   );

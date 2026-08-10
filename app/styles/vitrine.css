@@ -1,10 +1,12 @@
 /* ============================================================================
    Site vitrine — mise en page publique.
 
+   Mesures reprises des maquettes `Site vitrine CGA` (1440 px) et
+   `Vitrine mobile CGA` (390 px). Les valeurs en dur ci-dessous — 38, 72, 112,
+   14, 48 — viennent du dessin, pas d'un arbitrage de ma part.
+
    La vitrine et l'espace de travail partagent les MÊMES jetons, et rien d'autre.
    Leur densité est opposée : l'ERP compte ses lignes à 36 px, la vitrine respire.
-   Un visiteur y passe deux minutes, un comptable y passe sa journée — les traiter
-   pareil desservirait les deux.
    ========================================================================= */
 
 .vitrine {
@@ -19,16 +21,15 @@
   flex: 1;
 }
 
-/* Largeur de lecture. Au-delà, une ligne de texte devient pénible à suivre. */
 .bloc {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1344px;
   margin-inline: auto;
-  padding-inline: 20px;
+  padding-inline: 48px;
 }
 
 .section {
-  padding-block: clamp(48px, 7vw, 96px);
+  padding-block: clamp(48px, 7vw, 88px);
 }
 
 .section--teinte {
@@ -48,79 +49,120 @@
 
 .titre-section {
   margin: 0;
-  font: 600 clamp(26px, 3.4vw, 40px) / 1.15 var(--police-titre);
+  font: 600 clamp(24px, 3vw, 34px) / 1.2 var(--police-titre);
   color: var(--ink-900);
   text-wrap: balance;
 }
 
 .chapeau {
   margin: 14px 0 0;
-  max-width: 68ch;
-  font: 400 clamp(15px, 1.4vw, 17px) / 1.65 var(--police-texte);
+  max-width: 72ch;
+  font: 400 clamp(14px, 1.3vw, 15.5px) / 1.75 var(--police-texte);
   color: var(--ink-500);
 }
 
-/* ── En-tête ────────────────────────────────────────────────────────────── */
+/* ============================================================================
+   EN-TÊTE
+
+   Il se superpose au héros : `position: absolute`, et le héros réserve la place
+   par son propre remplissage. C'est ce qui donne la pilule flottant au-dessus
+   de la photographie.
+   ========================================================================= */
 
 .entete-vitrine {
-  position: sticky;
+  position: absolute;
+  inset-inline: 0;
   top: 0;
-  z-index: 50;
-  background: color-mix(in srgb, var(--surface-alt) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line-200);
+  z-index: 40;
 }
 
-.entete-vitrine__barre {
+/* ── Barre utilitaire, 38 px ────────────────────────────────────────────── */
+
+.barre-utile {
+  height: 38px;
+  background: rgb(10 6 18 / 50%);
+  color: rgb(255 255 255 / 78%);
   display: flex;
   align-items: center;
   gap: 20px;
-  min-height: 68px;
+  padding-inline: 48px;
+  font: 400 12px/1 var(--police-texte);
 }
 
-.entete-vitrine__marque {
+.barre-utile__element {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.barre-utile__element:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.barre-utile__agrement {
+  margin-left: auto;
   flex: none;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
 }
 
-.entete-vitrine__marque:hover {
-  text-decoration: none;
+/* ── Pilule de navigation, 72 px ────────────────────────────────────────── */
+
+.entete-vitrine__rangee {
+  padding: 16px 48px 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
 }
 
-.entete-vitrine__nom {
-  display: block;
-  font: 600 15px/1.15 var(--police-titre);
-  color: var(--ink-900);
+.pilule {
+  pointer-events: auto;
+  max-width: 100%;
+  height: 72px;
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgb(0 0 0 / 28%);
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 18px 0 20px;
 }
 
-.entete-vitrine__signature {
-  display: block;
-  font: 400 10.5px/1.4 var(--police-texte);
-  color: var(--ink-500);
+.pilule__logo {
+  flex: none;
+  display: flex;
+  align-items: center;
 }
 
 .nav-vitrine {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-inline: auto;
+  gap: 22px;
 }
 
 .nav-vitrine__lien {
-  padding: 8px 12px;
-  border-radius: var(--rayon);
+  flex: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 24px 0;
   font: 500 13.5px/1 var(--police-texte);
   color: var(--ink-500);
   text-decoration: none;
-  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
 }
 
 .nav-vitrine__lien:hover {
-  background: var(--brand-indigo-100);
-  color: var(--brand-indigo-700);
+  color: var(--ink-900);
   text-decoration: none;
 }
 
@@ -129,59 +171,183 @@
   font-weight: 600;
 }
 
-.entete-vitrine__outils {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Pastille de 6 px devant chaque entrée : discrète au repos, magenta et pulsée
+   sur l'entrée active. C'est le seul repère de position dans la pilule. */
+.nav-vitrine__point {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line-300);
   flex: none;
 }
 
+.nav-vitrine__lien[aria-current="page"] .nav-vitrine__point {
+  background: var(--brand-magenta-600);
+  animation: pulsation 2.2s ease-in-out infinite;
+}
+
+@keyframes pulsation {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-vitrine__lien[aria-current="page"] .nav-vitrine__point {
+    animation: none;
+  }
+}
+
+.pilule__outils {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.select-langue {
+  flex: none;
+  height: 40px;
+  padding: 0 8px;
+  border: 1px solid var(--line-200);
+  border-radius: 9px;
+  background: var(--surface-alt);
+  color: var(--ink-900);
+  font: 600 12.5px/1.2 var(--police-texte);
+  cursor: pointer;
+}
+
 .bouton-icone {
-  width: 36px;
-  height: 36px;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-200);
+  border-radius: 9px;
+  background: var(--surface-alt);
   display: grid;
   place-items: center;
-  border: 1px solid var(--line-200);
-  border-radius: var(--rayon);
-  background: var(--surface);
-  color: var(--ink-500);
+  color: var(--brand-indigo-700);
   cursor: pointer;
 }
 
 .bouton-icone:hover {
   border-color: var(--brand-indigo-700);
-  color: var(--brand-indigo-700);
 }
 
-.bascule-langue {
-  display: flex;
-  border: 1px solid var(--line-200);
-  border-radius: var(--rayon);
-  overflow: hidden;
+/* ── Méga-menu ──────────────────────────────────────────────────────────── */
+
+.mega {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  top: 112px;
   background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  box-shadow: 0 20px 44px rgb(0 0 0 / 30%);
+  padding: 24px;
+  display: flex;
+  gap: 28px;
+  z-index: 50;
+  animation: monte 0.25s ease;
 }
 
-.bascule-langue__choix {
-  padding: 0 10px;
-  height: 34px;
-  border: 0;
-  background: transparent;
-  font: 600 11.5px/1 var(--police-texte);
-  color: var(--ink-500);
+@keyframes monte {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega {
+    animation: none;
+  }
+}
+
+.mega__grille {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mega__carte {
+  border: 1px solid var(--line-200);
+  border-radius: 9px;
+  background: var(--surface-alt);
+  padding: 13px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   cursor: pointer;
   text-decoration: none;
+  transition: transform 0.18s ease;
+}
+
+.mega__carte:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.mega__carte--accent {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-100);
+}
+
+.mega__icone {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
   display: grid;
   place-items: center;
 }
 
-.bascule-langue__choix:hover {
-  background: var(--brand-indigo-100);
-  text-decoration: none;
+.mega__carte--accent .mega__icone {
+  background: var(--brand-magenta-600);
+  color: #fff;
 }
 
-.bascule-langue__choix[aria-current="true"] {
-  background: var(--brand-indigo-700);
-  color: #fff;
+.mega__titre {
+  display: block;
+  font: 600 14px/1.35 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.mega__detail {
+  display: block;
+  font: 400 11.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.mega__prix {
+  display: block;
+  font: 600 11.5px/1.5 var(--police-texte);
+  color: var(--brand-magenta-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.mega__aparte {
+  flex: none;
+  width: 290px;
+  border-radius: 9px;
+  background: var(--brand-indigo-900);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* ── Actions ────────────────────────────────────────────────────────────── */
@@ -190,15 +356,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 20px;
-  border-radius: var(--rayon);
+  gap: 7px;
+  border-radius: 9px;
   border: 1px solid transparent;
-  font: 600 14px/1.2 var(--police-texte);
+  font: 600 12.5px/1.2 var(--police-texte);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
+  padding: 12px 17px;
 }
 
 .bouton:hover {
@@ -220,6 +385,7 @@
   background: transparent;
   border-color: var(--brand-indigo-700);
   color: var(--brand-indigo-700);
+  padding: 11px 15px;
 }
 
 .bouton--secondaire:hover {
@@ -229,16 +395,22 @@
 
 .bouton--clair {
   background: rgb(255 255 255 / 12%);
-  border-color: rgb(255 255 255 / 40%);
+  border-color: rgb(255 255 255 / 45%);
   color: #fff;
 }
 
 .bouton--clair:hover {
-  background: rgb(255 255 255 / 20%);
+  background: rgb(255 255 255 / 22%);
   color: #fff;
 }
 
-/* ── Menu mobile ────────────────────────────────────────────────────────── */
+.bouton--large {
+  min-height: 44px;
+  padding-inline: 20px;
+  font-size: 13px;
+}
+
+/* ── Menu mobile, tiroir à deux niveaux ─────────────────────────────────── */
 
 .tiroir {
   position: fixed;
@@ -266,11 +438,17 @@
   min-height: 52px;
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0 14px;
   border-radius: var(--rayon);
   font: 600 15px/1.2 var(--police-texte);
   color: var(--ink-900);
   text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
 }
 
 .tiroir__lien:hover,
@@ -280,7 +458,15 @@
   text-decoration: none;
 }
 
-/* ── Héros ──────────────────────────────────────────────────────────────── */
+.tiroir__chevron {
+  margin-left: auto;
+  flex: none;
+  color: var(--ink-500);
+}
+
+/* ============================================================================
+   HÉROS
+   ========================================================================= */
 
 .heros {
   position: relative;
@@ -288,6 +474,8 @@
   background: var(--brand-indigo-900);
   color: #fff;
   overflow: hidden;
+  /* Réserve la place de la barre utilitaire (38) et de la pilule (16 + 72). */
+  padding-top: 126px;
 }
 
 .heros__image {
@@ -308,14 +496,21 @@
   background: linear-gradient(
     100deg,
     rgb(15 11 22 / 94%) 0%,
-    rgb(15 11 22 / 82%) 45%,
-    rgb(46 27 77 / 55%) 100%
+    rgb(15 11 22 / 84%) 42%,
+    rgb(46 27 77 / 58%) 100%
   );
 }
 
-.heros__contenu {
-  padding-block: clamp(56px, 9vw, 112px);
-  max-width: 720px;
+.heros__corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) 360px;
+  gap: 40px;
+  align-items: start;
+  padding-block: clamp(40px, 5vw, 64px) 36px;
+}
+
+.heros__texte {
+  max-width: 640px;
 }
 
 .heros__kicker {
@@ -324,33 +519,74 @@
 
 .heros__titre {
   margin: 0;
-  font: 600 clamp(30px, 4.6vw, 54px) / 1.1 var(--police-titre);
+  font: 600 clamp(28px, 4vw, 46px) / 1.12 var(--police-titre);
   color: #fff;
   text-wrap: balance;
 }
 
 .heros__detail {
-  margin: 18px 0 0;
-  max-width: 60ch;
-  font: 400 clamp(15px, 1.5vw, 18px) / 1.65 var(--police-texte);
+  margin: 16px 0 0;
+  max-width: 56ch;
+  font: 400 clamp(14.5px, 1.4vw, 16.5px) / 1.65 var(--police-texte);
   color: rgb(255 255 255 / 82%);
 }
 
-.heros__actions {
-  margin-top: 28px;
+.heros__action {
+  margin-top: 24px;
+  display: inline-flex;
+}
+
+/* ── Chiffres clés, dans le héros ───────────────────────────────────────── */
+
+.heros__chiffres {
+  margin-top: 40px;
   display: flex;
-  gap: 12px;
+  gap: 28px;
   flex-wrap: wrap;
 }
+
+.chiffre {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: none;
+}
+
+.chiffre__icone {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 20%);
+  display: grid;
+  place-items: center;
+  color: #d9a3d6;
+}
+
+.chiffre__valeur {
+  display: block;
+  font: 600 20px/1.15 var(--police-titre);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.chiffre__label {
+  display: block;
+  font: 400 11.5px/1.4 var(--police-texte);
+  color: rgb(255 255 255 / 68%);
+}
+
+/* ── Puces du carrousel ─────────────────────────────────────────────────── */
 
 .heros__puces {
   display: flex;
   gap: 8px;
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .heros__puce {
-  width: 32px;
+  width: 30px;
   height: 4px;
   border-radius: 2px;
   border: 0;
@@ -361,30 +597,92 @@
 
 .heros__puce[aria-current="true"] {
   background: var(--brand-magenta-600);
-  width: 48px;
+  width: 46px;
 }
 
-/* ── Grilles ────────────────────────────────────────────────────────────── */
+/* ── Formulaire « Lancer une démarche », superposé au héros ─────────────── */
+
+.formulaire-heros {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 32%);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--ink-900);
+}
+
+.formulaire-heros__titre {
+  margin: 0;
+  font: 600 19px/1.25 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.formulaire-heros__detail {
+  margin: 0;
+  font: 400 13px/1.55 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.champ__etiquette {
+  display: block;
+  margin-bottom: 5px;
+  font: 600 11.5px/1.4 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.champ__saisie {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-200);
+  border-radius: 9px;
+  background: var(--surface-alt);
+  color: var(--ink-900);
+  font: 400 14px/1.2 var(--police-texte);
+}
+
+.champ__saisie:focus-visible {
+  border-color: var(--brand-indigo-700);
+}
+
+.champ__groupe {
+  display: flex;
+  gap: 8px;
+}
+
+.formulaire-heros__pied {
+  margin: 0;
+  font: 400 11.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* ============================================================================
+   SECTIONS DE CONTENU
+   ========================================================================= */
 
 .grille {
   display: grid;
-  gap: 20px;
-  margin-top: 36px;
+  gap: 18px;
+  margin-top: 34px;
 }
 
 .grille--4 {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .grille--3 {
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .grille--2 {
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-/* ── Cartes ─────────────────────────────────────────────────────────────── */
+/* ── Cartes de service ──────────────────────────────────────────────────── */
 
 .carte {
   display: flex;
@@ -393,21 +691,55 @@
   border-radius: 12px;
   background: var(--surface);
   overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease;
 }
 
-.carte--lien:hover {
+.carte:hover {
+  transform: translateY(-3px);
   border-color: var(--brand-magenta-600);
+  text-decoration: none;
+}
+
+.carte--accent {
+  border-color: var(--brand-magenta-600);
+}
+
+.carte__media {
+  position: relative;
+  height: 150px;
 }
 
 .carte__image {
   width: 100%;
-  height: 168px;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
+/* L'icône de la maquette est conservée, posée sur la photographie : le repère
+   visuel du service reste identique d'un écran à l'autre, y compris là où la
+   photo est absente — méga-menu, mobile. */
+.carte__pastille {
+  position: absolute;
+  left: 14px;
+  bottom: -18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--brand-indigo-700);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 28%);
+}
+
+.carte--accent .carte__pastille {
+  background: var(--brand-magenta-600);
+}
+
 .carte__corps {
-  padding: 18px;
+  padding: 28px 18px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -416,66 +748,137 @@
 
 .carte__titre {
   margin: 0;
-  font: 600 17px/1.3 var(--police-titre);
+  font: 600 16.5px/1.3 var(--police-titre);
   color: var(--ink-900);
 }
 
 .carte__detail {
   margin: 0;
-  font: 400 14px/1.6 var(--police-texte);
+  font: 400 13.5px/1.6 var(--police-texte);
   color: var(--ink-500);
   flex: 1;
+  text-wrap: pretty;
 }
 
 .carte__pied {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 
 .carte__prix {
-  font: 600 13.5px/1 var(--police-texte);
+  font: 600 13px/1 var(--police-texte);
   color: var(--brand-magenta-600);
   font-variant-numeric: tabular-nums;
 }
 
 .carte__action {
   margin-left: auto;
-  font: 600 13px/1 var(--police-texte);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 12.5px/1 var(--police-texte);
   color: var(--brand-indigo-700);
 }
 
-/* ── Chiffres clés ──────────────────────────────────────────────────────── */
+/* ── Avantages de l'adhésion, sur fond indigo ───────────────────────────── */
 
-.chiffre {
-  padding: 22px;
-  border: 1px solid var(--line-200);
+.section-cga {
+  background: var(--brand-indigo-900);
+  color: #fff;
+}
+
+.section-cga .kicker {
+  color: #d9a3d6;
+}
+
+.section-cga .titre-section {
+  color: #fff;
+}
+
+.section-cga .chapeau {
+  color: rgb(255 255 255 / 76%);
+}
+
+.avantage {
+  position: relative;
+  padding: 20px;
   border-radius: 12px;
-  background: var(--surface);
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
 }
 
-.chiffre__valeur {
-  display: block;
-  font: 600 clamp(28px, 3.4vw, 38px) / 1.1 var(--police-titre);
-  color: var(--brand-indigo-700);
-  font-variant-numeric: tabular-nums;
+/* Filet qui se déploie au survol — repris du dessin, où il souligne la carte. */
+.avantage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  background: #fff;
+  transition: width 0.35s ease;
 }
 
-.chiffre__label {
-  display: block;
-  margin-top: 6px;
-  font: 400 13.5px/1.5 var(--police-texte);
-  color: var(--ink-500);
+.avantage:hover::after {
+  width: 100%;
 }
 
-/* ── Étapes numérotées ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .avantage::after {
+    transition: none;
+  }
+}
+
+.avantage__icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgb(255 255 255 / 12%);
+  color: #d9a3d6;
+  display: grid;
+  place-items: center;
+}
+
+.avantage__titre {
+  margin: 0;
+  font: 600 15.5px/1.35 var(--police-titre);
+  color: #fff;
+  text-wrap: balance;
+}
+
+.avantage__detail {
+  margin: 0;
+  font: 400 13px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 72%);
+  text-wrap: pretty;
+}
+
+/* ── Étapes ─────────────────────────────────────────────────────────────── */
+
+.etape {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.etape__entete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 .etape__rang {
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
+  flex: none;
   border-radius: 50%;
   background: var(--brand-magenta-600);
   color: #fff;
@@ -483,66 +886,75 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Questions fréquentes ───────────────────────────────────────────────── */
-
-.question {
-  border: 1px solid var(--line-200);
-  border-radius: 12px;
-  background: var(--surface);
+.etape__barre {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line-200);
   overflow: hidden;
 }
 
-.question > summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font: 600 15px/1.4 var(--police-texte);
-  color: var(--ink-900);
+.etape__progression {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brand-magenta-600);
 }
 
-.question > summary::-webkit-details-marker {
-  display: none;
-}
-
-.question > summary::after {
-  content: "+";
-  margin-left: auto;
+.etape__compte {
   flex: none;
-  font: 400 20px/1 var(--police-texte);
-  color: var(--brand-magenta-600);
-}
-
-.question[open] > summary::after {
-  content: "−";
-}
-
-.question__reponse {
-  margin: 0;
-  padding: 0 18px 18px;
-  font: 400 14.5px/1.7 var(--police-texte);
+  font: 600 11.5px/1 var(--police-texte);
   color: var(--ink-500);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Témoignages, en carrousel ──────────────────────────────────────────── */
+/* ── Témoignages, défilement automatique ────────────────────────────────── */
 
 .temoins {
+  margin-top: 34px;
+  overflow: hidden;
+  /* Le défilement est contenu ici : la page ne défile jamais latéralement. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+.temoins__ruban {
   display: flex;
-  gap: 20px;
-  margin-top: 36px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 10px;
-  /* Le défilement horizontal est contenu ici : la page elle-même ne doit jamais
-     défiler latéralement. */
-  scrollbar-width: thin;
+  gap: 18px;
+  width: max-content;
+  animation: defilement var(--duree-defilement, 44s) linear infinite;
+}
+
+/* Au survol et au focus clavier, le ruban s'arrête : on ne peut pas lire un
+   texte qui glisse, ni cliquer une carte qui fuit. */
+.temoins:hover .temoins__ruban,
+.temoins:focus-within .temoins__ruban {
+  animation-play-state: paused;
+}
+
+@keyframes defilement {
+  /* Le ruban contient deux copies de la liste. Translater de la moitié exacte
+     ramène la seconde copie à la position de la première : la boucle est
+     invisible, sans saut. */
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temoins {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .temoins__ruban {
+    animation: none;
+    width: auto;
+  }
 }
 
 .temoin {
-  flex: 0 0 min(360px, 84vw);
-  scroll-snap-align: start;
+  flex: 0 0 340px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -552,11 +964,17 @@
   background: var(--surface);
 }
 
-.temoin__citation {
+.temoin__guillemet {
+  color: var(--brand-magenta-600);
+  opacity: 0.55;
+}
+
+.temoin__texte {
   margin: 0;
-  font: 400 15px/1.7 var(--police-texte);
+  font: 400 14.5px/1.7 var(--police-texte);
   color: var(--ink-900);
   flex: 1;
+  text-wrap: pretty;
 }
 
 .temoin__auteur {
@@ -581,7 +999,7 @@
 }
 
 .appel__contenu {
-  padding-block: clamp(40px, 6vw, 72px);
+  padding-block: clamp(40px, 6vw, 64px);
   display: flex;
   align-items: center;
   gap: 28px;
@@ -590,30 +1008,30 @@
 
 .appel__titre {
   margin: 0;
-  font: 600 clamp(22px, 2.6vw, 32px) / 1.2 var(--police-titre);
+  font: 600 clamp(22px, 2.4vw, 30px) / 1.25 var(--police-titre);
   color: #fff;
   text-wrap: balance;
 }
 
 .appel__detail {
   margin: 10px 0 0;
-  max-width: 56ch;
-  font: 400 15px/1.65 var(--police-texte);
-  color: rgb(255 255 255 / 78%);
+  max-width: 62ch;
+  font: 400 14px/1.7 var(--police-texte);
+  color: rgb(255 255 255 / 74%);
 }
 
 /* ── Pied de page ───────────────────────────────────────────────────────── */
 
 .pied-vitrine {
-  background: var(--brand-indigo-900);
-  color: rgb(255 255 255 / 78%);
-  padding-block: 56px 28px;
+  background: #0b0810;
+  color: rgb(255 255 255 / 72%);
+  padding-block: 52px 26px;
 }
 
 .pied-vitrine__grille {
   display: grid;
   gap: 32px;
-  grid-template-columns: minmax(260px, 1.6fr) repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: minmax(260px, 1.5fr) repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .pied-vitrine__titre {
@@ -625,7 +1043,7 @@
 }
 
 .pied-vitrine a {
-  color: rgb(255 255 255 / 78%);
+  color: rgb(255 255 255 / 72%);
   text-decoration: none;
 }
 
@@ -641,11 +1059,11 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
-  font: 400 14px/1.5 var(--police-texte);
+  font: 400 13.5px/1.5 var(--police-texte);
 }
 
 .pied-vitrine__bas {
-  margin-top: 40px;
+  margin-top: 38px;
   padding-top: 20px;
   border-top: 1px solid rgb(255 255 255 / 14%);
   display: flex;
@@ -653,19 +1071,74 @@
   flex-wrap: wrap;
   align-items: center;
   font: 400 12.5px/1.6 var(--police-texte);
-  color: rgb(255 255 255 / 60%);
+  color: rgb(255 255 255 / 58%);
 }
 
-/* ── Adaptation aux petits écrans ───────────────────────────────────────── */
+/* ============================================================================
+   ADAPTATION AUX PETITS ÉCRANS
 
-@media (max-width: 900px) {
-  .nav-vitrine {
+   La maquette mobile est dessinée en 390 px : en-tête réduit — logo, langue,
+   thème, menu — et tiroir à deux niveaux. Le formulaire du héros passe sous le
+   texte, les chiffres s'empilent.
+   ========================================================================= */
+
+@media (max-width: 1100px) {
+  .heros__corps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+@media (max-width: 980px) {
+  .bloc {
+    padding-inline: 20px;
+  }
+
+  .barre-utile {
+    padding-inline: 20px;
+    gap: 14px;
+    font-size: 11.5px;
+  }
+
+  /* Le courriel et l'agrément sortent en premier : le téléphone est ce qu'on
+     cherche sur un téléphone. */
+  .barre-utile__element--courriel,
+  .barre-utile__agrement {
+    display: none;
+  }
+
+  .entete-vitrine__rangee {
+    padding: 12px 20px 0;
+    justify-content: stretch;
+  }
+
+  .pilule {
+    width: 100%;
+    height: 64px;
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .nav-vitrine,
+  .pilule__espace-client {
+    display: none;
+  }
+
+  .heros {
+    padding-top: 108px;
+  }
+
+  .heros__chiffres {
+    gap: 18px;
+  }
+
+  .mega {
     display: none;
   }
 }
 
-@media (min-width: 901px) {
-  .entete-vitrine__menu {
+@media (min-width: 981px) {
+  .pilule__menu {
     display: none;
   }
 }

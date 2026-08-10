@@ -5,39 +5,62 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Link } from "@/i18n/navigation";
-
-const SLIDES = ["slide1", "slide2", "slide3"] as const;
-
-/** Durée d'affichage d'une vue avant passage à la suivante. */
-const CADENCE = 7000;
+import { IconeVitrine } from "./IconeVitrine";
+import { FormulaireDemarche } from "./FormulaireDemarche";
 
 /**
- * Carrousel d'ouverture.
+ * Héros de l'accueil — maquette `Site vitrine CGA`.
  *
- * Il avance seul, mais **s'arrête dès qu'on interagit avec lui** — survol, focus
- * clavier, ou choix explicite d'une vue. Un carrousel qui reprend sa course pendant
- * qu'on lit le texte est une des façons les plus sûres de faire quitter une page.
+ * Trois vues, **chacune avec son propre bouton** vers une page différente : la
+ * création, l'adhésion, le cabinet. C'est ce qui distingue ce carrousel d'un
+ * diaporama décoratif — chaque vue a une destination.
  *
- * Le défilement automatique est également désactivé si le visiteur a demandé de
- * réduire les animations.
+ * Le formulaire « Lancer une démarche » est posé à droite, dans le héros, et les
+ * quatre chiffres clés courent sous le texte.
  */
+
+const VUES = [
+  {
+    cle: "slide1",
+    href: "/creer-mon-entreprise",
+    image: "/images/heros/reunion-equipe.jpg",
+  },
+  {
+    cle: "slide2",
+    href: "/devenir-adherent",
+    image: "/images/heros/mains-levees.jpg",
+  },
+  {
+    cle: "slide3",
+    href: "/le-cabinet",
+    image: "/images/heros/rue-commercante.jpg",
+  },
+] as const;
+
+const CHIFFRES = [
+  { cle: "creation", icone: "immeuble" },
+  { cle: "entrepreneurs", icone: "equipe" },
+  { cle: "agrement", icone: "agrement" },
+  { cle: "cible", icone: "boutique" },
+] as const;
+
+/** Cadence du dessin : une vue toutes les 5 secondes. */
+const CADENCE = 5000;
+
 export function Heros() {
   const t = useTranslations("vitrine.heros");
-  const commun = useTranslations("commun");
+  const chiffres = useTranslations("vitrine.chiffres");
   const [index, setIndex] = useState(0);
   const [enPause, setEnPause] = useState(false);
 
   useEffect(() => {
     if (enPause) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const minuterie = window.setInterval(
-      () => setIndex((i) => (i + 1) % SLIDES.length),
-      CADENCE,
-    );
+    const minuterie = window.setInterval(() => setIndex((i) => (i + 1) % VUES.length), CADENCE);
     return () => window.clearInterval(minuterie);
   }, [enPause]);
 
-  const cle = SLIDES[index];
+  const vue = VUES[index];
 
   return (
     <section
@@ -47,12 +70,13 @@ export function Heros() {
       onMouseLeave={() => setEnPause(false)}
       onFocusCapture={() => setEnPause(true)}
     >
-      {/* Toutes les vues sont montées, seule l'active est visible : recharger une
-          photo à chaque passage ferait clignoter le fond sur connexion lente. */}
-      {SLIDES.map((slide, i) => (
+      {/* Les trois photographies sont montées en permanence, seule l'active est
+          visible : les recharger à chaque passage ferait clignoter le fond sur
+          connexion lente. */}
+      {VUES.map((v, i) => (
         <Image
-          key={slide}
-          src={t(`${slide}.image`)}
+          key={v.cle}
+          src={v.image}
           alt=""
           fill
           priority={i === 0}
@@ -63,36 +87,50 @@ export function Heros() {
       ))}
       <div className="heros__voile" />
 
-      <div className="bloc heros__contenu">
-        <span className="kicker heros__kicker">{t(`${cle}.kicker`)}</span>
-        <h1 className="heros__titre">{t(`${cle}.titre`)}</h1>
-        <p className="heros__detail">{t(`${cle}.detail`)}</p>
+      <div className="bloc heros__corps">
+        <div className="heros__texte">
+          <span className="kicker heros__kicker">{t(`${vue.cle}.kicker`)}</span>
+          <h1 className="heros__titre">{t(`${vue.cle}.titre`)}</h1>
+          <p className="heros__detail">{t(`${vue.cle}.detail`)}</p>
 
-        <div className="heros__actions">
-          <Link href="/estimation" className="bouton bouton--principal">
-            {commun("actions.estimerProjet")}
+          <Link href={vue.href} className="bouton bouton--principal bouton--large heros__action">
+            {t(`${vue.cle}.action`)}
+            <IconeVitrine nom="fleche" taille={16} />
           </Link>
-          <Link href="/nos-services" className="bouton bouton--clair">
-            {commun("actions.decouvrir")}
-          </Link>
+
+          <div className="heros__chiffres">
+            {CHIFFRES.map((chiffre) => (
+              <div key={chiffre.cle} className="chiffre">
+                <span className="chiffre__icone">
+                  <IconeVitrine nom={chiffre.icone} taille={18} epaisseur={1.6} />
+                </span>
+                <span>
+                  <span className="chiffre__valeur">{chiffres(`${chiffre.cle}.valeur`)}</span>
+                  <span className="chiffre__label">{chiffres(`${chiffre.cle}.label`)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="heros__puces" role="tablist" aria-label="Vues">
+            {VUES.map((v, i) => (
+              <button
+                key={v.cle}
+                type="button"
+                role="tab"
+                className="heros__puce"
+                aria-current={i === index}
+                aria-label={t(`${v.cle}.titre`)}
+                onClick={() => {
+                  setIndex(i);
+                  setEnPause(true);
+                }}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="heros__puces" role="tablist" aria-label="Vues">
-          {SLIDES.map((slide, i) => (
-            <button
-              key={slide}
-              type="button"
-              role="tab"
-              className="heros__puce"
-              aria-current={i === index}
-              aria-label={t(`${slide}.titre`)}
-              onClick={() => {
-                setIndex(i);
-                setEnPause(true);
-              }}
-            />
-          ))}
-        </div>
+        <FormulaireDemarche />
       </div>
     </section>
   );

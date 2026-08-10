@@ -4,34 +4,52 @@
     "adherent": "Become a member",
     "formations": "Training",
     "cabinet": "The firm",
-    "contact": "Contact us",
-    "estimation": "Estimate"
+    "estimation": "Estimate",
+    "contact": "Contact us"
+  },
+  "megaMenu": {
+    "hesitez": "Still unsure?",
+    "hesitezDetail": "Estimate the cost of your formation free of charge, or talk it through with an adviser."
   },
   "heros": {
     "slide1": {
-      "kicker": "Starting a business in Cameroon",
-      "titre": "Your company registered, without queueing",
-      "detail": "Articles, registration, trade register, tax number and publication: we prepare your file and lodge it at the one-stop shop. You follow every step from your phone.",
-      "image": "/images/heros/reunion-equipe.jpg",
-      "alt": "Team meeting around a table"
+      "kicker": "Approved management centre in Cameroon · Douala",
+      "titre": "Start your company, we keep your books",
+      "detail": "From the first idea to the annual return: articles, registration, accounting and tax.",
+      "action": "Estimate my formation"
     },
     "slide2": {
-      "kicker": "Approved management centre",
-      "titre": "Books kept, taxes under control",
-      "detail": "We check every invoice before recording it, and tell you what an irregular one will cost you. Before the tax adjustment, not after.",
-      "image": "/images/heros/mains-levees.jpg",
-      "alt": "Gathering with raised hands"
+      "kicker": "Membership of the approved centre",
+      "titre": "A 50% allowance on your taxable profit",
+      "detail": "Our specialists check your return before filing it, and you are exempt from business licence tax for two years.",
+      "action": "Explore membership"
     },
     "slide3": {
-      "kicker": "Since 1994",
-      "titre": "Three offices, over 500 entrepreneurs supported",
-      "detail": "Douala Akwa, Yaoundé Elig-Essono, Bafoussam Haoussa district. One contact who knows your file and answers on WhatsApp.",
-      "image": "/images/heros/rue-commercante.jpg",
-      "alt": "Busy shopping street in Douala"
+      "kicker": "Thirty years alongside Cameroonian entrepreneurs",
+      "titre": "Over 500 entrepreneurs already supported",
+      "detail": "Founded in 1994, approved by the Ministry of Finance, based in Douala.",
+      "action": "Discover the firm"
+    }
+  },
+  "formulaire": {
+    "titre": "Start a procedure",
+    "detail": "An adviser calls you back to discuss it.",
+    "demarche": "Your procedure",
+    "nom": "Full name",
+    "nomExemple": "Jean-Paul KAMGA",
+    "tel": "Phone or WhatsApp",
+    "bouton": "Request a call back",
+    "pied": "Or message us directly on WhatsApp at 699 902 184.",
+    "demarches": {
+      "creation": "Company formation",
+      "adhesion": "Membership and bookkeeping",
+      "ponctuel": "One-off service",
+      "domiciliation": "Registered address",
+      "formation": "Training",
+      "autre": "Another request"
     }
   },
   "chiffres": {
-    "titre": "The firm in four figures",
     "creation": { "valeur": "1994", "label": "Firm founded" },
     "entrepreneurs": { "valeur": "500+", "label": "Entrepreneurs supported" },
     "agrement": { "valeur": "2020", "label": "Ministry of Finance approval" },
@@ -40,11 +58,11 @@
   "services": {
     "kicker": "Our services",
     "titre": "From the first idea to the annual return",
-    "detail": "As an accounting, audit and advisory firm, we provide accounting, tax and management support to Cameroonian small and medium businesses.",
+    "detail": "As an accounting, audit and advisory firm, we provide accounting, tax and management support to Cameroonian small and medium businesses",
     "creation": {
       "titre": "Company formation",
-      "detail": "Sole trader, LLC, single-member LLC, simplified joint stock, property company, public limited. Articles, registration, trade register, tax number and publication: we lodge the file for you.",
-      "prix": "from 300,000 FCFA",
+      "detail": "Sole trader, LLC, single-member LLC, simplified joint stock, property company, public limited. Articles, registration, trade register, tax number and publication — we lodge the file for you.",
+      "prix": "from 165,000 FCFA",
       "action": "Estimate"
     },
     "adhesion": {
@@ -81,104 +99,75 @@
   "cga": {
     "kicker": "Understanding the approved management centre",
     "titre": "What membership changes for your business",
-    "detail": "An approved management centre is not an ordinary accounting firm: it is an association approved by the Minister of Finance, working alongside the tax administration. Membership opens real advantages, in return for books kept rigorously.",
-    "action": "Explore membership",
-    "avantage1": {
-      "titre": "An allowance on your profit",
-      "detail": "Membership of an approved centre entitles you to an allowance on declared profit. The amount and conditions depend on your tax regime."
+    "detail1": "An approved centre is a body approved by the Minister of Finance, which assists its small member businesses",
+    "detail2": "with their management and their obligations. Its involvement heads off tax risk: the return is checked before it is filed.",
+    "bouton": "Explore membership",
+    "abattement": {
+      "titre": "50% allowance on declared profit",
+      "detail": "The base of your profit tax is halved, from your very first return."
     },
-    "avantage2": {
-      "titre": "A desk audit, not an on-site one",
-      "detail": "The administration favours documentary review for members of an approved centre. Your business is not interrupted."
+    "exoneration": {
+      "titre": "Two years free of business licence tax",
+      "detail": "Cash flow preserved at the very moment your activity starts."
     },
-    "avantage3": {
-      "titre": "A reduced withholding on purchases",
-      "detail": "The withholding rate applied to your purchases is reduced for members. Your cash flow breathes."
+    "controle": {
+      "titre": "Your documents checked before filing",
+      "detail": "Our specialists verify your return before it reaches the tax office — that is what heads off an adjustment."
     },
-    "avantage4": {
-      "titre": "Errors caught before the tax office does",
-      "detail": "We check every invoice on arrival and put a figure on what an irregularity would cost. An invoice missing a tax number can be corrected in a week; discovered during an audit, it is lost."
+    "dialogue": {
+      "titre": "Fewer penalties, an easier dialogue",
+      "detail": "The tax administration provides technical support to approved centres; your file is handled within that framework."
     }
   },
   "etapes": {
     "kicker": "How it works",
     "titre": "Three steps, and you follow everything online",
     "etape1": {
-      "titre": "You estimate and confirm",
-      "detail": "Four questions in the estimator, the amount appears, split between official fees and our own. You pay by transfer or Orange Money."
+      "titre": "You fill in the form",
+      "detail": "Company formation, accounting or legal service: two minutes are enough, with no account to create."
     },
     "etape2": {
-      "titre": "We build and lodge the file",
-      "detail": "You photograph your documents from your phone. We draft the articles, you review them, we lodge at the one-stop shop."
+      "titre": "An adviser takes your procedure in hand",
+      "detail": "We call you back, draw up your itemised quote and open your file as soon as payment clears."
     },
     "etape3": {
-      "titre": "You receive your documents",
-      "detail": "Trade register, tax number, tax compliance certificate, social security numbers. Eight weeks at most after your articles are approved."
-    }
-  },
-  "faq": {
-    "kicker": "Frequently asked",
-    "titre": "What people ask us most",
-    "q1": {
-      "question": "What exactly do your prices cover?",
-      "reponse": "Two distinct amounts: the official fees we advance and pay on to the administrations, and our own fees. The estimator shows them separately, and your quote itemises every line."
-    },
-    "q2": {
-      "question": "How long does company formation take?",
-      "reponse": "Eight weeks at most once your articles are reviewed and approved, and payment received. Outside Douala and Yaoundé, allow two more weeks: the file is lodged at the regional one-stop shop."
-    },
-    "q3": {
-      "question": "Must I pay in the capital before registration?",
-      "reponse": "Yes for companies with share capital: it is placed in a blocked account, then released once the trade register entry is obtained."
-    },
-    "q4": {
-      "question": "Do I need to be a large company to join?",
-      "reponse": "No, quite the opposite. The approved management centre is designed for very small and medium businesses, including those under the general synthetic tax regime."
-    },
-    "q5": {
-      "question": "How do I send you my invoices?",
-      "reponse": "By WhatsApp, from the app, by email, or at one of our offices. You photograph them as you receive them; the rest is our concern."
-    },
-    "q6": {
-      "question": "What if my company name is refused?",
-      "reponse": "We submit the second proposal at no extra cost. That is why we ask you for three from the outset."
+      "titre": "You follow progress in real time",
+      "detail": "Every step is visible in your workspace: documents received, filing at the one-stop shop, papers available."
     }
   },
   "temoins": {
     "kicker": "They trust us",
     "titre": "In our clients' words",
-    "note": "Reserved placements. These testimonials are layout examples: send us your real testimonials and their permissions, and we will publish them.",
+    "note": "Reserved placements: send us your real testimonials and their permissions, and we will publish them.",
     "t1": {
-      "citation": "We used to send our invoices in bulk at the end of the quarter. Now I photograph them the same day and know straight away if one is a problem.",
-      "auteur": "Managing director",
-      "entreprise": "General trade, Douala"
+      "texte": "Testimonial to be collected from a member whose company we formed.",
+      "nom": "Director's name",
+      "role": "Company, sector, city"
     },
     "t2": {
-      "citation": "The firm spotted that one of my suppliers was no longer registered. Without them I would have found out during an audit, two years later.",
-      "auteur": "Manager",
-      "entreprise": "Construction, Douala Bonabéri"
+      "texte": "Testimonial to be collected from a member under bookkeeping service.",
+      "nom": "Director's name",
+      "role": "Company, sector, city"
     },
     "t3": {
-      "citation": "The formation went through without my setting foot in the one-stop shop once. My registration and tax number arrived by post.",
-      "auteur": "Founder",
-      "entreprise": "Food processing, Yaoundé"
+      "texte": "Testimonial to be collected from a training participant.",
+      "nom": "Participant's name",
+      "role": "Role, company"
     },
     "t4": {
-      "citation": "What I value is knowing what a mistake will cost me before I make it, not afterwards.",
-      "auteur": "Administrative director",
-      "entreprise": "Healthcare, Yaoundé"
+      "texte": "Testimonial to be collected from a director supported through a tax audit.",
+      "nom": "Director's name",
+      "role": "Company, sector, city"
     }
-  },
-  "hesitez": {
-    "titre": "Still unsure?",
-    "detail": "Estimate the cost of your formation free of charge, or talk it through with an adviser. No commitment, no sign-up."
   },
   "cta": {
     "titre": "Let's talk about your project today",
-    "detail": "Message us on WhatsApp at 699 902 184, call +237 233 424 847, or drop by our Douala Akwa office."
+    "detail": "Message us on WhatsApp at 699 902 184, call +237 233 42 48 47, or drop by our Douala office. Our advisers will take your request in hand.",
+    "whatsapp": "Message us on WhatsApp",
+    "rendezVous": "Book an appointment"
   },
   "pied": {
-    "description": "Accounting, audit and advisory firm approved by the Minister of Finance, order no. 00000048/MINFI/DGI of 28 January 2020. Accounting, tax and management support for small and medium businesses.",
+    "description": "Accounting, audit and advisory firm approved by the Minister of Finance, order no. 00000048 of 28 January 2020. Accounting, tax and management support for small and medium businesses.",
     "creer": "Start",
     "gerer": "Manage",
     "leCabinet": "The firm",
@@ -186,6 +175,7 @@
     "mentions": "Legal notice",
     "confidentialite": "Privacy policy",
     "cgv": "Terms of sale",
+    "fraisNote": "Official fees in force at 1 January 2026",
     "droits": "All rights reserved."
   }
 }

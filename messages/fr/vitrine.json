@@ -4,34 +4,52 @@
     "adherent": "Devenir adhérent",
     "formations": "Formations",
     "cabinet": "Le cabinet",
-    "contact": "Contactez-nous",
-    "estimation": "Estimation"
+    "estimation": "Estimation",
+    "contact": "Contactez-nous"
+  },
+  "megaMenu": {
+    "hesitez": "Vous hésitez ?",
+    "hesitezDetail": "Estimez gratuitement le coût de votre création, ou parlez-en directement avec un expert."
   },
   "heros": {
     "slide1": {
-      "kicker": "Créer son entreprise au Cameroun",
-      "titre": "Votre entreprise immatriculée, sans faire la queue",
-      "detail": "Statuts, enregistrement, RCCM, NIU et publication : nous montons votre dossier et le déposons au guichet unique. Vous suivez chaque étape depuis votre téléphone.",
-      "image": "/images/heros/reunion-equipe.jpg",
-      "alt": "Réunion de travail autour d'une table"
+      "kicker": "Centre de gestion agréé au Cameroun · Douala",
+      "titre": "Créez votre entreprise, nous tenons vos comptes",
+      "detail": "De la première idée à la déclaration annuelle : statuts, immatriculation, comptabilité et fiscalité.",
+      "action": "Estimer ma création"
     },
     "slide2": {
-      "kicker": "Centre de gestion agréé",
-      "titre": "Une comptabilité tenue, des impôts sous contrôle",
-      "detail": "Nous contrôlons chaque facture avant de la comptabiliser, et nous vous disons ce qu'elle vous coûte si elle est irrégulière. Avant le redressement, pas après.",
-      "image": "/images/heros/mains-levees.jpg",
-      "alt": "Assemblée, mains levées"
+      "kicker": "Adhésion au centre agréé",
+      "titre": "Un abattement de 50 % sur votre bénéfice imposable",
+      "detail": "Nos experts vérifient votre déclaration avant de la déposer, et vous êtes exonéré de patente deux ans.",
+      "action": "Découvrir l'adhésion"
     },
     "slide3": {
-      "kicker": "Depuis 1994",
-      "titre": "Trois agences, plus de 500 entrepreneurs accompagnés",
-      "detail": "Douala Akwa, Yaoundé Elig-Essono, Bafoussam Quartier Haoussa. Un interlocuteur qui connaît votre dossier et répond sur WhatsApp.",
-      "image": "/images/heros/rue-commercante.jpg",
-      "alt": "Rue commerçante animée à Douala"
+      "kicker": "Trente ans auprès des entrepreneurs camerounais",
+      "titre": "Plus de 500 entrepreneurs déjà accompagnés",
+      "detail": "Fondé en 1994, agréé par le ministère des Finances, établi à Douala.",
+      "action": "Découvrir le cabinet"
+    }
+  },
+  "formulaire": {
+    "titre": "Lancer une démarche",
+    "detail": "Un expert vous rappelle pour en parler.",
+    "demarche": "Votre démarche",
+    "nom": "Nom et prénom",
+    "nomExemple": "Jean-Paul KAMGA",
+    "tel": "Téléphone ou WhatsApp",
+    "bouton": "Être rappelé",
+    "pied": "Ou écrivez directement sur WhatsApp au 699 902 184.",
+    "demarches": {
+      "creation": "Création d'entreprise",
+      "adhesion": "Adhésion et suivi comptable",
+      "ponctuel": "Prestation ponctuelle",
+      "domiciliation": "Domiciliation commerciale",
+      "formation": "Formation",
+      "autre": "Autre demande"
     }
   },
   "chiffres": {
-    "titre": "Le cabinet en quatre chiffres",
     "creation": { "valeur": "1994", "label": "Création du cabinet" },
     "entrepreneurs": { "valeur": "500+", "label": "Entrepreneurs accompagnés" },
     "agrement": { "valeur": "2020", "label": "Agrément du ministère des Finances" },
@@ -40,11 +58,11 @@
   "services": {
     "kicker": "Nos services",
     "titre": "De la première idée à la déclaration annuelle",
-    "detail": "Cabinet comptable, d'audit et de conseil, nous apportons une assistance comptable, fiscale et de gestion aux TPE et PME camerounaises.",
+    "detail": "Cabinet comptable, d'audit et de conseil, nous apportons une assistance comptable, fiscale et de gestion aux TPE et PME camerounaises",
     "creation": {
       "titre": "Création d'entreprise",
-      "detail": "ETS, SARL, SARLU, SAS, SCI, SA. Statuts, enregistrement, RCCM, NIU et publication : nous déposons pour vous au guichet unique.",
-      "prix": "dès 300 000 FCFA",
+      "detail": "ETS, SARL, SARLU, SAS, SCI, SA. Statuts, enregistrement, RCCM, NIU et publication, nous déposons pour vous au guichet unique.",
+      "prix": "dès 165 000 FCFA",
       "action": "Estimer"
     },
     "adhesion": {
@@ -81,104 +99,75 @@
   "cga": {
     "kicker": "Comprendre le centre de gestion agréé",
     "titre": "Ce que l'adhésion change pour votre entreprise",
-    "detail": "Un centre de gestion agréé n'est pas un cabinet comptable ordinaire : c'est une association agréée par le ministre des Finances, partenaire de l'administration fiscale. L'adhésion ouvre des avantages réels, en contrepartie d'une comptabilité tenue avec rigueur.",
-    "action": "Découvrir l'adhésion",
-    "avantage1": {
-      "titre": "Un abattement sur votre bénéfice",
-      "detail": "L'adhésion à un centre agréé ouvre droit à un abattement sur le bénéfice déclaré. Le montant et les conditions dépendent de votre régime."
+    "detail1": "Un centre agréé est une structure agréée par le ministre chargé des Finances, qui assiste les petites entreprises adhérentes",
+    "detail2": "dans leur gestion et leurs obligations. Son intervention prévient le risque fiscal : la déclaration est vérifiée avant d'être déposée.",
+    "bouton": "Découvrir l'adhésion",
+    "abattement": {
+      "titre": "Abattement de 50 % sur le bénéfice déclaré",
+      "detail": "La base de votre impôt sur le résultat est réduite de moitié, dès votre première déclaration."
     },
-    "avantage2": {
-      "titre": "Un contrôle sur pièces, pas sur place",
-      "detail": "L'administration privilégie le contrôle documentaire pour les adhérents d'un centre agréé. Votre activité n'est pas interrompue."
+    "exoneration": {
+      "titre": "Exonération de patente deux ans",
+      "detail": "Une trésorerie préservée au moment où votre activité démarre."
     },
-    "avantage3": {
-      "titre": "Un précompte réduit sur vos achats",
-      "detail": "Le taux de précompte appliqué à vos achats est réduit pour les adhérents. Votre trésorerie respire."
+    "controle": {
+      "titre": "Contrôle de vos pièces avant dépôt",
+      "detail": "Nos experts vérifient votre déclaration avant transmission au fisc : c'est ce qui prévient le redressement."
     },
-    "avantage4": {
-      "titre": "Des erreurs vues avant l'administration",
-      "detail": "Nous contrôlons chaque facture à sa réception et chiffrons ce qu'une irrégularité vous coûterait. Une facture sans NIU se fait corriger en une semaine ; découverte au contrôle, elle est perdue."
+    "dialogue": {
+      "titre": "Moins de pénalités, un dialogue facilité",
+      "detail": "L'administration fiscale assiste techniquement les centres agréés ; votre dossier est instruit dans ce cadre."
     }
   },
   "etapes": {
     "kicker": "Comment ça se passe",
     "titre": "Trois étapes, et vous suivez tout en ligne",
     "etape1": {
-      "titre": "Vous estimez et vous validez",
-      "detail": "Quatre questions dans l'estimateur, le montant s'affiche, décomposé entre frais officiels et honoraires. Vous réglez par virement ou par Orange Money."
+      "titre": "Vous remplissez le formulaire",
+      "detail": "Création d'entreprise, service comptable ou juridique : deux minutes suffisent, sans créer de compte."
     },
     "etape2": {
-      "titre": "Nous montons et déposons le dossier",
-      "detail": "Vous photographiez vos pièces depuis votre téléphone. Nous rédigeons les statuts, vous les relisez, nous déposons au guichet unique."
+      "titre": "Un expert prend votre démarche en charge",
+      "detail": "Nous vous rappelons, établissons votre devis chiffré et ouvrons votre dossier dès le paiement."
     },
     "etape3": {
-      "titre": "Vous recevez vos documents",
-      "detail": "RCCM, NIU, attestation de conformité fiscale, numéros CNPS. Huit semaines au maximum après validation de vos statuts."
-    }
-  },
-  "faq": {
-    "kicker": "Questions fréquentes",
-    "titre": "Ce qu'on nous demande le plus",
-    "q1": {
-      "question": "Que comprennent exactement vos prix ?",
-      "reponse": "Deux masses distinctes : les frais officiels que nous avançons et reversons aux administrations, et nos honoraires. L'estimateur les affiche séparément, et votre proforma reprend le détail ligne à ligne."
-    },
-    "q2": {
-      "question": "Combien de temps prend une création d'entreprise ?",
-      "reponse": "Huit semaines au maximum après relecture et approbation de vos statuts, et après paiement. Hors Douala et Yaoundé, comptez deux semaines de plus : le dépôt se fait au guichet unique de la région."
-    },
-    "q3": {
-      "question": "Dois-je verser le capital avant l'immatriculation ?",
-      "reponse": "Oui pour les sociétés à capital : il est déposé sur un compte bloqué, puis libéré dès l'obtention du RCCM."
-    },
-    "q4": {
-      "question": "Faut-il être une grande entreprise pour adhérer ?",
-      "reponse": "Non, c'est même l'inverse. Le centre de gestion agréé s'adresse aux très petites et moyennes entreprises, y compris celles au régime de l'impôt général synthétique."
-    },
-    "q5": {
-      "question": "Comment vous transmettre mes factures ?",
-      "reponse": "Par WhatsApp, depuis l'application, par courriel, ou en agence. Vous les photographiez au moment où vous les recevez ; le reste est notre affaire."
-    },
-    "q6": {
-      "question": "Que se passe-t-il si ma dénomination est refusée ?",
-      "reponse": "Nous présentons la deuxième proposition sans frais supplémentaires. C'est pourquoi nous vous en demandons trois dès le départ."
+      "titre": "Vous suivez l'avancement en temps réel",
+      "detail": "Chaque étape est visible dans votre espace : pièces reçues, dépôt au guichet, documents disponibles."
     }
   },
   "temoins": {
     "kicker": "Ils nous font confiance",
     "titre": "La parole à nos clients",
-    "note": "Emplacements réservés. Ces témoignages sont des exemples de mise en page : transmettez-nous vos témoignages réels et leurs autorisations, nous les mettrons en ligne.",
+    "note": "Emplacements réservés : transmettez-nous vos témoignages réels et leurs autorisations, nous les mettrons en ligne.",
     "t1": {
-      "citation": "Nous envoyions nos factures en vrac à la fin du trimestre. Aujourd'hui je les photographie le jour même et je sais tout de suite si une pièce pose problème.",
-      "auteur": "Dirigeante",
-      "entreprise": "Commerce général, Douala"
+      "texte": "Témoignage à recueillir auprès d'un adhérent créé par le cabinet.",
+      "nom": "Nom du dirigeant",
+      "role": "Entreprise, secteur, ville"
     },
     "t2": {
-      "citation": "Le cabinet a repéré qu'un de mes fournisseurs n'était plus immatriculé. Sans eux, je l'apprenais au contrôle, deux ans plus tard.",
-      "auteur": "Gérant",
-      "entreprise": "BTP, Douala Bonabéri"
+      "texte": "Témoignage à recueillir auprès d'un adhérent en suivi comptable.",
+      "nom": "Nom du dirigeant",
+      "role": "Entreprise, secteur, ville"
     },
     "t3": {
-      "citation": "La création s'est faite sans que je me déplace une seule fois au guichet. J'ai reçu mon RCCM et mon NIU par courrier.",
-      "auteur": "Fondatrice",
-      "entreprise": "Agroalimentaire, Yaoundé"
+      "texte": "Témoignage à recueillir auprès d'un participant à une formation.",
+      "nom": "Nom du participant",
+      "role": "Fonction, entreprise"
     },
     "t4": {
-      "citation": "Ce que j'apprécie, c'est de savoir combien une erreur va me coûter avant de la commettre, pas après.",
-      "auteur": "Directeur administratif",
-      "entreprise": "Santé, Yaoundé"
+      "texte": "Témoignage à recueillir auprès d'un dirigeant accompagné en contrôle fiscal.",
+      "nom": "Nom du dirigeant",
+      "role": "Entreprise, secteur, ville"
     }
-  },
-  "hesitez": {
-    "titre": "Vous hésitez ?",
-    "detail": "Estimez gratuitement le coût de votre création, ou parlez-en directement avec un expert. Sans engagement et sans inscription."
   },
   "cta": {
     "titre": "Parlons de votre projet dès aujourd'hui",
-    "detail": "Écrivez-nous sur WhatsApp au 699 902 184, appelez le +237 233 424 847, ou passez à notre bureau de Douala Akwa."
+    "detail": "Écrivez-nous sur WhatsApp au 699 902 184, appelez le +237 233 42 48 47, ou passez à notre bureau de Douala. Nos experts prennent votre demande en charge.",
+    "whatsapp": "Écrire sur WhatsApp",
+    "rendezVous": "Prendre rendez-vous"
   },
   "pied": {
-    "description": "Cabinet comptable, d'audit et de conseil agréé par le ministre des Finances, arrêté n° 00000048/MINFI/DGI du 28 janvier 2020. Assistance comptable, fiscale et de gestion aux TPE et PME.",
+    "description": "Cabinet comptable, d'audit et de conseil agréé par le ministre des Finances, arrêté n° 00000048 du 28 janvier 2020. Assistance comptable, fiscale et de gestion aux TPE et PME.",
     "creer": "Créer",
     "gerer": "Gérer",
     "leCabinet": "Le cabinet",
@@ -186,6 +175,7 @@
     "mentions": "Mentions légales",
     "confidentialite": "Politique de confidentialité",
     "cgv": "Conditions générales de vente",
+    "fraisNote": "Frais officiels en vigueur au 1er janvier 2026",
     "droits": "Tous droits réservés."
   }
 }
