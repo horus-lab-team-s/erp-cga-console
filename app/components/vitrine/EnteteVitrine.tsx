@@ -99,13 +99,21 @@ export function EnteteVitrine() {
         <div className="entete-vitrine__rangee">
           <div className="pilule">
             <Link href="/" className="pilule__logo" title={commun("actions.retourAccueil")}>
+              {/* Deux fichiers distincts, comme au dessin : le logo couleur sur
+                  fond clair, le monochrome blanc sur fond sombre. Le blanc est un
+                  vrai tracé sur transparent — pas le logo couleur posé sur un
+                  rectangle blanc, qui ferait une tache dans la barre sombre. */}
               <Image
-                src="/marque/cga-logo-couleur.jpg"
+                src={
+                  theme === "sombre"
+                    ? "/marque/cga-logo-blanc.png"
+                    : "/marque/cga-logo-couleur.jpg"
+                }
                 alt={commun("cabinet.nom")}
                 width={112}
-                height={48}
+                height={63}
                 priority
-                style={{ width: 112, height: "auto", borderRadius: 6 }}
+                style={{ width: 112, height: "auto" }}
               />
             </Link>
 
@@ -151,7 +159,7 @@ export function EnteteVitrine() {
               >
                 {LANGUES.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.libelle}
+                    {l.drapeau} {l.libelle}
                   </option>
                 ))}
               </select>
@@ -280,11 +288,15 @@ export function EnteteVitrine() {
                 </button>
               ) : (
                 <Image
-                  src="/marque/cga-logo-couleur.jpg"
+                  src={
+                    theme === "sombre"
+                      ? "/marque/cga-logo-blanc.png"
+                      : "/marque/cga-logo-couleur.jpg"
+                  }
                   alt=""
                   width={88}
-                  height={38}
-                  style={{ width: 88, height: "auto", borderRadius: 6 }}
+                  height={50}
+                  style={{ width: 88, height: "auto" }}
                 />
               )}
               <span

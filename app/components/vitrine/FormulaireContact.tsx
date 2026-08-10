@@ -1,0 +1,209 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { IconeVitrine } from "./IconeVitrine";
+
+/**
+ * Formulaire de contact — maquette, page `surContact`.
+ *
+ * « Le téléphone reste le champ principal : beaucoup de nos clients n'utilisent
+ * pas de messagerie électronique. » Le courriel est donc facultatif, et c'est le
+ * numéro qui est exigé — l'inverse de l'habitude occidentale.
+ *
+ * Comme celui du héros, il compose un message WhatsApp plutôt que d'appeler une
+ * API qui n'existe pas encore. Le consentement est requis avant envoi : ces
+ * données sont personnelles et le cabinet doit pouvoir prouver qu'il l'a obtenu.
+ */
+
+const DEMANDES = ["creation", "adhesion", "ponctuel", "domiciliation", "formation", "autre"] as const;
+
+export function FormulaireContact() {
+  const t = useTranslations("pages.contact");
+  const form = useTranslations("vitrine.formulaire");
+  const commun = useTranslations("commun");
+
+  const [demande, setDemande] = useState<string>("creation");
+  const [nom, setNom] = useState("");
+  const [telephone, setTelephone] = useState("");
+  const [courriel, setCourriel] = useState("");
+  const [message, setMessage] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [tente, setTente] = useState(false);
+
+  const chiffres = telephone.replace(/\D/g, "");
+  const complet = nom.trim().length >= 3 && chiffres.length >= 8 && consent;
+
+  const numero = commun("cabinet.whatsapp").replace(/\D/g, "");
+  const corps = [
+    `${t("votreDemande")} : ${form(`demarches.${demande}`)}`,
+    `${t("champNom")} : ${nom.trim()}`,
+    `${t("champTel")} : ${chiffres}`,
+    courriel.trim() ? `${t("champMail")} : ${courriel.trim()}` : null,
+    message.trim() ? `${t("champMessage")} : ${message.trim()}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const etiquette: React.CSSProperties = {
+    display: "block",
+    marginBottom: 5,
+    font: "600 11.5px/1.4 var(--police-texte)",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    color: "var(--ink-500)",
+  };
+  const saisie: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    minHeight: 46,
+    padding: "12px",
+    border: "1px solid var(--line-200)",
+    borderRadius: 9,
+    background: "var(--surface)",
+    color: "var(--ink-900)",
+    font: "400 14px/1.4 var(--police-texte)",
+  };
+
+  return (
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 16 }}
+    >
+      <div>
+        <label style={etiquette} htmlFor="demande">
+          {t("votreDemande")}
+        </label>
+        <select
+          id="demande"
+          style={saisie}
+          value={demande}
+          onChange={(e) => setDemande(e.target.value)}
+        >
+          {DEMANDES.map((cle) => (
+            <option key={cle} value={cle}>
+              {form(`demarches.${cle}`)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+        <div>
+          <label style={etiquette} htmlFor="contact-nom">
+            {t("champNom")}
+          </label>
+          <input
+            id="contact-nom"
+            type="text"
+            style={{
+              ...saisie,
+              ...(tente && nom.trim().length < 3
+                ? { borderColor: "var(--danger)", borderWidth: 2 }
+                : {}),
+            }}
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            autoComplete="name"
+          />
+        </div>
+        <div>
+          {/* Champ principal : voir la note de la maquette. */}
+          <label style={etiquette} htmlFor="contact-tel">
+            {t("champTel")}
+          </label>
+          <input
+            id="contact-tel"
+            type="tel"
+            inputMode="numeric"
+            placeholder="699 902 184"
+            style={{
+              ...saisie,
+              ...(tente && chiffres.length < 8
+                ? { borderColor: "var(--danger)", borderWidth: 2 }
+                : {}),
+            }}
+            value={telephone}
+            onChange={(e) => setTelephone(e.target.value)}
+            autoComplete="tel"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label style={etiquette} htmlFor="contact-mail">
+          {t("champMail")}
+        </label>
+        <input
+          id="contact-mail"
+          type="email"
+          style={saisie}
+          value={courriel}
+          onChange={(e) => setCourriel(e.target.value)}
+          autoComplete="email"
+        />
+      </div>
+
+      <div>
+        <label style={etiquette} htmlFor="contact-message">
+          {t("champMessage")}
+        </label>
+        <textarea
+          id="contact-message"
+          rows={4}
+          style={{ ...saisie, minHeight: 110, resize: "vertical" }}
+          placeholder={t("messageExemple")}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+      </div>
+
+      <label
+        style={{
+          display: "flex",
+          gap: 10,
+          alignItems: "flex-start",
+          font: "400 13px/1.6 var(--police-texte)",
+          color: "var(--ink-500)",
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          style={{ marginTop: 3, flex: "none" }}
+        />
+        {t("consentement")}
+      </label>
+
+      {tente && !complet && (
+        <p role="alert" style={{ margin: 0, font: "500 12.5px/1.5 var(--police-texte)", color: "var(--danger)" }}>
+          {commun("formulaire.champsRequis")}
+        </p>
+      )}
+
+      <a
+        className="bouton bouton--principal bouton--large"
+        style={{ alignSelf: "flex-start", ...(complet ? {} : { opacity: 0.72 }) }}
+        href={`https://wa.me/${numero}?text=${encodeURIComponent(corps)}`}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-disabled={!complet}
+        onClick={(e) => {
+          if (complet) return;
+          e.preventDefault();
+          setTente(true);
+        }}
+      >
+        {t("envoyer")}
+        <IconeVitrine nom="fleche" taille={16} />
+      </a>
+
+      <p style={{ margin: 0, font: "400 12.5px/1.7 var(--police-texte)", color: "var(--ink-500)" }}>
+        {t("note")}
+      </p>
+    </form>
+  );
+}

@@ -14,9 +14,21 @@
     "boitePostale": "B.P. 7761 Douala"
   },
   "agences": {
-    "douala": { "ville": "Douala", "quartier": "Akwa", "adresse": "B.P. 7761 Douala" },
-    "yaounde": { "ville": "Yaoundé", "quartier": "Elig-Essono", "adresse": "Yaoundé" },
-    "bafoussam": { "ville": "Bafoussam", "quartier": "Quartier Haoussa", "adresse": "Bafoussam" }
+    "douala": {
+      "ville": "Douala",
+      "quartier": "Akwa",
+      "adresse": "B.P. 7761 Douala"
+    },
+    "yaounde": {
+      "ville": "Yaoundé",
+      "quartier": "Elig-Essono",
+      "adresse": "Yaoundé"
+    },
+    "bafoussam": {
+      "ville": "Bafoussam",
+      "quartier": "Quartier Haoussa",
+      "adresse": "Bafoussam"
+    }
   },
   "actions": {
     "espaceClient": "Espace client",
@@ -43,7 +55,11 @@
   "langue": {
     "choisir": "Choisir la langue",
     "fr": "Français",
-    "en": "English"
+    "en": "English",
+    "drapeau": {
+      "fr": "🇫🇷",
+      "en": "🇬🇧"
+    }
   },
   "unites": {
     "fcfa": "FCFA",
@@ -53,5 +69,8 @@
     "semaines": "semaines",
     "des": "dès",
     "surDevis": "sur devis"
+  },
+  "formulaire": {
+    "champsRequis": "à renseigner pour être rappelé."
   }
 }

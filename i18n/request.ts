@@ -14,9 +14,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const demandee = await requestLocale;
   const locale = hasLocale(routing.locales, demandee) ? demandee : routing.defaultLocale;
 
-  const [commun, vitrine, erp] = await Promise.all([
+  const [commun, vitrine, pages, erp] = await Promise.all([
     import(`../messages/${locale}/commun.json`),
     import(`../messages/${locale}/vitrine.json`),
+    import(`../messages/${locale}/pages.json`),
     import(`../messages/${locale}/erp.json`),
   ]);
 
@@ -25,6 +26,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     messages: {
       commun: commun.default,
       vitrine: vitrine.default,
+      pages: pages.default,
       erp: erp.default,
     },
   };

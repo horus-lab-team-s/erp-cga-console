@@ -1,0 +1,451 @@
+{
+  "creation": {
+    "kicker": "Our services",
+    "titre": "Start my company",
+    "detail": "Articles, registration, trade register entry, tax number and publication: we prepare your file and lodge it at the one-stop shop.",
+    "piecesKicker": "What you will need to provide",
+    "piecesTitre": "Documents for the file",
+    "piecesNote": "You will photograph them from your phone once your account is created. No need to prepare them before subscribing.",
+    "pieces": [
+      "A valid identity document for each partner and for the manager.",
+      "Proof of address less than three months old for the registered office.",
+      "Three proposed company names, in order of preference.",
+      "A location plan for the office, or the lease if there is one.",
+      "A criminal record extract for the manager, less than three months old."
+    ],
+    "faqKicker": "Frequently asked",
+    "faqTitre": "About company formation",
+    "faq": [
+      {
+        "q": "Must I pay in the capital before registration?",
+        "r": "Yes for companies with share capital: it is placed in a blocked account and released once the trade register entry is obtained."
+      },
+      {
+        "q": "Can I incorporate without being in Cameroon?",
+        "r": "Yes, by notarised power of attorney. We send you the template and handle the filing."
+      },
+      {
+        "q": "What if my company name is refused?",
+        "r": "We submit the second proposal at no extra cost — which is why we ask for three."
+      },
+      {
+        "q": "Is the eight-week timeframe guaranteed?",
+        "r": "It is the timeframe observed at the Douala one-stop shop. We chase as soon as a deadline slips."
+      }
+    ]
+  },
+  "estimation": {
+    "kicker": "Estimator",
+    "titre": "What will my formation cost?",
+    "detail": "Answer four questions: the amount appears immediately, split between the official fees we advance and our own.",
+    "q1": "Which legal form?",
+    "q2": "Share capital, in FCFA",
+    "q3": "Number of partners",
+    "q4": "City of registration",
+    "ouSaisir": "or enter your own amount",
+    "ouSaisirNb": "or enter the exact number",
+    "precisezVille": "Specify the city",
+    "exMontant": "e.g. 2,500,000",
+    "exNombre": "e.g. 7",
+    "exVille": "e.g. Sangmélima",
+    "sansObjet": "Not applicable to this form",
+    "unSeulAssocie": "A single partner for this form",
+    "villeNote": "Outside Douala and Yaoundé, allow two more weeks: the file is lodged at the regional one-stop shop.",
+    "allerPlusLoin": "Would you like to go further?",
+    "optSuivi": "Accounting and tax service, 12 months",
+    "optSuiviDetail": "Bookkeeping, returns, document checks, membership of the approved centre",
+    "optDom": "Registered address, 12 months",
+    "optDomDetail": "Professional address, mail handling and forwarding",
+    "votreEstimation": "Your estimate",
+    "fraisOfficiels": "Official fees advanced",
+    "nosHonoraires": "Our fees",
+    "totalRegler": "Total payable",
+    "delaiAnnonce": "Stated timeframe",
+    "suiviComptable": "Accounting service",
+    "souscrire": "Subscribe online",
+    "devisWhatsapp": "Get this quote on WhatsApp",
+    "note": "Indicative estimate based on official rates in force. The final quote is confirmed after review of your project, with no file fee.",
+    "avertissement": "The scale is not yet wired to the dated referential: the amounts shown come from the firm's quotes and must be validated by the tax specialist before any public release.",
+    "semaines": "weeks",
+    "nonRetenu": "not selected",
+    "parMois": "12,500 FCFA per month",
+    "lignes": {
+      "cfce": "One-stop shop fee",
+      "rccmNiu": "Trade register and tax number",
+      "timbres": "Stamps and certificates",
+      "enregistrement": "Registration of articles",
+      "rccmJournal": "Trade register, gazette and stamps",
+      "notaire": "Notarised deed and contributions auditor",
+      "majorationAssocies": "Partners above the legal minimum",
+      "honorairesBase": "Drafting of articles and file preparation",
+      "domiciliation": "Registered address, 12 months"
+    },
+    "formes": {
+      "ETS": "Sole trader",
+      "SARLU": "Single-member LLC",
+      "SARL": "LLC",
+      "SAS": "Simplified joint stock",
+      "SCI": "Property company",
+      "SA": "Public limited company"
+    }
+  },
+  "adherent": {
+    "kicker": "Approved management centre",
+    "titre": "Become a member",
+    "detail": "Entrust us with your books and your returns, and enjoy the tax advantages reserved for members of an approved centre.",
+    "formulesKicker": "Our plans",
+    "formulesTitre": "A price to match your tax regime",
+    "formulesDetail": "The price depends on your regime and your document volume, never on turnover alone. It is fixed on joining.",
+    "parcoursKicker": "How we start",
+    "parcoursTitre": "Your membership, step by step",
+    "quiPeut": "Who can join?",
+    "quiPeutNote": "Turnover above 100 million? We support you as an accounting and audit firm, outside the approved centre regime.",
+    "bulletin": "Request my membership form",
+    "inclus": "What is included",
+    "conditions": [
+      {
+        "libelle": "Annual turnover",
+        "valeur": "15 to 100 million FCFA"
+      },
+      {
+        "libelle": "Form",
+        "valeur": "Individual or company"
+      },
+      {
+        "libelle": "Joining fee",
+        "valeur": "payable once on registration"
+      },
+      {
+        "libelle": "Contribution",
+        "valeur": "annual, according to your regime"
+      }
+    ],
+    "formules": [
+      {
+        "nom": "Flat-rate tax",
+        "cible": "Turnover up to 50 million FCFA",
+        "prix": "12,500",
+        "unite": "FCFA per month",
+        "marque": "",
+        "inclus": [
+          "Simplified bookkeeping",
+          "Quarterly return",
+          "Checks on your documents",
+          "WhatsApp reminders",
+          "A named contact"
+        ]
+      },
+      {
+        "nom": "Simplified actual",
+        "cible": "Turnover from 50 to 100 million FCFA",
+        "prix": "35,000",
+        "unite": "FCFA per month",
+        "marque": "Most chosen",
+        "inclus": [
+          "Full SYSCOHADA bookkeeping",
+          "Monthly VAT returns",
+          "Annual statistical and tax return",
+          "Monthly bank reconciliation",
+          "Support during an audit",
+          "An accountant and a reviewer"
+        ]
+      },
+      {
+        "nom": "Actual regime",
+        "cible": "Above 100 million FCFA",
+        "prix": "on request",
+        "unite": "by document volume",
+        "marque": "",
+        "inclus": [
+          "Full and analytical accounting",
+          "All tax and social returns",
+          "Tax return pack and year-end",
+          "Monthly dashboard",
+          "Banking support",
+          "Outside the approved centre regime"
+        ]
+      }
+    ],
+    "parcours": [
+      {
+        "titre": "You fill in the membership form",
+        "detail": "Company identity, tax regime, monthly document volume."
+      },
+      {
+        "titre": "We take over your history",
+        "detail": "Catch-up on the last closed year and regularisation, priced separately."
+      },
+      {
+        "titre": "You send your documents each month",
+        "detail": "As photos from your phone, even offline: they go out when the network returns."
+      },
+      {
+        "titre": "We file and keep you informed",
+        "detail": "Every deadline is announced with its amount, before it falls due."
+      }
+    ]
+  },
+  "formations": {
+    "kicker": "Our training",
+    "titre": "Understand, to decide better",
+    "detail": "Short sessions led by our reviewers and tax specialists, in our offices or on your premises. Limited groups, real case studies.",
+    "calendrierKicker": "Calendar",
+    "calendrierTitre": "Our next sessions",
+    "parPersonne": "FCFA per person",
+    "reserver": "Book a place",
+    "programme": "Programme",
+    "surMesure": "Training on your premises?",
+    "surMesureDetail": "From six participants, we come to your premises and adapt the programme to your activity.",
+    "catalogue": [
+      {
+        "titre": "Understanding and filing VAT",
+        "duree": "2 days",
+        "public": "Directors and accountants",
+        "prix": "95,000",
+        "places": "12 places",
+        "date": "Session on 15 September 2026, Douala",
+        "programme": [
+          "Scope and rates",
+          "Output VAT, input VAT",
+          "Common deduction refusals",
+          "Completing and filing the return"
+        ]
+      },
+      {
+        "titre": "Preparing the tax return pack",
+        "duree": "3 days",
+        "public": "Accountants and chief accountants",
+        "prix": "165,000",
+        "places": "10 places",
+        "date": "Session on 6 October 2026, Douala",
+        "programme": [
+          "From accounting profit to taxable profit",
+          "Add-backs and deductions",
+          "The statutory tables",
+          "Checks before filing"
+        ]
+      },
+      {
+        "titre": "Payroll and social contributions",
+        "duree": "2 days",
+        "public": "HR managers",
+        "prix": "110,000",
+        "places": "12 places",
+        "date": "Session on 20 October 2026, Douala",
+        "programme": [
+          "A compliant payslip",
+          "Social contributions and rates",
+          "Returns and deadlines",
+          "Leave, bonuses and allowances"
+        ]
+      },
+      {
+        "titre": "Keeping your cash records",
+        "duree": "1 day",
+        "public": "Traders and small business managers",
+        "prix": "75,000",
+        "places": "15 places",
+        "date": "Session on 3 November 2026, Douala",
+        "programme": [
+          "What makes a valid receipt",
+          "Keeping a cash book",
+          "Separating personal spending",
+          "Photographing and sending"
+        ]
+      }
+    ]
+  },
+  "cabinet": {
+    "kicker": "The firm",
+    "titre": "Thirty years alongside Cameroonian entrepreneurs",
+    "detail": "An accounting, audit and advisory firm approved by the Minister of Finance, providing accounting, tax and management support to small and medium businesses.",
+    "histoireKicker": "Our story",
+    "histoireTitre": "From an insight to an approved centre",
+    "equipeKicker": "Our team",
+    "equipeTitre": "A named contact for every file",
+    "agencesKicker": "Find us",
+    "agencesTitre": "Where to meet us",
+    "partenairesKicker": "Our partners",
+    "partenairesTitre": "Those we work with",
+    "partenairesNote": "Where needed, our partner lawyers, notaries and chartered accountants are at your disposal. Call us for an introduction.",
+    "histoire": [
+      {
+        "annee": "1994",
+        "titre": "The firm is founded",
+        "detail": "Gabriel NGASSE, a former Total Cameroun manager, sets up the practice to help service station operators keep their books."
+      },
+      {
+        "annee": "2000",
+        "titre": "Opening up to small business",
+        "detail": "Seeing how lost small entrepreneurs were, the firm becomes a genuine partner to small and medium businesses."
+      },
+      {
+        "annee": "2013",
+        "titre": "New general management",
+        "detail": "Paule Diane HIMSTA takes the helm: a younger team, a new approach to client relationships, a broader portfolio."
+      },
+      {
+        "annee": "2020",
+        "titre": "Ministry of Finance approval",
+        "detail": "Order no. 00000048 of 28 January 2020: the firm becomes an approved management centre."
+      },
+      {
+        "annee": "2026",
+        "titre": "Over 500 entrepreneurs supported",
+        "detail": "Douala, and an online platform to send documents and follow your file."
+      }
+    ],
+    "equipe": [
+      {
+        "nom": "Paule Diane HIMSTA",
+        "role": "Managing director",
+        "detail": "Leading the firm since 2013",
+        "photo": "/images/equipe/paule-diane-himsta.jpg"
+      },
+      {
+        "nom": "Rodrigue BIYA'A",
+        "role": "Reviewer",
+        "detail": "Quality control and filing of returns",
+        "photo": "/images/equipe/rodrigue-biyaa.jpg"
+      },
+      {
+        "nom": "Charles ATANGANA",
+        "role": "Tax specialist",
+        "detail": "Tax referential and compliance rules",
+        "photo": "/images/equipe/charles-atangana.jpg"
+      },
+      {
+        "nom": "Aïcha MBALLA",
+        "role": "Client manager",
+        "detail": "Member portfolio and client relations",
+        "photo": "/images/equipe/aicha-mballa.jpg"
+      },
+      {
+        "nom": "Estelle FOTSO",
+        "role": "Formalities officer",
+        "detail": "Company formations and the one-stop shop",
+        "photo": "/images/equipe/estelle-fotso.jpg"
+      },
+      {
+        "nom": "Serge NKOULOU",
+        "role": "Accountant",
+        "detail": "Bookkeeping and returns",
+        "photo": "/images/equipe/serge-nkoulou.jpg"
+      }
+    ],
+    "agences": [
+      {
+        "ville": "Douala",
+        "adresse": "Akwa · P.O. Box 7761",
+        "detail": "Firm office · call +237 233 42 48 47",
+        "photo": "/images/agences/douala.jpg"
+      },
+      {
+        "ville": "Yaoundé",
+        "adresse": "Elig-Essono",
+        "detail": "Exact address to be confirmed by the firm",
+        "photo": "/images/agences/yaounde.jpg"
+      },
+      {
+        "ville": "Bafoussam",
+        "adresse": "Haoussa district",
+        "detail": "Exact address to be confirmed by the firm",
+        "photo": "/images/agences/bafoussam.jpg"
+      }
+    ],
+    "partenaires": [
+      {
+        "titre": "Lawyers",
+        "detail": "Drafting of deeds, commercial and tax litigation"
+      },
+      {
+        "titre": "Notaries",
+        "detail": "Notarised articles, share transfers, commercial leases"
+      },
+      {
+        "titre": "Chartered accountants",
+        "detail": "Statutory audit and assurance engagements"
+      },
+      {
+        "titre": "Banks",
+        "detail": "Account opening, capital deposit, funding searches"
+      }
+    ]
+  },
+  "contact": {
+    "kicker": "Get in touch",
+    "titre": "Contact us",
+    "detail": "Write to us, call us, or drop by our Douala office. An adviser will take your request in hand.",
+    "canauxKicker": "Three ways to reach us",
+    "canauxTitre": "Choose what suits you",
+    "formulaireKicker": "Form",
+    "formulaireTitre": "Tell us what you need",
+    "votreDemande": "Your request concerns",
+    "champNom": "Full name",
+    "champTel": "Phone or WhatsApp",
+    "champMail": "Email address, optional",
+    "champMessage": "Your message",
+    "consentement": "I agree that the firm may use this information to contact me about my request.",
+    "envoyer": "Send my request",
+    "note": "The phone number remains the main field: many of our clients do not use email.",
+    "dejaClient": "Already a client?",
+    "dejaClientDetail": "Go through your client area: your account manager sees your messages, your documents and your deadlines there.",
+    "ouvrirEspace": "Open my client area",
+    "messageExemple": "I would like to set up an LLC in Douala with one partner, and then entrust my bookkeeping to the firm.",
+    "canaux": [
+      {
+        "titre": "WhatsApp",
+        "valeur": "699 902 184",
+        "detail": "The channel most used by our clients.",
+        "action": "Open the chat"
+      },
+      {
+        "titre": "Phone",
+        "valeur": "+237 233 42 48 47",
+        "detail": "Firm switchboard, during opening hours.",
+        "action": "Call"
+      },
+      {
+        "titre": "Email",
+        "valeur": "contact@cga-brcgroup.com",
+        "detail": "For detailed requests and attachments.",
+        "action": "Write"
+      }
+    ]
+  },
+  "connexion": {
+    "kicker": "Client area",
+    "titre": "Log in",
+    "detail": "One single entry point for members, client companies and subscribers. Your workspace is selected after you log in.",
+    "identifiant": "Email or phone",
+    "motDePasse": "Password",
+    "oubli": "Forgotten password?",
+    "garder": "Keep me signed in on this device",
+    "bouton": "Log in",
+    "aide": "No account yet? Your login link is sent by email and text message once your subscription is paid.",
+    "creer": "Subscribe to a service",
+    "retour": "Back to the site",
+    "note": "Two-factor authentication is required for firm staff.",
+    "profilsTitre": "Four populations, one door",
+    "profils": [
+      {
+        "titre": "Firm",
+        "detail": "Accountant, reviewer, client manager, tax specialist, management"
+      },
+      {
+        "titre": "Client company",
+        "detail": "The director and the colleagues they invite"
+      },
+      {
+        "titre": "Subscriber",
+        "detail": "A service paid for, no company incorporated yet"
+      },
+      {
+        "titre": "Platform",
+        "detail": "The software publisher, exceptional and traced access"
+      }
+    ],
+    "demonstration": "Demonstration",
+    "demonstrationDetail": "These accounts exist for demonstration only and will not ship to production. Pick a profile to see the matching workspace."
+  }
+}

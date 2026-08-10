@@ -14,9 +14,21 @@
     "boitePostale": "P.O. Box 7761 Douala"
   },
   "agences": {
-    "douala": { "ville": "Douala", "quartier": "Akwa", "adresse": "P.O. Box 7761 Douala" },
-    "yaounde": { "ville": "Yaoundé", "quartier": "Elig-Essono", "adresse": "Yaoundé" },
-    "bafoussam": { "ville": "Bafoussam", "quartier": "Haoussa district", "adresse": "Bafoussam" }
+    "douala": {
+      "ville": "Douala",
+      "quartier": "Akwa",
+      "adresse": "P.O. Box 7761 Douala"
+    },
+    "yaounde": {
+      "ville": "Yaoundé",
+      "quartier": "Elig-Essono",
+      "adresse": "Yaoundé"
+    },
+    "bafoussam": {
+      "ville": "Bafoussam",
+      "quartier": "Haoussa district",
+      "adresse": "Bafoussam"
+    }
   },
   "actions": {
     "espaceClient": "Client area",
@@ -43,7 +55,11 @@
   "langue": {
     "choisir": "Choose language",
     "fr": "Français",
-    "en": "English"
+    "en": "English",
+    "drapeau": {
+      "fr": "🇫🇷",
+      "en": "🇬🇧"
+    }
   },
   "unites": {
     "fcfa": "FCFA",
@@ -53,5 +69,8 @@
     "semaines": "weeks",
     "des": "from",
     "surDevis": "on request"
+  },
+  "formulaire": {
+    "champsRequis": "required so we can call you back."
   }
 }

@@ -126,7 +126,9 @@
   max-width: 100%;
   height: 72px;
   background: var(--surface);
-  border-radius: 14px;
+  /* Angles vifs : décision du cabinet du 10 août 2026, contre le dessin qui
+     arrondissait à 14 px. */
+  border-radius: 0;
   box-shadow: 0 12px 34px rgb(0 0 0 / 28%);
   display: inline-flex;
   align-items: center;
@@ -166,8 +168,11 @@
   text-decoration: none;
 }
 
+/* Entrée active : magenta et graisse 600, comme au dessin. Le repère est
+   double — couleur ET graisse — pour rester lisible en impression et pour qui
+   distingue mal les teintes. */
 .nav-vitrine__lien[aria-current="page"] {
-  color: var(--ink-900);
+  color: var(--brand-magenta-600);
   font-weight: 600;
 }
 
@@ -186,15 +191,16 @@
   animation: pulsation 2.2s ease-in-out infinite;
 }
 
+/* `cgaPoint` du dessin : la pastille de l'entrée active respire. */
 @keyframes pulsation {
   0%,
   100% {
-    opacity: 1;
     transform: scale(1);
+    opacity: 1;
   }
   50% {
-    opacity: 0.55;
-    transform: scale(1.35);
+    transform: scale(1.65);
+    opacity: 0.45;
   }
 }
 
@@ -202,6 +208,11 @@
   .nav-vitrine__lien[aria-current="page"] .nav-vitrine__point {
     animation: none;
   }
+}
+
+.pilule .bouton,
+.pilule__outils .bouton {
+  border-radius: 0;
 }
 
 .pilule__outils {
@@ -215,22 +226,35 @@
 .select-langue {
   flex: none;
   height: 40px;
-  padding: 0 8px;
-  border: 1px solid var(--line-200);
-  border-radius: 9px;
-  background: var(--surface-alt);
+  padding: 0 10px;
+  /* Sans bordure : la pilule est déjà un contenant, l'encadrement de chaque
+     commande la rendait bruyante. La distinction se fait par le fond. */
+  border: 0;
+  border-radius: 0;
+  background: var(--brand-indigo-100);
   color: var(--ink-900);
   font: 600 12.5px/1.2 var(--police-texte);
   cursor: pointer;
+  appearance: none;
+  padding-right: 26px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 12px center, right 7px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.select-langue:hover {
+  background-color: var(--brand-magenta-100);
 }
 
 .bouton-icone {
   flex: none;
   width: 40px;
   height: 40px;
-  border: 1px solid var(--line-200);
-  border-radius: 9px;
-  background: var(--surface-alt);
+  border: 0;
+  border-radius: 0;
+  background: var(--brand-indigo-100);
   display: grid;
   place-items: center;
   color: var(--brand-indigo-700);
@@ -238,7 +262,7 @@
 }
 
 .bouton-icone:hover {
-  border-color: var(--brand-indigo-700);
+  background: var(--brand-magenta-100);
 }
 
 /* ── Méga-menu ──────────────────────────────────────────────────────────── */
@@ -247,10 +271,10 @@
   position: absolute;
   left: 48px;
   right: 48px;
-  top: 112px;
+  top: 110px;
   background: var(--surface);
-  border: 1px solid var(--line-200);
-  border-radius: 14px;
+  border: 0;
+  border-radius: 0;
   box-shadow: 0 20px 44px rgb(0 0 0 / 30%);
   padding: 24px;
   display: flex;
@@ -281,8 +305,8 @@
 }
 
 .mega__carte {
-  border: 1px solid var(--line-200);
-  border-radius: 9px;
+  border: 0;
+  border-radius: 0;
   background: var(--surface-alt);
   padding: 13px 14px;
   display: flex;
@@ -307,7 +331,7 @@
   width: 36px;
   height: 36px;
   flex: none;
-  border-radius: 9px;
+  border-radius: 0;
   background: var(--brand-indigo-100);
   color: var(--brand-indigo-700);
   display: grid;
@@ -342,7 +366,7 @@
 .mega__aparte {
   flex: none;
   width: 290px;
-  border-radius: 9px;
+  border-radius: 0;
   background: var(--brand-indigo-900);
   padding: 20px;
   display: flex;
@@ -382,15 +406,17 @@
 }
 
 .bouton--secondaire {
-  background: transparent;
-  border-color: var(--brand-indigo-700);
+  /* Sans bordure dans la pilule : le fond teinté suffit à la distinguer de
+     l'action principale, qui est pleine. */
+  background: var(--brand-indigo-100);
+  border-color: transparent;
   color: var(--brand-indigo-700);
   padding: 11px 15px;
 }
 
 .bouton--secondaire:hover {
-  background: var(--brand-indigo-100);
-  color: var(--brand-indigo-700);
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
 }
 
 .bouton--clair {
@@ -465,91 +491,264 @@
 }
 
 /* ============================================================================
-   HÉROS
+   HÉROS — mesures reprises du dessin.
+
+   Point important : le formulaire et les cartes de chiffres sont posés SUR la
+   photographie. Leurs fonds sont donc des valeurs fixes en `rgba`, **jamais des
+   jetons de thème** : basculer en sombre ne doit pas changer ce qui se marie
+   avec l'image. C'est le verre dépoli qui fait le lien, pas la palette.
    ========================================================================= */
 
 .heros {
   position: relative;
-  isolation: isolate;
+  height: 100vh;
+  min-height: 800px;
   background: var(--brand-indigo-900);
-  color: #fff;
   overflow: hidden;
-  /* Réserve la place de la barre utilitaire (38) et de la pilule (16 + 72). */
-  padding-top: 126px;
+}
+
+.heros__vue {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.8s ease;
 }
 
 .heros__image {
   position: absolute;
   inset: 0;
-  z-index: -2;
-  object-fit: cover;
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
-/* Voile : sans lui, le texte blanc passe sur les zones claires de la photo. Ce
-   n'est pas une décoration mais une condition de lisibilité. */
+/* Dégradé horizontal : opaque à gauche où vit le texte, transparent à droite où
+   la photographie doit rester lisible. Condition de lisibilité, pas décoration. */
 .heros__voile {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  pointer-events: none;
   background: linear-gradient(
-    100deg,
-    rgb(15 11 22 / 94%) 0%,
-    rgb(15 11 22 / 84%) 42%,
-    rgb(46 27 77 / 58%) 100%
+    90deg,
+    rgb(20 12 32 / 94%) 0%,
+    rgb(20 12 32 / 70%) 34%,
+    rgb(20 12 32 / 12%) 58%,
+    rgb(20 12 32 / 0%) 78%
   );
 }
 
-.heros__corps {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) 360px;
-  gap: 40px;
-  align-items: start;
-  padding-block: clamp(40px, 5vw, 64px) 36px;
+.heros__contenu {
+  position: absolute;
+  inset: 0;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
 }
 
 .heros__texte {
-  max-width: 640px;
+  pointer-events: auto;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .heros__kicker {
-  color: #d9a3d6;
+  align-self: flex-start;
+  padding: 7px 14px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 14%);
+  color: #fff;
+  font: 600 12px/1.2 var(--police-texte);
 }
 
 .heros__titre {
   margin: 0;
-  font: 600 clamp(28px, 4vw, 46px) / 1.12 var(--police-titre);
+  font: 600 clamp(30px, 3.4vw, 44px) / 1.16 var(--police-titre);
   color: #fff;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .heros__detail {
-  margin: 16px 0 0;
-  max-width: 56ch;
-  font: 400 clamp(14.5px, 1.4vw, 16.5px) / 1.65 var(--police-texte);
-  color: rgb(255 255 255 / 82%);
+  margin: 0;
+  max-width: 54ch;
+  font: 400 15.5px/1.7 var(--police-texte);
+  color: rgb(255 255 255 / 85%);
+  text-wrap: pretty;
 }
 
 .heros__action {
-  margin-top: 24px;
-  display: inline-flex;
+  align-self: flex-start;
+  padding: 16px 26px;
+  font-size: 15px;
+  border-radius: 8px;
 }
 
-/* ── Chiffres clés, dans le héros ───────────────────────────────────────── */
+/* ── Formulaire « Lancer une démarche » ─────────────────────────────────── */
+
+.heros__colonne-formulaire {
+  position: absolute;
+  right: 48px;
+  top: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  padding: 150px 0 200px;
+  pointer-events: none;
+}
+
+.formulaire-heros {
+  pointer-events: auto;
+  width: 388px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 14px;
+  /* Verre dépoli, valeurs fixes : indépendant du thème clair ou sombre. */
+  background: rgb(10 6 18 / 62%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+}
+
+.formulaire-heros__titre {
+  margin: 0;
+  font: 600 20px/1.3 var(--police-titre);
+  color: #fff;
+}
+
+.formulaire-heros__detail {
+  margin: 0;
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 70%);
+}
+
+.champ__etiquette {
+  display: block;
+  font: 600 11px/1.7 var(--police-texte);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 60%);
+}
+
+.champ__saisie {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 46px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 10%);
+  padding: 0 11px;
+  color: #fff;
+  font: 500 13.5px/1.3 var(--police-texte);
+}
+
+.champ__saisie::placeholder {
+  color: rgb(255 255 255 / 45%);
+}
+
+/* Les options d'un select natif s'affichent avec le fond du système : sans
+   couleur d'encre explicite, elles seraient blanches sur blanc. */
+.champ__saisie option {
+  color: #1a1523;
+}
+
+/* Le champ téléphone est composite — drapeau, indicatif, saisie — et porte la
+   bordure magenta du dessin : c'est le champ que le visiteur doit remplir. */
+.champ__telephone {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 2px solid var(--brand-magenta-600);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 12%);
+  padding: 0 11px;
+}
+
+.champ__drapeau {
+  flex: none;
+  font: 500 15px/1 var(--police-texte);
+}
+
+.champ__indicatif {
+  flex: none;
+  font: 600 13.5px/1.3 var(--police-texte);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.champ__telephone input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font: 500 13.5px/1.3 var(--police-texte);
+}
+
+.champ__telephone input::placeholder {
+  color: rgb(255 255 255 / 45%);
+}
+
+.formulaire-heros__envoi {
+  min-height: 50px;
+  border-radius: 9px;
+  font-size: 14.5px;
+}
+
+.formulaire-heros__pied {
+  margin: 0;
+  font: 400 11.5px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 62%);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* ── Chiffres clés, en cartes au bas de la bannière ─────────────────────── */
 
 .heros__chiffres {
-  margin-top: 40px;
-  display: flex;
-  gap: 28px;
-  flex-wrap: wrap;
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 56px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 
 .chiffre {
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 11px;
+  background: rgb(10 6 18 / 50%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 11px;
-  flex: none;
+  gap: 13px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.chiffre:hover {
+  transform: translateY(-4px);
+  background: rgb(140 45 134 / 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chiffre {
+    transition: none;
+  }
+  .chiffre:hover {
+    transform: none;
+  }
 }
 
 .chiffre__icone {
@@ -557,16 +756,15 @@
   height: 38px;
   flex: none;
   border-radius: 10px;
-  background: rgb(255 255 255 / 12%);
-  border: 1px solid rgb(255 255 255 / 20%);
+  background: var(--brand-magenta-600);
+  color: #fff;
   display: grid;
   place-items: center;
-  color: #d9a3d6;
 }
 
 .chiffre__valeur {
   display: block;
-  font: 600 20px/1.15 var(--police-titre);
+  font: 600 21px/1.2 var(--police-titre);
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
@@ -574,90 +772,47 @@
 .chiffre__label {
   display: block;
   font: 400 11.5px/1.4 var(--police-texte);
-  color: rgb(255 255 255 / 68%);
+  color: rgb(255 255 255 / 72%);
+  text-wrap: pretty;
 }
 
-/* ── Puces du carrousel ─────────────────────────────────────────────────── */
+/* ── Puces du carrousel, centrées ───────────────────────────────────────── */
 
 .heros__puces {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  z-index: 5;
   display: flex;
-  gap: 8px;
-  margin-top: 28px;
+  gap: 9px;
+  justify-content: center;
 }
 
 .heros__puce {
-  width: 30px;
-  height: 4px;
-  border-radius: 2px;
+  width: 12px;
+  height: 6px;
+  border-radius: 3px;
   border: 0;
   padding: 0;
-  background: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 42%);
   cursor: pointer;
+  transition: width 0.3s ease;
 }
 
 .heros__puce[aria-current="true"] {
+  width: 34px;
   background: var(--brand-magenta-600);
-  width: 46px;
+  animation: pulsation 1.6s ease-in-out infinite;
 }
 
-/* ── Formulaire « Lancer une démarche », superposé au héros ─────────────── */
-
-.formulaire-heros {
-  background: var(--surface);
-  border-radius: 14px;
-  box-shadow: 0 18px 44px rgb(0 0 0 / 32%);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: var(--ink-900);
-}
-
-.formulaire-heros__titre {
-  margin: 0;
-  font: 600 19px/1.25 var(--police-titre);
-  color: var(--ink-900);
-}
-
-.formulaire-heros__detail {
-  margin: 0;
-  font: 400 13px/1.55 var(--police-texte);
-  color: var(--ink-500);
-}
-
-.champ__etiquette {
-  display: block;
-  margin-bottom: 5px;
-  font: 600 11.5px/1.4 var(--police-texte);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-500);
-}
-
-.champ__saisie {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--line-200);
-  border-radius: 9px;
-  background: var(--surface-alt);
-  color: var(--ink-900);
-  font: 400 14px/1.2 var(--police-texte);
-}
-
-.champ__saisie:focus-visible {
-  border-color: var(--brand-indigo-700);
-}
-
-.champ__groupe {
-  display: flex;
-  gap: 8px;
-}
-
-.formulaire-heros__pied {
-  margin: 0;
-  font: 400 11.5px/1.6 var(--police-texte);
-  color: var(--ink-500);
+@media (prefers-reduced-motion: reduce) {
+  .heros__puce {
+    transition: none;
+  }
+  .heros__puce[aria-current="true"] {
+    animation: none;
+  }
 }
 
 /* ============================================================================
@@ -1082,10 +1237,51 @@
    texte, les chiffres s'empilent.
    ========================================================================= */
 
-@media (max-width: 1100px) {
-  .heros__corps {
+@media (max-width: 1200px) {
+  /* Sous 1200 px, la colonne du formulaire n'a plus la place de flotter à
+     droite : le héros reprend un flux vertical et tout s'empile. */
+  .heros {
+    height: auto;
+    min-height: 0;
+  }
+
+  .heros__vue {
+    position: absolute;
+  }
+
+  .heros__contenu {
+    position: relative;
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
+    gap: 32px;
+    padding: 150px 48px 40px;
+  }
+
+  .heros__colonne-formulaire {
+    position: relative;
+    right: auto;
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .formulaire-heros {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .heros__chiffres {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 48px 56px;
+  }
+
+  .heros__puces {
+    position: relative;
+    bottom: auto;
+    padding-bottom: 28px;
   }
 }
 
@@ -1124,12 +1320,18 @@
     display: none;
   }
 
-  .heros {
-    padding-top: 108px;
+  .heros__contenu {
+    padding: 118px 20px 32px;
   }
 
   .heros__chiffres {
-    gap: 18px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 20px 48px;
+  }
+
+  .heros__titre {
+    font-size: clamp(26px, 7vw, 34px);
   }
 
   .mega {
@@ -1141,4 +1343,188 @@
   .pilule__menu {
     display: none;
   }
+}
+
+/* ── Bandeau d'ouverture des pages intérieures ──────────────────────────── */
+
+.entete-page {
+  position: relative;
+  isolation: isolate;
+  background: var(--brand-indigo-900);
+  overflow: hidden;
+  /* Réserve la barre utilitaire (38) et la barre de navigation (16 + 72). */
+  padding-top: 126px;
+}
+
+.entete-page__contenu {
+  position: relative;
+  z-index: 2;
+  padding-block: clamp(36px, 5vw, 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  max-width: 900px;
+}
+
+/* ── Listes numérotées, cartes de formule, frise ────────────────────────── */
+
+.liste-numerotee {
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.liste-numerotee li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-200);
+  border-radius: 12px;
+  background: var(--surface);
+  font: 400 14.5px/1.6 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.liste-numerotee__rang {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+  display: grid;
+  place-items: center;
+  font: 600 13px/1 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+}
+
+.formule {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.formule--accent {
+  border-color: var(--brand-magenta-600);
+  border-width: 2px;
+}
+
+.formule__marque {
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--brand-magenta-600);
+  color: #fff;
+  font: 600 10.5px/1.2 var(--police-texte);
+}
+
+.formule__prix {
+  font: 600 30px/1.15 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.formule__inclus {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font: 400 13.5px/1.55 var(--police-texte);
+  color: var(--ink-500);
+  flex: 1;
+}
+
+.formule__inclus li {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.formule__coche {
+  flex: none;
+  color: var(--success);
+}
+
+.frise {
+  margin-top: 34px;
+  display: grid;
+  gap: 0;
+}
+
+.frise__etape {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 20px;
+  padding-bottom: 26px;
+  position: relative;
+}
+
+.frise__etape:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 45px;
+  top: 30px;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-200);
+}
+
+.frise__annee {
+  font: 600 19px/1.2 var(--police-titre);
+  color: var(--brand-magenta-600);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 1;
+  background: var(--surface-alt);
+  padding-bottom: 6px;
+}
+
+.membre {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line-200);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.membre__portrait {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+
+.canal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  border: 1px solid var(--line-200);
+  border-radius: 12px;
+  background: var(--surface);
+  text-decoration: none;
+}
+
+.canal:hover {
+  border-color: var(--brand-magenta-600);
+  text-decoration: none;
+}
+
+.canal__valeur {
+  font: 600 18px/1.25 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
 }

@@ -1,0 +1,451 @@
+{
+  "creation": {
+    "kicker": "Nos services",
+    "titre": "Créer mon entreprise",
+    "detail": "Statuts, enregistrement, immatriculation au RCCM, NIU et publication : nous montons votre dossier et le déposons au guichet unique.",
+    "piecesKicker": "Ce que vous devrez fournir",
+    "piecesTitre": "Les pièces du dossier",
+    "piecesNote": "Vous les photographierez depuis votre téléphone une fois votre compte créé. Inutile de les préparer avant de souscrire.",
+    "pieces": [
+      "Une pièce d'identité en cours de validité pour chaque associé et pour le gérant.",
+      "Un justificatif de domicile de moins de trois mois pour le siège social.",
+      "Trois propositions de dénomination sociale, par ordre de préférence.",
+      "Le plan de localisation du siège, ou le contrat de bail s'il en existe un.",
+      "Un extrait de casier judiciaire du gérant, daté de moins de trois mois."
+    ],
+    "faqKicker": "Questions fréquentes",
+    "faqTitre": "Sur la création d'entreprise",
+    "faq": [
+      {
+        "q": "Dois-je verser le capital avant l'immatriculation ?",
+        "r": "Oui pour les sociétés à capital : il est déposé sur un compte bloqué, libéré dès l'obtention du RCCM."
+      },
+      {
+        "q": "Puis-je créer sans être présent au Cameroun ?",
+        "r": "Oui, par procuration notariée. Nous vous transmettons le modèle et nous chargeons du dépôt."
+      },
+      {
+        "q": "Que se passe-t-il si ma dénomination est refusée ?",
+        "r": "Nous présentons la deuxième proposition sans frais supplémentaires, c'est pourquoi nous en demandons trois."
+      },
+      {
+        "q": "Le délai de huit semaines est-il garanti ?",
+        "r": "C'est le délai constaté au guichet unique de Douala. Nous relançons dès qu'un délai est dépassé."
+      }
+    ]
+  },
+  "estimation": {
+    "kicker": "Estimateur",
+    "titre": "Combien va me coûter ma création ?",
+    "detail": "Répondez à quatre questions : le montant s'affiche immédiatement, décomposé entre les frais officiels que nous avançons et nos honoraires.",
+    "q1": "Quelle forme juridique ?",
+    "q2": "Capital social, en FCFA",
+    "q3": "Nombre d'associés",
+    "q4": "Ville d'immatriculation",
+    "ouSaisir": "ou saisissez votre montant",
+    "ouSaisirNb": "ou saisissez le nombre exact",
+    "precisezVille": "Précisez la ville",
+    "exMontant": "Ex. 2 500 000",
+    "exNombre": "Ex. 7",
+    "exVille": "Ex. Sangmélima",
+    "sansObjet": "Sans objet pour cette forme",
+    "unSeulAssocie": "Un seul associé pour cette forme",
+    "villeNote": "Hors Douala et Yaoundé, comptez deux semaines de plus : le dépôt se fait au guichet unique de la région.",
+    "allerPlusLoin": "Voulez-vous aller plus loin ?",
+    "optSuivi": "Suivi comptable et fiscal, 12 mois",
+    "optSuiviDetail": "Tenue des comptes, déclarations, contrôle des pièces, adhésion au centre agréé",
+    "optDom": "Domiciliation commerciale, 12 mois",
+    "optDomDetail": "Adresse professionnelle, réception et réexpédition du courrier",
+    "votreEstimation": "Votre estimation",
+    "fraisOfficiels": "Frais officiels avancés",
+    "nosHonoraires": "Nos honoraires",
+    "totalRegler": "Total à régler",
+    "delaiAnnonce": "Délai annoncé",
+    "suiviComptable": "Suivi comptable",
+    "souscrire": "Souscrire en ligne",
+    "devisWhatsapp": "Recevoir ce devis par WhatsApp",
+    "note": "Estimation indicative fondée sur les tarifs officiels en vigueur. Le devis définitif vous est confirmé après examen de votre projet, sans frais de dossier.",
+    "avertissement": "Barème non encore branché sur le référentiel daté : les montants affichés proviennent des proformas du cabinet et doivent être validés par le fiscaliste avant toute mise en ligne publique.",
+    "semaines": "semaines",
+    "nonRetenu": "non retenu",
+    "parMois": "12 500 FCFA par mois",
+    "lignes": {
+      "cfce": "Caisse du guichet unique (CFCE)",
+      "rccmNiu": "Immatriculation RCCM et NIU",
+      "timbres": "Timbres et attestations",
+      "enregistrement": "Enregistrement des statuts",
+      "rccmJournal": "RCCM, journal officiel et timbres",
+      "notaire": "Acte notarié et commissaire aux apports",
+      "majorationAssocies": "Associés au-delà du minimum légal",
+      "honorairesBase": "Rédaction des statuts et montage du dossier",
+      "domiciliation": "Domiciliation commerciale, 12 mois"
+    },
+    "formes": {
+      "ETS": "Établissement",
+      "SARLU": "SARL unipersonnelle",
+      "SARL": "SARL",
+      "SAS": "SAS",
+      "SCI": "SCI",
+      "SA": "Société anonyme"
+    }
+  },
+  "adherent": {
+    "kicker": "Centre de gestion agréé",
+    "titre": "Devenir adhérent",
+    "detail": "Confiez-nous votre comptabilité et vos déclarations, et bénéficiez des avantages fiscaux réservés aux adhérents d'un centre agréé.",
+    "formulesKicker": "Nos formules",
+    "formulesTitre": "Un tarif selon votre régime fiscal",
+    "formulesDetail": "Le prix dépend de votre régime et du volume de pièces, jamais du chiffre d'affaires seul. Il est fixé à l'adhésion.",
+    "parcoursKicker": "Comment on démarre",
+    "parcoursTitre": "Votre adhésion, étape par étape",
+    "quiPeut": "Qui peut adhérer ?",
+    "quiPeutNote": "Vous dépassez 100 millions de chiffre d'affaires ? Nous vous accompagnons sous notre casquette de cabinet comptable et d'audit, hors régime du centre agréé.",
+    "bulletin": "Demander mon bulletin d'adhésion",
+    "inclus": "Ce qui est compris",
+    "conditions": [
+      {
+        "libelle": "Chiffre d'affaires annuel",
+        "valeur": "15 à 100 millions FCFA"
+      },
+      {
+        "libelle": "Forme",
+        "valeur": "Personne physique ou morale"
+      },
+      {
+        "libelle": "Droit d'adhésion",
+        "valeur": "payable une fois à l'inscription"
+      },
+      {
+        "libelle": "Contribution",
+        "valeur": "annuelle, selon votre régime"
+      }
+    ],
+    "formules": [
+      {
+        "nom": "Impôt libératoire",
+        "cible": "Chiffre d'affaires jusqu'à 50 millions FCFA",
+        "prix": "12 500",
+        "unite": "FCFA par mois",
+        "marque": "",
+        "inclus": [
+          "Comptabilité simplifiée",
+          "Déclaration trimestrielle",
+          "Contrôle de vos pièces",
+          "Relances par WhatsApp",
+          "Un interlocuteur nommé"
+        ]
+      },
+      {
+        "nom": "Réel simplifié",
+        "cible": "Chiffre d'affaires de 50 à 100 millions FCFA",
+        "prix": "35 000",
+        "unite": "FCFA par mois",
+        "marque": "Le plus choisi",
+        "inclus": [
+          "Comptabilité SYSCOHADA complète",
+          "Déclarations mensuelles de TVA",
+          "Déclaration annuelle DSF",
+          "Rapprochement bancaire mensuel",
+          "Assistance en cas de contrôle",
+          "Un comptable et un réviseur"
+        ]
+      },
+      {
+        "nom": "Régime du réel",
+        "cible": "Au-delà de 100 millions FCFA",
+        "prix": "sur devis",
+        "unite": "selon volume de pièces",
+        "marque": "",
+        "inclus": [
+          "Comptabilité complète et analytique",
+          "Toutes déclarations fiscales et sociales",
+          "Liasse fiscale et clôture",
+          "Tableau de bord mensuel",
+          "Accompagnement bancaire",
+          "Hors régime du centre agréé"
+        ]
+      }
+    ],
+    "parcours": [
+      {
+        "titre": "Vous remplissez le bulletin",
+        "detail": "Identité de l'entreprise, régime fiscal, volume de pièces mensuel."
+      },
+      {
+        "titre": "Nous reprenons votre historique",
+        "detail": "Reprise du dernier exercice clos et régularisation, chiffrées séparément."
+      },
+      {
+        "titre": "Vous déposez vos pièces chaque mois",
+        "detail": "En photo depuis votre téléphone, même hors ligne : elles partent au retour du réseau."
+      },
+      {
+        "titre": "Nous déclarons et vous informons",
+        "detail": "Chaque échéance vous est annoncée avec son montant, avant son exigibilité."
+      }
+    ]
+  },
+  "formations": {
+    "kicker": "Nos formations",
+    "titre": "Comprendre pour mieux décider",
+    "detail": "Des sessions courtes, animées par nos réviseurs et fiscalistes, en agence ou dans vos locaux. Groupes limités, cas pratiques réels.",
+    "calendrierKicker": "Calendrier",
+    "calendrierTitre": "Nos prochaines sessions",
+    "parPersonne": "FCFA par personne",
+    "reserver": "Réserver une place",
+    "programme": "Au programme",
+    "surMesure": "Formation dans vos locaux ?",
+    "surMesureDetail": "À partir de six participants, nous nous déplaçons dans vos locaux et adaptons le programme à votre activité.",
+    "catalogue": [
+      {
+        "titre": "Comprendre et déclarer la TVA",
+        "duree": "2 jours",
+        "public": "Dirigeants et comptables",
+        "prix": "95 000",
+        "places": "12 places",
+        "date": "Session du 15 septembre 2026, Douala",
+        "programme": [
+          "Champ d'application et taux",
+          "TVA collectée, TVA déductible",
+          "Les rejets de déduction fréquents",
+          "Remplir et déposer sa déclaration"
+        ]
+      },
+      {
+        "titre": "Établir sa liasse fiscale",
+        "duree": "3 jours",
+        "public": "Comptables et chefs comptables",
+        "prix": "165 000",
+        "places": "10 places",
+        "date": "Session du 6 octobre 2026, Douala",
+        "programme": [
+          "Du résultat comptable au résultat fiscal",
+          "Réintégrations et déductions",
+          "Les tableaux de la DSF",
+          "Contrôles avant dépôt"
+        ]
+      },
+      {
+        "titre": "Paie et cotisations sociales",
+        "duree": "2 jours",
+        "public": "Responsables du personnel",
+        "prix": "110 000",
+        "places": "12 places",
+        "date": "Session du 20 octobre 2026, Douala",
+        "programme": [
+          "Bulletin de paie conforme",
+          "Cotisations CNPS et taux",
+          "Déclarations et échéances",
+          "Congés, primes et indemnités"
+        ]
+      },
+      {
+        "titre": "Tenir sa caisse et ses justificatifs",
+        "duree": "1 jour",
+        "public": "Commerçants et gérants de TPE",
+        "prix": "75 000",
+        "places": "15 places",
+        "date": "Session du 3 novembre 2026, Douala",
+        "programme": [
+          "Ce qui fait un justificatif valable",
+          "Tenir un livre de caisse",
+          "Séparer les dépenses personnelles",
+          "Photographier et transmettre"
+        ]
+      }
+    ]
+  },
+  "cabinet": {
+    "kicker": "Le cabinet",
+    "titre": "Trente ans auprès des entrepreneurs camerounais",
+    "detail": "Cabinet comptable, d'audit et de conseil agréé par le ministre des Finances, nous apportons une assistance comptable, fiscale et de gestion aux TPE et PME.",
+    "histoireKicker": "Notre histoire",
+    "histoireTitre": "D'une intuition à un centre agréé",
+    "equipeKicker": "Notre équipe",
+    "equipeTitre": "Un interlocuteur nommé pour chaque dossier",
+    "agencesKicker": "Nous trouver",
+    "agencesTitre": "Où nous rencontrer",
+    "partenairesKicker": "Nos partenaires",
+    "partenairesTitre": "Ceux avec qui nous travaillons",
+    "partenairesNote": "En cas de besoin, nos avocats, notaires et experts-comptables partenaires sont à votre disposition. Appelez-nous pour être mis en relation.",
+    "histoire": [
+      {
+        "annee": "1994",
+        "titre": "Naissance du cabinet",
+        "detail": "Gabriel NGASSE, ancien manager de Total Cameroun, crée la structure pour aider les gérants de stations-service à tenir leur comptabilité."
+      },
+      {
+        "annee": "2000",
+        "titre": "Ouverture aux TPE et PME",
+        "detail": "Constatant le désarroi des petits entrepreneurs, le cabinet devient un véritable accompagnateur des TPE et PME."
+      },
+      {
+        "annee": "2013",
+        "titre": "Nouvelle direction générale",
+        "detail": "Paule Diane HIMSTA prend la tête du cabinet : équipe rajeunie, nouvelle approche de la relation client, portefeuille élargi."
+      },
+      {
+        "annee": "2020",
+        "titre": "Agrément du ministère des Finances",
+        "detail": "Arrêté n° 00000048 du 28 janvier 2020 : le cabinet devient centre de gestion agréé."
+      },
+      {
+        "annee": "2026",
+        "titre": "Plus de 500 entrepreneurs accompagnés",
+        "detail": "Douala, et une plateforme en ligne pour déposer ses pièces et suivre son dossier."
+      }
+    ],
+    "equipe": [
+      {
+        "nom": "Paule Diane HIMSTA",
+        "role": "Directrice générale",
+        "detail": "À la tête du cabinet depuis 2013",
+        "photo": "/images/equipe/paule-diane-himsta.jpg"
+      },
+      {
+        "nom": "Rodrigue BIYA'A",
+        "role": "Réviseur",
+        "detail": "Contrôle qualité et dépôt des déclarations",
+        "photo": "/images/equipe/rodrigue-biyaa.jpg"
+      },
+      {
+        "nom": "Charles ATANGANA",
+        "role": "Fiscaliste",
+        "detail": "Référentiel fiscal et règles de conformité",
+        "photo": "/images/equipe/charles-atangana.jpg"
+      },
+      {
+        "nom": "Aïcha MBALLA",
+        "role": "Chargée de clientèle",
+        "detail": "Portefeuille adhérents et relation client",
+        "photo": "/images/equipe/aicha-mballa.jpg"
+      },
+      {
+        "nom": "Estelle FOTSO",
+        "role": "Chargée de formalités",
+        "detail": "Créations d'entreprise et guichet unique",
+        "photo": "/images/equipe/estelle-fotso.jpg"
+      },
+      {
+        "nom": "Serge NKOULOU",
+        "role": "Comptable",
+        "detail": "Tenue des comptes et déclarations",
+        "photo": "/images/equipe/serge-nkoulou.jpg"
+      }
+    ],
+    "agences": [
+      {
+        "ville": "Douala",
+        "adresse": "Akwa · B.P. 7761",
+        "detail": "Bureau du cabinet · appelez le +237 233 42 48 47",
+        "photo": "/images/agences/douala.jpg"
+      },
+      {
+        "ville": "Yaoundé",
+        "adresse": "Elig-Essono",
+        "detail": "Adresse précise à confirmer par le cabinet",
+        "photo": "/images/agences/yaounde.jpg"
+      },
+      {
+        "ville": "Bafoussam",
+        "adresse": "Quartier Haoussa",
+        "detail": "Adresse précise à confirmer par le cabinet",
+        "photo": "/images/agences/bafoussam.jpg"
+      }
+    ],
+    "partenaires": [
+      {
+        "titre": "Avocats",
+        "detail": "Rédaction d'actes, contentieux commercial et fiscal"
+      },
+      {
+        "titre": "Notaires",
+        "detail": "Statuts authentiques, cessions de parts, baux commerciaux"
+      },
+      {
+        "titre": "Experts-comptables ONECCA",
+        "detail": "Commissariat aux comptes et missions d'audit"
+      },
+      {
+        "titre": "Établissements bancaires",
+        "detail": "Ouverture de compte, dépôt de capital, recherche de financement"
+      }
+    ]
+  },
+  "contact": {
+    "kicker": "Nous joindre",
+    "titre": "Contactez-nous",
+    "detail": "Écrivez-nous, appelez-nous, ou passez à notre bureau de Douala. Un expert prend votre demande en charge.",
+    "canauxKicker": "Trois façons de nous joindre",
+    "canauxTitre": "Choisissez ce qui vous arrange",
+    "formulaireKicker": "Formulaire",
+    "formulaireTitre": "Dites-nous ce dont vous avez besoin",
+    "votreDemande": "Votre demande concerne",
+    "champNom": "Nom et prénom",
+    "champTel": "Téléphone ou WhatsApp",
+    "champMail": "Adresse électronique, facultative",
+    "champMessage": "Votre message",
+    "consentement": "J'accepte que le cabinet utilise ces informations pour me recontacter au sujet de ma demande.",
+    "envoyer": "Envoyer ma demande",
+    "note": "Le téléphone reste le champ principal : beaucoup de nos clients n'utilisent pas de messagerie électronique.",
+    "dejaClient": "Vous êtes déjà client ?",
+    "dejaClientDetail": "Passez par votre espace client : votre chargé de clientèle y voit vos échanges, vos pièces et vos échéances.",
+    "ouvrirEspace": "Ouvrir mon espace client",
+    "messageExemple": "Je souhaite créer une SARL à Douala avec un associé, et confier ensuite ma comptabilité au cabinet.",
+    "canaux": [
+      {
+        "titre": "WhatsApp",
+        "valeur": "699 902 184",
+        "detail": "Le canal le plus utilisé par nos clients.",
+        "action": "Ouvrir la discussion"
+      },
+      {
+        "titre": "Téléphone",
+        "valeur": "+237 233 42 48 47",
+        "detail": "Standard du cabinet, aux heures d'ouverture.",
+        "action": "Appeler"
+      },
+      {
+        "titre": "Courriel",
+        "valeur": "contact@cga-brcgroup.com",
+        "detail": "Pour les demandes détaillées et les pièces jointes.",
+        "action": "Écrire"
+      }
+    ]
+  },
+  "connexion": {
+    "kicker": "Espace client",
+    "titre": "Se connecter",
+    "detail": "Un point d'entrée unique pour les adhérents, les entreprises clientes et les souscripteurs. Votre espace est choisi après authentification.",
+    "identifiant": "Adresse électronique ou téléphone",
+    "motDePasse": "Mot de passe",
+    "oubli": "Mot de passe oublié ?",
+    "garder": "Rester connecté sur cet appareil",
+    "bouton": "Se connecter",
+    "aide": "Pas encore de compte ? Votre lien de connexion vous est envoyé par courriel et par message dès votre souscription réglée.",
+    "creer": "Souscrire une prestation",
+    "retour": "Retour au site",
+    "note": "La double authentification est exigée pour les collaborateurs du cabinet.",
+    "profilsTitre": "Quatre populations, une seule porte",
+    "profils": [
+      {
+        "titre": "Cabinet",
+        "detail": "Comptable, réviseur, chargé de clientèle, fiscaliste, direction"
+      },
+      {
+        "titre": "Entreprise cliente",
+        "detail": "Le dirigeant et les collaborateurs qu'il invite"
+      },
+      {
+        "titre": "Souscripteur",
+        "detail": "Une prestation réglée, pas encore d'entreprise constituée"
+      },
+      {
+        "titre": "Plateforme",
+        "detail": "L'éditeur de la solution, accès exceptionnel et tracé"
+      }
+    ],
+    "demonstration": "Démonstration",
+    "demonstrationDetail": "Ces comptes n'existent que pour la démonstration et ne partiront pas en production. Choisissez un profil pour voir l'espace correspondant."
+  }
+}

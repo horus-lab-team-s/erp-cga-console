@@ -20,7 +20,14 @@ export const routing = defineRouting({
 
 export type Langue = (typeof routing.locales)[number];
 
-export const LANGUES: { code: Langue; libelle: string; abrege: string }[] = [
-  { code: "fr", libelle: "Français", abrege: "FR" },
-  { code: "en", libelle: "English", abrege: "EN" },
+export const LANGUES: {
+  code: Langue;
+  libelle: string;
+  abrege: string;
+  drapeau: string;
+}[] = [
+  // Le drapeau précède le nom : c'est lui qu'on repère du coin de l'œil, le nom
+  // ne sert qu'à lever le doute.
+  { code: "fr", libelle: "Français", abrege: "FR", drapeau: "🇫🇷" },
+  { code: "en", libelle: "English", abrege: "EN", drapeau: "🇬🇧" },
 ];

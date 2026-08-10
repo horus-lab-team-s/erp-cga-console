@@ -6,64 +6,79 @@ import { useState } from "react";
 import { IconeVitrine } from "./IconeVitrine";
 
 /**
- * Formulaire « Lancer une démarche », superposé au héros — maquette § héros.
+ * Formulaire « Lancer une démarche », posé sur la bannière.
  *
- * Il n'y a **aucun compte à créer** : trois champs, et un expert rappelle. C'est
- * la porte d'entrée la plus courte du site, et elle doit le rester.
+ * Son fond est un **verre dépoli à valeurs fixes** — `rgb(10 6 18 / 62%)` et un
+ * flou de 18 px — et non un jeton de thème : il repose sur la photographie, pas
+ * sur la page. Basculer en clair ou en sombre ne doit rien y changer.
  *
- * ⚠️ Le formulaire n'est pas encore branché : il compose un message WhatsApp
- * pré-rempli plutôt que d'appeler une API inexistante. Un envoi qui ne part nulle
- * part coûterait plus cher qu'un lien franc — le prospect croirait avoir été
- * enregistré. Le point d'entrée `POST /prospects` viendra avec le contexte
- * I · Création d'entreprise.
+ * Il fonctionne : les champs sont contrôlés, validés, et l'envoi compose un
+ * message WhatsApp pré-rempli.
+ *
+ * ⚠️ Pourquoi WhatsApp plutôt qu'un `POST` : le point d'entrée `/prospects`
+ * n'existe pas encore, il viendra avec le contexte I · Création d'entreprise. Un
+ * formulaire qui n'envoie nulle part serait pire qu'un lien franc — le prospect
+ * croirait avoir été enregistré. WhatsApp est par ailleurs le canal
+ * professionnel dominant au Cameroun, ce n'est pas un pis-aller.
  */
 
-const DEMARCHES = [
-  "creation",
-  "adhesion",
-  "ponctuel",
-  "domiciliation",
-  "formation",
-  "autre",
-] as const;
+const DEMARCHES = ["creation", "adhesion", "ponctuel", "domiciliation", "formation", "autre"] as const;
 
 /** Indicatifs de la sous-région, le Cameroun en tête. */
-const INDICATIFS = [
-  { code: "CM", indicatif: "+237", pays: "Cameroun" },
-  { code: "GA", indicatif: "+241", pays: "Gabon" },
-  { code: "CG", indicatif: "+242", pays: "Congo" },
-  { code: "TD", indicatif: "+235", pays: "Tchad" },
-  { code: "CF", indicatif: "+236", pays: "Centrafrique" },
-  { code: "GQ", indicatif: "+240", pays: "Guinée équatoriale" },
-  { code: "CI", indicatif: "+225", pays: "Côte d'Ivoire" },
-  { code: "SN", indicatif: "+221", pays: "Sénégal" },
-  { code: "FR", indicatif: "+33", pays: "France" },
-  { code: "BE", indicatif: "+32", pays: "Belgique" },
-  { code: "US", indicatif: "+1", pays: "États-Unis" },
-  { code: "GB", indicatif: "+44", pays: "Royaume-Uni" },
+const PAYS = [
+  { code: "CM", drapeau: "🇨🇲", indicatif: "+237", nom: "Cameroun", longueur: 9 },
+  { code: "GA", drapeau: "🇬🇦", indicatif: "+241", nom: "Gabon", longueur: 8 },
+  { code: "CG", drapeau: "🇨🇬", indicatif: "+242", nom: "Congo", longueur: 9 },
+  { code: "TD", drapeau: "🇹🇩", indicatif: "+235", nom: "Tchad", longueur: 8 },
+  { code: "CF", drapeau: "🇨🇫", indicatif: "+236", nom: "Centrafrique", longueur: 8 },
+  { code: "GQ", drapeau: "🇬🇶", indicatif: "+240", nom: "Guinée équatoriale", longueur: 9 },
+  { code: "CI", drapeau: "🇨🇮", indicatif: "+225", nom: "Côte d'Ivoire", longueur: 10 },
+  { code: "SN", drapeau: "🇸🇳", indicatif: "+221", nom: "Sénégal", longueur: 9 },
+  { code: "FR", drapeau: "🇫🇷", indicatif: "+33", nom: "France", longueur: 9 },
+  { code: "BE", drapeau: "🇧🇪", indicatif: "+32", nom: "Belgique", longueur: 9 },
+  { code: "CA", drapeau: "🇨🇦", indicatif: "+1", nom: "Canada", longueur: 10 },
+  { code: "GB", drapeau: "🇬🇧", indicatif: "+44", nom: "Royaume-Uni", longueur: 10 },
 ];
 
-export function FormulaireDemarche() {
+export function FormulaireDemarche({ onInteraction }: { onInteraction?: () => void }) {
   const t = useTranslations("vitrine.formulaire");
   const commun = useTranslations("commun");
 
   const [demarche, setDemarche] = useState<string>("creation");
   const [nom, setNom] = useState("");
-  const [indicatif, setIndicatif] = useState("+237");
+  const [codePays, setCodePays] = useState("CM");
   const [telephone, setTelephone] = useState("");
+  const [tente, setTente] = useState(false);
 
-  const numeroCabinet = commun("cabinet.whatsapp").replace(/[^\d]/g, "");
+  const pays = PAYS.find((p) => p.code === codePays) ?? PAYS[0];
+  const chiffres = telephone.replace(/\D/g, "");
+  const telephoneValide = chiffres.length >= Math.min(8, pays.longueur);
+  const nomValide = nom.trim().length >= 3;
+  const complet = nomValide && telephoneValide;
+
+  const numeroCabinet = commun("cabinet.whatsapp").replace(/\D/g, "");
   const message = [
-    t("titre"),
+    `${t("titre")} — ${commun("cabinet.nomCourt")}`,
     `${t("demarche")} : ${t(`demarches.${demarche}`)}`,
-    nom ? `${t("nom")} : ${nom}` : null,
-    telephone ? `${t("tel")} : ${indicatif} ${telephone}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
+    `${t("nom")} : ${nom.trim()}`,
+    `${t("tel")} : ${pays.indicatif} ${chiffres}`,
+  ].join("\n");
+  const lien = `https://wa.me/${numeroCabinet}?text=${encodeURIComponent(message)}`;
+
+  function envoyer(evenement: React.MouseEvent<HTMLAnchorElement>) {
+    if (complet) return;
+    // Champs incomplets : on retient la navigation et on montre ce qui manque,
+    // plutôt que d'ouvrir WhatsApp avec un message tronqué.
+    evenement.preventDefault();
+    setTente(true);
+  }
 
   return (
-    <form className="formulaire-heros" onSubmit={(e) => e.preventDefault()}>
+    <form
+      className="formulaire-heros"
+      onSubmit={(e) => e.preventDefault()}
+      onFocusCapture={onInteraction}
+    >
       <div>
         <h2 className="formulaire-heros__titre">{t("titre")}</h2>
         <p className="formulaire-heros__detail">{t("detail")}</p>
@@ -99,6 +114,10 @@ export function FormulaireDemarche() {
           value={nom}
           onChange={(e) => setNom(e.target.value)}
           autoComplete="name"
+          aria-invalid={tente && !nomValide}
+          style={
+            tente && !nomValide ? { borderColor: "var(--danger)", borderWidth: 2 } : undefined
+          }
         />
       </div>
 
@@ -106,40 +125,71 @@ export function FormulaireDemarche() {
         <label className="champ__etiquette" htmlFor="telephone">
           {t("tel")}
         </label>
-        <div className="champ__groupe">
+        <div style={{ display: "flex", gap: 8 }}>
           <select
             className="champ__saisie"
-            style={{ width: 118, flex: "none" }}
-            aria-label="Indicatif"
-            value={indicatif}
-            onChange={(e) => setIndicatif(e.target.value)}
+            style={{ flex: "none", width: 118 }}
+            aria-label={t("tel")}
+            value={codePays}
+            onChange={(e) => setCodePays(e.target.value)}
           >
-            {INDICATIFS.map((i) => (
-              <option key={i.code} value={i.indicatif}>
-                {i.indicatif} {i.code}
+            {PAYS.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.drapeau} {p.indicatif}
               </option>
             ))}
           </select>
-          <input
-            id="telephone"
-            type="tel"
-            className="champ__saisie"
-            placeholder="699 902 184"
-            value={telephone}
-            onChange={(e) => setTelephone(e.target.value)}
-            autoComplete="tel"
-          />
+
+          <span
+            className="champ__telephone"
+            style={
+              tente && !telephoneValide ? { borderColor: "var(--danger)" } : undefined
+            }
+          >
+            <span className="champ__drapeau" aria-hidden="true">
+              {pays.drapeau}
+            </span>
+            <span className="champ__indicatif">{pays.indicatif}</span>
+            <input
+              id="telephone"
+              type="tel"
+              inputMode="numeric"
+              placeholder="699902184"
+              value={telephone}
+              onChange={(e) => setTelephone(e.target.value)}
+              autoComplete="tel-national"
+              aria-invalid={tente && !telephoneValide}
+            />
+          </span>
         </div>
       </div>
 
+      {tente && !complet && (
+        <p
+          role="alert"
+          style={{
+            margin: 0,
+            font: "500 12px/1.5 var(--police-texte)",
+            color: "#ffb4ad",
+          }}
+        >
+          {!nomValide ? `${t("nom")} — ` : ""}
+          {!telephoneValide ? `${t("tel")} — ` : ""}
+          {commun("formulaire.champsRequis")}
+        </p>
+      )}
+
       <a
-        className="bouton bouton--principal bouton--large"
-        href={`https://wa.me/${numeroCabinet}?text=${encodeURIComponent(message)}`}
+        className="bouton bouton--principal formulaire-heros__envoi"
+        href={lien}
         target="_blank"
         rel="noreferrer noopener"
+        onClick={envoyer}
+        aria-disabled={!complet}
+        style={complet ? undefined : { opacity: 0.72 }}
       >
         {t("bouton")}
-        <IconeVitrine nom="fleche" taille={16} />
+        <IconeVitrine nom="fleche" taille={17} />
       </a>
 
       <p className="formulaire-heros__pied">{t("pied")}</p>
