@@ -1,57 +1,36 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 
-import { BadgeGravite, type Severite } from "../../components/Gravite";
-import { Cellule, EnteteTableau, EtatErreur, LigneTableau, Panneau, type Colonne } from "../../components/Tableau";
+import { EtatErreur } from "../../components/Tableau";
+import { BoiteReception } from "../../components/collecte/BoiteReception";
 import { EnteteTravail } from "../../components/coquille/EnteteTravail";
-import {
-  ErreurApi,
-  controlerPieceDemonstration,
-  listerPiecesDemonstration,
-  type ReponseControle,
-} from "../../lib/api";
-import { dateCourte, montantFcfa } from "../../lib/formats";
+import { ErreurApi, controlerToutLeFlux, type ReponseControle } from "../../lib/api";
 
 export const metadata: Metadata = { title: "Pièces justificatives — Plateforme CGA" };
+
+// Le contrôle dépend du référentiel courant : pré-rendre figerait les verdicts.
 export const dynamic = "force-dynamic";
 
 /**
- * Amorce de **E03 · Boîte de réception des pièces** — fiche au § 8.3.
+ * E03 · Boîte de réception des pièces — fiche au § 8.3.
  *
- * ⚠️ ÉBAUCHE, pas l'écran final. E03 exige une barre de filtres à puces
- * supprimables, la sélection multiple avec actions groupées, un panneau latéral
- * d'aperçu sans changement de page, des compteurs par statut, au moins 25 lignes
- * visibles en 1440 × 900 et une navigation complète au clavier.
+ * Le contrôle de tout le flux est fait ici, côté serveur, en un seul appel : la
+ * pastille de conformité de chaque ligne vient du vrai moteur. Le tri, le filtrage
+ * et la navigation clavier sont ensuite purement client — voir `BoiteReception`.
  *
- * Cette page assure pour l'instant la seule chose dont E01 et E02 ont besoin : une
- * liste qui mène au rapport de conformité. Le reste vient avec le contexte
- * C · Collecte, qui possédera le canal de réception, le statut du cycle de vie et
- * la miniature du document — aucune de ces trois données n'existe aujourd'hui.
+ * ⚠️ Le **canal de réception** et le **statut du cycle de vie** appartiennent au
+ * contexte C · Collecte, non implémenté. Ils sont simulés dans
+ * `lib/collecte-demo.ts` plutôt qu'ajoutés au backend, ce qui aurait laissé croire
+ * ce contexte existant. La conformité, elle, est réelle.
  */
-
-const COLONNES: Colonne[] = [
-  { cle: "reference", libelle: "Référence", largeur: "118px" },
-  { cle: "adherent", libelle: "Entreprise", largeur: "minmax(0, 1.4fr)" },
-  { cle: "fournisseur", libelle: "Fournisseur", largeur: "minmax(0, 1.5fr)" },
-  { cle: "date", libelle: "Date", largeur: "88px" },
-  { cle: "ttc", libelle: "Montant TTC", largeur: "132px", aDroite: true },
-  { cle: "reglement", libelle: "Règlement", largeur: "116px" },
-  { cle: "conformite", libelle: "Conformité", largeur: "132px" },
-];
-
-export default async function ListePieces() {
+export default async function BoiteReceptionPieces() {
   let rapports: ReponseControle[] = [];
   let erreur: string | null = null;
 
   try {
-    const references = await listerPiecesDemonstration();
-    rapports = await Promise.all(references.map(controlerPieceDemonstration));
+    rapports = await controlerToutLeFlux();
   } catch (cause) {
-    erreur =
-      cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
+    erreur = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
   }
-
-  const aTraiter = rapports.filter((r) => r.rapport.constats.length > 0).length;
 
   return (
     <>
@@ -71,91 +50,26 @@ export default async function ListePieces() {
           >
             Pièces justificatives
           </h1>
-          {!erreur && (
-            <span
-              style={{
-                padding: "6px 12px",
-                borderRadius: "var(--rayon-pilule)",
-                background: "var(--brand-indigo-100)",
-                color: "var(--brand-indigo-700)",
-                font: "600 12px/1.2 var(--police-texte)",
-              }}
-            >
-              {rapports.length} pièces · {aTraiter} à traiter
-            </span>
-          )}
+          <p
+            style={{
+              margin: 0,
+              font: "400 12.5px/1.4 var(--police-texte)",
+              color: "var(--ink-500)",
+            }}
+          >
+            Flux entrant de juillet 2026
+          </p>
           <button type="button" className="action-principale" style={{ marginLeft: "auto" }}>
             Importer des pièces
           </button>
         </div>
 
-        <Panneau
-          titre="Réception de juillet 2026"
-          aide="cliquez une ligne pour ouvrir le rapport de conformité"
-          style={{ flex: 1 }}
-        >
-          {erreur ? (
-            <EtatErreur titre="Contrôle de conformité indisponible" detail={erreur} />
-          ) : (
-            <>
-              <EnteteTableau colonnes={COLONNES} />
-              {rapports.map(({ facture, rapport }, index) => {
-                const severite = pireSeverite(rapport.constats.map((c) => c.severite));
-                const enEspeces = facture.reglement.mode === "ESPECES";
-                return (
-                  <LigneTableau
-                    key={facture.document.reference}
-                    colonnes={COLONNES}
-                    ton={index % 2 ? "alterne" : "normal"}
-                    hauteur="44px"
-                  >
-                    <Cellule tabulaire>
-                      <Link href={`/pieces/${facture.document.reference}`}>
-                        {facture.document.reference}
-                      </Link>
-                    </Cellule>
-                    <Cellule
-                      couleur="var(--brand-indigo-700)"
-                      titre={facture.destinataire.denomination ?? undefined}
-                    >
-                      {facture.destinataire.denomination}
-                    </Cellule>
-                    <Cellule titre={facture.emetteur.denomination ?? undefined}>
-                      {facture.emetteur.denomination}
-                    </Cellule>
-                    <Cellule tabulaire couleur="var(--ink-500)">
-                      {dateCourte(facture.document.date_emission)}
-                    </Cellule>
-                    <Cellule aDroite tabulaire gras>
-                      {montantFcfa(facture.montants.total_ttc)}
-                    </Cellule>
-                    <Cellule couleur={enEspeces ? "var(--warning)" : "var(--ink-500)"}>
-                      {facture.reglement.mode.toLocaleLowerCase("fr").replace(/_/g, " ")}
-                    </Cellule>
-                    <span>
-                      <BadgeGravite severite={severite} court />
-                    </span>
-                  </LigneTableau>
-                );
-              })}
-            </>
-          )}
-        </Panneau>
+        {erreur ? (
+          <EtatErreur titre="Contrôle de conformité indisponible" detail={erreur} />
+        ) : (
+          <BoiteReception rapports={rapports} />
+        )}
       </div>
     </>
   );
-}
-
-const ORDRE: Record<string, number> = {
-  BLOQUANT: 4,
-  MAJEUR: 3,
-  AVERTISSEMENT: 2,
-  INFORMATION: 1,
-};
-
-function pireSeverite(severites: string[]): Severite {
-  if (severites.length === 0) return "CONFORME";
-  return severites.reduce((pire, s) =>
-    (ORDRE[s] ?? 0) > (ORDRE[pire] ?? 0) ? s : pire,
-  ) as Severite;
 }

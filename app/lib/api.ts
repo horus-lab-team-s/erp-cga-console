@@ -157,3 +157,14 @@ export function controlerPieceDemonstration(reference: string) {
 export function listerPiecesDemonstration() {
   return appeler<string[]>("/conformite/demonstration");
 }
+
+/**
+ * Contrôle de tout le flux entrant, en un appel.
+ *
+ * La boîte de réception affiche la pastille de conformité sur chaque ligne. La
+ * peupler par appels unitaires coûterait un aller-retour par ligne — inacceptable
+ * sur les connexions visées.
+ */
+export function controlerToutLeFlux() {
+  return appeler<ReponseControle[]>("/conformite/demonstration/rapports");
+}
