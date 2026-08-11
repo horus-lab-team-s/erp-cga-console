@@ -91,14 +91,10 @@ export default function TableauDeBord() {
           </p>
         </div>
 
-        <div
-          style={{
-            flex: "none",
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 14,
-          }}
-        >
+        {/* Classe et non style en ligne : un `gridTemplateColumns` écrit dans
+            l'attribut `style` ne peut être repris par aucune requête média, la
+            grille resterait à quatre colonnes sur un téléphone. */}
+        <div className="grille-indicateurs">
           {INDICATEURS.map((indicateur) => (
             <Carte key={indicateur.libelle} indicateur={indicateur} />
           ))}
@@ -106,16 +102,7 @@ export default function TableauDeBord() {
 
         {/* Deux colonnes, deux rangées : les échéances occupent toute la hauteur à
             gauche, parce que c'est la liste la plus longue et la plus consultée. */}
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            display: "grid",
-            gridTemplateColumns: "1.35fr 1fr",
-            gridTemplateRows: "1fr 1fr",
-            gap: 16,
-          }}
-        >
+        <div className="grille-panneaux">
           <Panneau
             titre="Échéances à venir"
             aide="7 prochains jours, puis au-delà"

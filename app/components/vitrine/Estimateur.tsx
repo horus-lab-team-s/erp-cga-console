@@ -287,6 +287,10 @@ export function Estimateur() {
           style={{
             display: "flex",
             alignItems: "baseline",
+            /* Le montant est rendu à 26 px : sur un écran de 320 px il ne tient
+               pas à côté de son intitulé. Plutôt que de le rogner, on le laisse
+               passer à la ligne — `marginLeft: auto` le garde aligné à droite. */
+            flexWrap: "wrap",
             gap: 10,
             paddingTop: 12,
             borderTop: "1px solid rgb(255 255 255 / 20%)",
@@ -296,8 +300,8 @@ export function Estimateur() {
             {t("totalRegler")}
           </span>
           <span
-            className="tabulaire"
-            style={{ marginLeft: "auto", font: "600 26px/1.15 var(--police-titre)", color: "#fff" }}
+            className="tabulaire estimateur__total"
+            style={{ marginLeft: "auto", color: "#fff" }}
           >
             {montantFcfa(estimation.total)}
           </span>
@@ -403,9 +407,20 @@ function Bloc({
 }) {
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+      {/* Même règle que pour le total : l'intitulé en capitales est long et le
+          montant ne se rogne pas. Il passe à la ligne au lieu de déborder. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          flexWrap: "wrap",
+          gap: 10,
+          marginBottom: 6,
+        }}
+      >
         <span
           style={{
+            minWidth: 0,
             font: "600 11.5px/1.4 var(--police-texte)",
             letterSpacing: "0.04em",
             textTransform: "uppercase",

@@ -474,3 +474,198 @@
   color: var(--ink-300);
   cursor: not-allowed;
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   GRILLES DES ÉCRANS
+   ════════════════════════════════════════════════════════════════════════
+
+   Elles vivaient dans l'attribut `style` des pages, donc hors d'atteinte de
+   toute requête média : quatre colonnes d'indicateurs restaient quatre sur un
+   téléphone. Elles sont ici pour pouvoir se replier. */
+
+.grille-indicateurs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.grille-panneaux {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+}
+
+.connexion__grille {
+  display: grid;
+  gap: 44px;
+  grid-template-columns: minmax(0, 1.2fr) 420px;
+  padding-block: 64px;
+}
+
+/* L'enveloppe qui capte les clics sur les liens du tiroir ne doit rien changer
+   à la mise en page : `contents` la retire de la disposition, `.barre` reste
+   l'enfant direct de la coquille en flex. Les événements, eux, remontent le DOM
+   sans se soucier de `display`. */
+.coquille__barre {
+  display: contents;
+}
+
+/* ── Poignée du tiroir ──────────────────────────────────────────────────── */
+
+/* Invisible au-dessus de 1000 px : la barre y est toujours là, elle n'a pas de
+   poignée à offrir. */
+.coquille__menu {
+  display: none;
+}
+
+.coquille__voile {
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SOUS 1000 px — la barre latérale devient un tiroir
+   ════════════════════════════════════════════════════════════════════════
+
+   240 px fixes prenaient les deux tiers d'un écran de téléphone : il ne restait
+   pas de quoi lire une ligne d'échéance. La barre sort donc du flux et se
+   rappelle par une poignée. */
+
+@media (max-width: 1000px) {
+  /* La coquille cesse d'être une hauteur d'écran verrouillée : sur un
+     téléphone, un tableau de bord ne tient pas sans défiler, et `overflow:
+     hidden` ne ferait que cacher ce qui dépasse. */
+  .coquille {
+    display: block;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .zone-travail {
+    min-height: 100svh;
+  }
+
+  .barre {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    z-index: 70;
+    width: 264px;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    box-shadow: 0 0 40px rgb(0 0 0 / 45%);
+  }
+
+  .coquille[data-tiroir="true"] .barre {
+    transform: translateX(0);
+  }
+
+  /* Le repli à 64 px est une commande de bureau : dans un tiroir, il n'a plus
+     de sens et sa largeur réduite couperait les libellés. */
+  .barre[data-repliee="true"] {
+    width: 264px;
+    align-items: stretch;
+  }
+
+  .barre__bouton-repli {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .barre {
+      transition: none;
+    }
+  }
+
+  .coquille__voile {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: rgb(12 8 20 / 55%);
+  }
+
+  .coquille__menu {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    top: 10px;
+    left: 12px;
+    z-index: 80;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line-200);
+    border-radius: var(--rayon);
+    background: var(--surface);
+    color: var(--brand-indigo-700);
+    cursor: pointer;
+  }
+
+  /* L'en-tête réserve la place de la poignée, sinon le fil d'Ariane passe
+     dessous. */
+  .entete {
+    height: auto;
+    min-height: var(--entete-hauteur);
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 10px 14px 10px 68px;
+  }
+
+  /* La recherche globale s'appuie sur un raccourci clavier : sur un téléphone,
+     ni le clavier ni la place ne sont là. */
+  .recherche-globale,
+  .raccourci {
+    display: none;
+  }
+
+  .entete__utilisateur span {
+    display: none;
+  }
+
+  .contenu {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  /* ── Grilles ─────────────────────────────────────────────────────────── */
+
+  .grille-indicateurs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Les panneaux cessent de se partager la hauteur : chacun prend la sienne et
+     la page défile. Deux rangées de 1fr dans un écran de 600 px donneraient des
+     panneaux de 300 px, illisibles. */
+  .grille-panneaux {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    flex: none;
+  }
+
+  .connexion__grille {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-block: 36px;
+  }
+
+  /* Le panneau de sélection de dossier ne peut pas déborder du tiroir. */
+  .selecteur__panneau {
+    width: calc(100% - 2 * var(--espace-1));
+  }
+}
+
+@media (max-width: 560px) {
+  .grille-indicateurs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contenu {
+    padding: 12px;
+  }
+}

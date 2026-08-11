@@ -480,6 +480,28 @@
   padding: 12px 17px;
 }
 
+/* Le montant total de l'estimateur.
+
+   `montantFcfa` sépare les milliers par une espace **insécable** : « 300 000
+   FCFA » ne peut donc pas se couper, et sa largeur minimale à 26 px dépasse la
+   place disponible sur un téléphone. Ni `flex-wrap` ni `min-width: 0` n'y
+   changent quoi que ce soit — un mot insécable déborde.
+
+   La taille est donc liée à la largeur de la fenêtre. `anywhere` reste en
+   dernier recours, pour une devise ou un montant plus longs que prévu. */
+.estimateur__total {
+  min-width: 0;
+  font: 600 clamp(19px, 5.6vw, 26px) / 1.15 var(--police-titre);
+  overflow-wrap: anywhere;
+}
+
+/* Une icône de bouton est une image, pas du texte : elle ne se comprime pas.
+   Sans cela, l'étroitesse la réduit à zéro et la flèche disparaît en débordant
+   du bouton. */
+.bouton svg {
+  flex: none;
+}
+
 .bouton:hover {
   text-decoration: none;
 }
@@ -592,6 +614,7 @@
 .heros {
   position: relative;
   height: 100vh;
+  height: 100svh;
   min-height: 800px;
   background: var(--brand-indigo-900);
   overflow: hidden;
@@ -916,15 +939,15 @@
 }
 
 .grille--4 {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
 }
 
 .grille--3 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
 }
 
 .grille--2 {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
 }
 
 /* ── Cartes de service ──────────────────────────────────────────────────── */
@@ -1111,7 +1134,7 @@
   display: grid;
   gap: 18px;
   margin-top: 40px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 
 /* Rail continu derrière les trois pastilles : c'est lui qui donne le sentiment
@@ -1268,7 +1291,7 @@
 }
 
 .temoin {
-  flex: 0 0 340px;
+  flex: 0 0 min(340px, 78vw);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1345,7 +1368,9 @@
 .pied-vitrine__grille {
   display: grid;
   gap: 32px;
-  grid-template-columns: minmax(260px, 1.5fr) repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns:
+    minmax(min(260px, 100%), 1.5fr)
+    repeat(auto-fit, minmax(min(150px, 100%), 1fr));
 }
 
 .pied-vitrine__titre {
@@ -1444,7 +1469,7 @@
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1099px) {
   .bloc {
     padding-inline: 20px;
   }
@@ -1474,8 +1499,7 @@
     padding: 0 12px;
   }
 
-  .nav-vitrine,
-  .pilule__espace-client {
+  .nav-vitrine {
     display: none;
   }
 
@@ -1498,8 +1522,17 @@
   }
 }
 
-@media (min-width: 981px) {
+@media (min-width: 1100px) {
   .pilule__menu {
+    display: none;
+  }
+}
+
+/* Entre 1100 et 1200 px, les six entrées tiennent mais pas les deux boutons.
+   « Espace client » cède : il est aussi dans le tiroir, le pied et la page de
+   connexion, alors que « Nous joindre » est l'appel principal. */
+@media (max-width: 1199px) {
+  .pilule__espace-client {
     display: none;
   }
 }
@@ -1514,6 +1547,7 @@
   /* Même gabarit que la bannière d'accueil : le visiteur ne doit pas sentir de
      rupture de hauteur en changeant de page. */
   height: 100vh;
+  height: 100svh;
   min-height: 800px;
   /* Grille et non flex : `.bloc` doit garder son comportement de bloc et
      s'étirer jusqu'à sa largeur maximale. En élément flex il se rétracterait à
@@ -1952,4 +1986,295 @@
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   TÉLÉPHONE — sous 760 px
+   ════════════════════════════════════════════════════════════════════════
+
+   Les hauteurs de bannière viennent de la maquette `Vitrine mobile CGA`, qui
+   les fixe écran par écran : accueil 520 px, création 290, adhérent /
+   formations / cabinet 270, estimation / contact 250. On retient 520 pour le
+   héros et 280 pour les pages intérieures — l'écart entre 250 et 290 relève du
+   réglage fin, pas de la structure.
+
+   Ce que la maquette mobile ne montre pas, on ne le rend pas : ni barre
+   utilitaire, ni bouton « Nous joindre » dans la barre. Le téléphone reste
+   joignable par le tiroir, le pied et la page Contact. */
+
+@media (max-width: 760px) {
+  /* ── En-tête ─────────────────────────────────────────────────────────── */
+
+  .barre-utile {
+    display: none;
+  }
+
+  /* Le voile passe de l'horizontal au vertical.
+
+     Sur grand écran le texte occupe la gauche et la photographie respire à
+     droite : un dégradé horizontal protège l'un sans éteindre l'autre. Sur
+     téléphone le texte occupe toute la largeur, et ce même dégradé le laissait
+     finir sur la partie claire de l'image — les derniers mots devenaient
+     illisibles. Le dégradé descend donc, comme dans la maquette mobile. */
+  .heros__voile {
+    background: linear-gradient(
+      180deg,
+      rgb(20 12 32 / 55%) 0%,
+      rgb(20 12 32 / 82%) 55%,
+      rgb(20 12 32 / 95%) 100%
+    );
+  }
+
+  /* La barre cesse de flotter : elle se colle en haut, pleine largeur, comme
+     les 62 px de la maquette. */
+  .entete-vitrine__rangee {
+    padding: 0;
+  }
+
+  .pilule {
+    height: 62px;
+    gap: 8px;
+    padding: 0 14px;
+    border: 0;
+    border-bottom: 1px solid var(--line-200);
+    box-shadow: none;
+  }
+
+  .pilule__logo img {
+    width: 88px !important;
+  }
+
+  /* L'appel principal quitte la barre : il occupait 135 px et poussait le
+     bouton de menu hors de l'écran. */
+  .pilule .bouton--principal {
+    display: none;
+  }
+
+  /* `padding-inline` écraserait la réserve de 26 px ménagée à droite pour la
+     flèche : le dernier caractère du libellé passait dessous. On garde la
+     réserve et on ne réduit que la marge de gauche. */
+  .select-langue {
+    height: 40px;
+    padding: 0 24px 0 8px;
+    font-size: 11.5px;
+  }
+
+  .bouton-icone {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Le bouton de menu est la seule porte vers la navigation : il se voit. */
+  .pilule__menu {
+    width: 44px;
+    height: 44px;
+    background: var(--brand-magenta-600);
+    border-color: var(--brand-magenta-600);
+    color: #fff;
+  }
+
+  /* ── Bannières ───────────────────────────────────────────────────────── */
+
+  /* 520 px est la hauteur de la maquette mobile. Elle vaut ici comme plancher
+     et non comme plafond : voir le formulaire, plus bas. */
+  .heros {
+    height: auto;
+    min-height: 520px;
+  }
+
+  .heros__contenu {
+    padding: 78px 20px 26px;
+    gap: 22px;
+  }
+
+  .heros__titre {
+    font-size: clamp(24px, 6.4vw, 31px);
+  }
+
+  /* ÉCART ASSUMÉ À LA MAQUETTE — la maquette mobile ne porte aucun formulaire
+     dans la bannière : le visiteur n'y a qu'un bouton, la saisie se fait sur la
+     page Contact. On garde le formulaire.
+
+     C'est la principale capture de contacts du site, et le téléphone est
+     l'appareil par lequel arrivera la majorité des visiteurs. Le supprimer là
+     où il sert le plus pour respecter une hauteur de 520 px serait payer le
+     dessin avec des prospects. La bannière s'allonge de ce qu'il occupe. */
+  .heros__colonne-formulaire {
+    width: 100%;
+  }
+
+  .formulaire-heros {
+    max-width: none;
+    padding: 18px;
+  }
+
+  /* Deux colonnes comme la maquette mobile : quatre chiffres empilés
+     repousseraient tout le reste sous la ligne de flottaison. */
+  .heros__chiffres {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    padding: 22px 20px 26px;
+  }
+
+  .entete-page {
+    height: auto;
+    min-height: 280px;
+    padding-top: 62px;
+  }
+
+  .entete-page__contenu {
+    padding-block: 30px;
+  }
+
+  /* ── Corps ───────────────────────────────────────────────────────────── */
+
+  .bloc {
+    padding-inline: 18px;
+  }
+
+  .section {
+    padding-block: 40px;
+  }
+
+  .grille {
+    margin-top: 24px;
+  }
+
+  /* Le filigrane et les cartes de témoignage se règlent déjà plus haut. */
+  .pied-vitrine {
+    padding-block: 38px 22px;
+  }
+
+  /* `minmax(min(150px, 100%), 1fr)` ne suffit pas ici : le pourcentage se
+     mesure sur le conteneur entier, pas sur la place laissée par la première
+     colonne de 260 px. La somme dépassait donc la largeur de l'écran. On fixe
+     deux colonnes, l'identité du cabinet occupant la ligne du haut. */
+  .pied-vitrine__grille {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .pied-vitrine__grille > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .pied-vitrine__bas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pied-vitrine__bas span:last-child {
+    margin-left: 0 !important;
+  }
+
+  /* ── Cibles tactiles ─────────────────────────────────────────────────── */
+
+  /* 44 px est le minimum au doigt. En dessous, on vise à côté — et le parc
+     visé est majoritairement composé de téléphones tenus à une main. */
+  .pied-vitrine__liste a,
+  .barre-utile__element,
+  .reseaux__lien {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .bouton--large {
+    min-height: 48px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PETIT TÉLÉPHONE — sous 420 px
+   ════════════════════════════════════════════════════════════════════════
+
+   Un écran de 360 px reste courant sur le parc Android d'entrée de gamme. À
+   cette largeur, ce ne sont plus les colonnes qui posent problème mais la
+   longueur des mots : un titre à 31 px casse « déclaration » en deux. */
+
+@media (max-width: 420px) {
+  .bloc {
+    padding-inline: 14px;
+  }
+
+  .pilule {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .pilule__logo img {
+    width: 76px !important;
+  }
+
+  /* Un plancher, jamais un plafond : `.heros` a `overflow: hidden`, une
+     hauteur fixe couperait le formulaire au lieu de laisser la bannière
+     s'allonger. */
+  .heros {
+    min-height: 470px;
+  }
+
+  .heros__titre {
+    font-size: clamp(22px, 6.6vw, 26px);
+  }
+
+  .heros__detail {
+    font-size: 13.5px;
+  }
+
+  .titre-section {
+    font-size: clamp(21px, 6vw, 26px);
+  }
+
+  /* Sous 420 px, un libellé de bouton long ne tient plus sur une ligne. On
+     l'autorise à se replier plutôt qu'à déborder. */
+  .bouton--large {
+    white-space: normal;
+    text-align: center;
+    padding-inline: 14px;
+  }
+
+  /* Deux colonnes de 150 px ne tiennent plus : les raccourcis de formes
+     passent en pile. */
+  .tiroir__formes {
+    grid-template-columns: 1fr;
+  }
+
+  /* La rangée du téléphone porte deux fois la même information : le sélecteur
+     annonce déjà « 🇨🇲 +237 », le champ le répète. Sous 420 px, cette redite
+     coûte une trentaine de pixels au numéro lui-même. Le drapeau du champ
+     s'efface ; l'indicatif reste, il dit quoi taper. */
+  .champ__drapeau {
+    display: none;
+  }
+
+  .temoin {
+    flex-basis: 84vw;
+    padding: 18px;
+  }
+
+  .pied-vitrine__grille {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PAYSAGE COURT
+   ════════════════════════════════════════════════════════════════════════
+
+   Téléphone tourné : la largeur suffit, la hauteur non. Une bannière calée sur
+   la hauteur de l'écran ne laisserait rien voir du contenu, et une bannière de
+   520 px dépasserait l'écran. On la rend au contenu. */
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .heros,
+  .entete-page {
+    height: auto;
+    min-height: 0;
+  }
+
+  .heros__contenu {
+    padding-block: 92px 24px;
+  }
 }

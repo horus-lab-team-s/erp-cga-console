@@ -60,6 +60,10 @@ export const ICONES: Record<string, string> = {
   pilotage: "M12 4l9 16H3zM12 10v4M12 17.2h.01",
   referentiel: "M4 5h11a2 2 0 0 1 2 2v13H6a2 2 0 0 1-2-2zM17 7h3v13H6M8 9h6M8 13h6",
   parametres: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4.1a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4z",
+  // Ouverture et fermeture du tiroir : la barre latérale sort du flux sous
+  // 1000 px, il lui faut une poignée.
+  menu: "M4 7h16M4 12h16M4 17h16",
+  fermer: "M6 6l12 12M18 6L6 18",
   replier: "M9 6l6 6-6 6M4 4v16",
   deplier: "M15 6l-6 6 6 6M20 4v16",
   recherche: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",

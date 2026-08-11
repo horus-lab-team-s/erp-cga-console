@@ -82,16 +82,8 @@ function Ecran() {
       <div className="heros__voile" />
 
       <div
-        className="bloc"
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "grid",
-          gap: 44,
-          gridTemplateColumns: "minmax(0, 1.2fr) 420px",
-          alignItems: "center",
-          paddingBlock: 64,
-        }}
+        className="bloc connexion__grille"
+        style={{ position: "relative", zIndex: 2, alignItems: "center" }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <Link href="/" style={{ alignSelf: "flex-start" }}>
