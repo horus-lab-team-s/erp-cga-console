@@ -40,8 +40,15 @@ export function Estimateur() {
   const [codeForme, setCodeForme] = useState(() =>
     FORMES.some((f) => f.code === formeDemandee) ? (formeDemandee as string) : "SARL",
   );
-  const [capital, setCapital] = useState(1_000_000);
-  const [associes, setAssocies] = useState(2);
+  // On garde le **texte** saisi, pas un nombre déjà borné.
+  //
+  // Le champ affichait auparavant `Math.max(capital, capitalMin)`. Effacer un
+  // chiffre donnait une chaîne vide, donc 0, donc le minimum légal réécrit dans
+  // le champ à l'instant même : il était impossible d'y taper quoi que ce soit,
+  // la valeur revenait à chaque touche. Le bornage a lieu au calcul, pas à
+  // l'affichage — un champ ne corrige pas ce qu'on est en train d'écrire.
+  const [capitalTexte, setCapitalTexte] = useState("");
+  const [associesTexte, setAssociesTexte] = useState("");
   const [ville, setVille] = useState("Douala");
   const [suivi, setSuivi] = useState(true);
   const [domiciliation, setDomiciliation] = useState(false);
@@ -50,10 +57,22 @@ export function Estimateur() {
   const capitalApplicable = forme.capitalMin > 0;
   const associesApplicable = forme.associesMax > 1;
 
-  // Changer de forme peut invalider le capital ou le nombre d'associés : on les
-  // ramène dans les bornes au calcul plutôt que de laisser un état incohérent.
-  const capitalRetenu = Math.max(capital, forme.capitalMin);
-  const associesRetenu = Math.min(Math.max(associes, forme.associesMin), forme.associesMax);
+  const nombre = (texte: string) => {
+    const propre = texte.replace(/[^\d]/g, "");
+    return propre === "" ? null : Number(propre);
+  };
+  const capitalSaisi = nombre(capitalTexte);
+  const associesSaisi = nombre(associesTexte);
+
+  // Champ vide : on calcule sur le capital de référence de la forme, celui à
+  // partir duquel le droit d'enregistrement proportionnel commence à courir.
+  // C'est aussi ce que le repère du champ annonce, donc le chiffre affiché
+  // correspond à ce qu'on a sous les yeux.
+  const capitalRetenu = Math.max(capitalSaisi ?? forme.capitalReference, forme.capitalMin);
+  const associesRetenu = Math.min(
+    Math.max(associesSaisi ?? forme.associesMin, forme.associesMin),
+    forme.associesMax,
+  );
 
   const estimation = estimer({
     forme,
@@ -105,7 +124,7 @@ export function Estimateur() {
   };
 
   return (
-    <div style={{ display: "grid", gap: 24, gridTemplateColumns: "minmax(0,1.1fr) minmax(0,1fr)" }}>
+    <div className="estimateur__grille">
       {/* ── Les quatre questions ─────────────────────────────────────── */}
       <div
         style={{
@@ -147,13 +166,19 @@ export function Estimateur() {
             min={forme.capitalMin}
             style={{ ...saisie, opacity: capitalApplicable ? 1 : 0.5 }}
             disabled={!capitalApplicable}
-            value={capitalApplicable ? capitalRetenu : ""}
-            placeholder={t("exMontant")}
-            onChange={(e) => setCapital(Number(e.target.value) || 0)}
+            value={capitalTexte}
+            placeholder={montantFcfa(forme.capitalReference)}
+            onChange={(e) => setCapitalTexte(e.target.value)}
           />
+          {/* Dire la règle plutôt que laisser croire à une panne : sous le
+              capital de référence, le droit d'enregistrement est forfaitaire,
+              le total ne bouge donc pas. Au-dessus, il devient proportionnel. */}
           <p style={aide}>
             {capitalApplicable
-              ? `${t("ouSaisir")} · minimum ${montantFcfa(forme.capitalMin)}`
+              ? t("capitalRegle", {
+                  minimum: montantFcfa(forme.capitalMin),
+                  reference: montantFcfa(forme.capitalReference),
+                })
               : t("sansObjet")}
           </p>
         </div>
@@ -169,9 +194,9 @@ export function Estimateur() {
             max={forme.associesMax}
             style={{ ...saisie, opacity: associesApplicable ? 1 : 0.5 }}
             disabled={!associesApplicable}
-            value={associesApplicable ? associesRetenu : 1}
-            placeholder={t("exNombre")}
-            onChange={(e) => setAssocies(Number(e.target.value) || forme.associesMin)}
+            value={associesTexte}
+            placeholder={String(forme.associesMin)}
+            onChange={(e) => setAssociesTexte(e.target.value)}
           />
           <p style={aide}>{associesApplicable ? t("ouSaisirNb") : t("unSeulAssocie")}</p>
         </div>

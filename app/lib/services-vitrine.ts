@@ -80,32 +80,37 @@ export const SERVICES_VITRINE: ServiceVitrine[] = [
  * Les formes juridiques proposées à la création, dans l'ordre du pied de page.
  *
  * `codeBareme` renvoie à `FORMES` dans `bareme-creation.ts` et sert à
- * pré-sélectionner l'estimateur. **La SA n'y figure pas** : le barème du cabinet
- * n'a pas de ligne pour elle. Plutôt que d'inventer des montants, son lien mène
- * à la page Création, où le visiteur est invité à nous joindre.
+ * pré-sélectionner l'estimateur. Les six formes y figurent, la SA comprise —
+ * j'avais d'abord cru le contraire et fait pointer son lien ailleurs.
  */
 export const FORMES_JURIDIQUES = [
   { cle: "SARL", codeBareme: "SARL" },
   { cle: "SARLU", codeBareme: "SARLU" },
-  { cle: "SA", codeBareme: null },
+  { cle: "SA", codeBareme: "SA" },
   { cle: "SAS", codeBareme: "SAS" },
   { cle: "SCI", codeBareme: "SCI" },
   { cle: "ETS", codeBareme: "ETS" },
 ] as const;
 
-/** Où mène une forme : l'estimateur pré-rempli, ou la page Création à défaut. */
+/** Où mène une forme : l'estimateur, pré-rempli sur elle. */
 export function lienForme(forme: (typeof FORMES_JURIDIQUES)[number]) {
-  return forme.codeBareme
-    ? `/estimation?forme=${forme.codeBareme}`
-    : "/creer-mon-entreprise";
+  return `/estimation?forme=${forme.codeBareme}`;
 }
 
-/** Les six entrées de la barre, dans l'ordre du dessin. */
+/**
+ * Les entrées de la barre, dans l'ordre du dessin.
+ *
+ * « Blog » vient après « Le CGA » et avant « Estimation » : il appartient à ce
+ * que le cabinet dit de lui-même, pas aux outils. Le placer en fin de barre,
+ * après « Contactez-nous », l'aurait rendu invisible — or c'est par lui que le
+ * trafic de Facebook et de WhatsApp entrera sur le site.
+ */
 export const ENTREES_NAV = [
   { cle: "services", href: "/creer-mon-entreprise", megaMenu: true },
   { cle: "adherent", href: "/devenir-adherent", megaMenu: false },
   { cle: "formations", href: "/formations", megaMenu: false },
   { cle: "cabinet", href: "/le-cabinet", megaMenu: false },
+  { cle: "blog", href: "/blog", megaMenu: false },
   { cle: "estimation", href: "/estimation", megaMenu: false },
   { cle: "contact", href: "/contact", megaMenu: false },
 ] as const;

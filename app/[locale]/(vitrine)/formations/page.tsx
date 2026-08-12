@@ -16,7 +16,22 @@ export async function generateMetadata({
   return { title: t("titre"), description: t("detail") };
 }
 
-/** Page « Formations » — maquette, section `surFormations`. */
+/**
+ * Page « Formations » — maquette, section `surFormations`.
+ *
+ * Le catalogue des sessions, chacune avec sa date, sa durée, son public, son
+ * programme et son prix. Le programme est affiché en entier plutôt que résumé :
+ * une formation professionnelle s'achète sur son contenu, et un intitulé seul
+ * n'engage personne à réserver.
+ *
+ * Les sessions viennent des messages (`pages.formations.catalogue`) et non d'une
+ * source de données : le calendrier est refait chaque trimestre par le cabinet,
+ * et il est bilingue. Le jour où il changera plusieurs fois par mois, il ira
+ * rejoindre le contenu éditorial du contexte L · Vitrine.
+ *
+ * Le bloc « sur mesure », en bas, existe parce que la moitié des demandes reçues
+ * ne correspondent à aucune session du catalogue.
+ */
 export default async function Formations({
   params,
 }: {
@@ -39,7 +54,7 @@ function Ouverture() {
       kicker={t("kicker")}
       titre={t("titre")}
       detail={t("detail")}
-      image="/images/pages/formations-a.jpg"
+      images={["/images/pages/formations-a.jpg", "/images/pages/formations-b.jpg"]}
     />
   );
 }
@@ -60,7 +75,7 @@ function Catalogue() {
   const sessions = t.raw("catalogue") as Session[];
 
   return (
-    <section className="section">
+    <section className="section section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("calendrierKicker")}</span>
         <h2 className="titre-section">{t("calendrierTitre")}</h2>

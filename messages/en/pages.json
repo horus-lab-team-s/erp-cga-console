@@ -86,7 +86,8 @@
       "SAS": "Simplified joint stock",
       "SCI": "Property company",
       "SA": "Public limited company"
-    }
+    },
+    "capitalRegle": "Legal minimum {minimum}. Above {reference}, a proportional registration duty applies; below it the duty is flat and the total does not change."
   },
   "adherent": {
     "kicker": "Approved management centre",
@@ -424,7 +425,7 @@
     "aide": "No account yet? Your login link is sent by email and text message once your subscription is paid.",
     "creer": "Subscribe to a service",
     "retour": "Back to the site",
-    "note": "Two-factor authentication is required for firm staff.",
+    "note": "Demonstration access: the check runs in the browser and protects nothing. Real authentication will be handled by the backend before any client data goes online.",
     "profilsTitre": "Four populations, one door",
     "profils": [
       {
@@ -445,6 +446,8 @@
       }
     ],
     "demonstration": "Demonstration",
-    "demonstrationDetail": "These accounts exist for demonstration only and will not ship to production. Pick a profile to see the matching workspace."
+    "demonstrationDetail": "These accounts exist for demonstration only and will not ship to production. Pick a profile to see the matching workspace.",
+    "refus": "Wrong username or password. The demonstration credentials are shown below.",
+    "demoTitre": "Demonstration credentials"
   }
 }

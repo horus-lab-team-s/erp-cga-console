@@ -3,7 +3,8 @@
     "services": "Nos services",
     "adherent": "Devenir adhérent",
     "formations": "Formations",
-    "cabinet": "Le cabinet",
+    "cabinet": "Le CGA",
+    "blog": "Blog",
     "estimation": "Estimation",
     "contact": "Contactez-nous"
   },
@@ -168,22 +169,22 @@
     "t1": {
       "texte": "Ma SARL était immatriculée en trois semaines, sans que j'aie eu à faire une seule file d'attente. Le cabinet a monté le dossier, suivi le greffe, et m'a remis le registre de commerce et la carte de contribuable le même jour.",
       "nom": "Estelle Mbarga",
-      "role": "Gérante, Éclat Cosmétiques — Douala"
+      "role": "Gérante d'Éclat Cosmétiques, à Douala"
     },
     "t2": {
       "texte": "Avant l'adhésion, je découvrais mes échéances la veille. Aujourd'hui l'alerte tombe dix jours avant et ma déclaration est vérifiée avant d'être déposée. Deux exercices, pas une seule pénalité.",
       "nom": "Rodrigue Fotso",
-      "role": "Directeur, Fotso Matériaux — Bafoussam"
+      "role": "Directeur de Fotso Matériaux, à Bafoussam"
     },
     "t3": {
-      "texte": "Deux jours de formation et mon assistante saisit désormais les achats elle-même. L'abattement de 50 % sur le bénéfice, je l'ai enfin compris — et je sais quelles pièces fournir pour y avoir droit.",
+      "texte": "Deux jours de formation et mon assistante saisit désormais les achats elle-même. L'abattement de 50 % sur le bénéfice, je l'ai enfin compris, et je sais quelles pièces fournir pour y avoir droit.",
       "nom": "Aïcha Ndongo",
-      "role": "Responsable administrative, Sahel Agro-Distribution — Yaoundé"
+      "role": "Responsable administrative de Sahel Agro-Distribution, à Yaoundé"
     },
     "t4": {
       "texte": "Quand le contrôle est arrivé, tout était classé, daté et justifié. Le cabinet a répondu à ma place : la vérification s'est terminée en une matinée, sans redressement.",
       "nom": "Serge Ekwalla",
-      "role": "Cogérant, Ekwalla & Fils Transit — Douala"
+      "role": "Cogérant d'Ekwalla & Fils Transit, à Douala"
     }
   },
   "cta": {
@@ -211,7 +212,7 @@
     "reseaux": "Suivez-nous",
     "creerTitre": "Créer",
     "gererTitre": "Gérer",
-    "cabinetTitre": "Le cabinet",
+    "cabinetTitre": "Le CGA",
     "suiviComptable": "Suivi comptable",
     "declarationAnnuelle": "Déclaration annuelle",
     "domiciliation": "Domiciliation",
@@ -219,5 +220,52 @@
     "notreEquipe": "Notre équipe",
     "nosPartenaires": "Nos partenaires",
     "contactezNous": "Contactez-nous"
+  },
+  "partenaires": {
+    "kicker": "Nos partenaires",
+    "titre": "Le cadre dans lequel nous travaillons",
+    "detail": "Nos dossiers passent par ces institutions : elles reçoivent vos déclarations, encadrent la profession et fixent le droit comptable applicable."
+  },
+  "annonce": {
+    "region": "Annonce du cabinet",
+    "fermer": "Fermer l'annonce"
+  },
+  "blog": {
+    "kicker": "Le blog du cabinet",
+    "titre": "Ce qui change, et ce que ça change pour vous",
+    "detail": "Les textes fiscaux et juridiques bougent, et personne ne vous prévient. Ici, nous expliquons ce qui a changé, en français simple, et ce que cela veut dire pour votre entreprise.",
+    "sommaireKicker": "Tous nos articles",
+    "sommaireTitre": "À lire en ce moment",
+    "sommaireDetail": "Nos rendez-vous : un fait à connaître, un mode d'emploi comptable, un cas juridique commenté, et les annonces du cabinet.",
+    "filtreLabel": "Filtrer par rubrique",
+    "toutes": "Tout",
+    "rubriques": {
+      "saviezVous": "Le saviez-vous ?",
+      "vraiOuFaux": "Vrai ou faux ?",
+      "lundiComptable": "Lundi comptable",
+      "mercrediJuridique": "Mercredi juridique",
+      "coinFiscaliste": "Le coin du fiscaliste",
+      "annonces": "Annonces"
+    },
+    "rubriquesDetail": {
+      "saviezVous": "Un texte, une règle, une échéance — expliqués en trois minutes.",
+      "vraiOuFaux": "Les idées reçues qui coûtent cher, passées au crible.",
+      "lundiComptable": "Chaque lundi, notre comptable Aïcha détaille les gestes du métier.",
+      "mercrediJuridique": "Un cas réel, traité par notre juriste comme il le serait au cabinet.",
+      "coinFiscaliste": "L'impôt expliqué par celui qui le pratique tous les jours.",
+      "annonces": "Nos offres, nos tarifs et les informations de service."
+    },
+    "minutes": "{minutes} min de lecture",
+    "lire": "Lire l'article",
+    "aucun": "Aucun article dans cette rubrique pour l'instant. Revenez bientôt.",
+    "retourSommaire": "Tous les articles",
+    "motsCles": "Mots-clés de l'article",
+    "appelIntro": "Besoin d'un accompagnement sur ce point ?",
+    "provenance": "Publié le {date} par le CGA Broad Range Consulting. Le droit fiscal évolue : vérifiez auprès de nous ce qui est en vigueur avant de vous en prévaloir.",
+    "partager": "Partager",
+    "copierLien": "Copier le lien",
+    "lienCopie": "Lien copié",
+    "aLireKicker": "Dans la même veine",
+    "aLireTitre": "À lire ensuite"
   }
 }

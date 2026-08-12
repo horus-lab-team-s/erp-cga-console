@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { routing } from "@/i18n/routing";
+import { SITE_URL } from "@/app/lib/site";
 import "@/app/globals.css";
 
 /* § 10.2 — Inter pour tout le corps de texte, Poppins cantonnée aux titres de page
@@ -24,6 +25,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  /* Sans base, toute image d'aperçu déclarée par un chemin relatif est ignorée
+     au partage : le lien part sur Facebook ou WhatsApp sans vignette. */
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "CGA Broad Range Consulting Group",
     template: "%s — CGA Broad Range Consulting Group",

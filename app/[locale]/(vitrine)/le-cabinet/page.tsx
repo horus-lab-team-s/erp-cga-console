@@ -16,7 +16,27 @@ export async function generateMetadata({
   return { title: t("titre"), description: t("detail") };
 }
 
-/** Page « Le cabinet » — maquette, section `surCabinet`. */
+/**
+ * Page « Le CGA » — maquette, section `surCabinet`.
+ *
+ * La page de confiance : elle répond à « à qui ai-je affaire ? ». Quatre
+ * sections, chacune atteignable par une ancre publique visée depuis le pied de
+ * page — `#histoire`, `#equipe`, `#agences`, `#partenaires`. Les renommer
+ * casserait ces liens.
+ *
+ * 1. `Histoire` — les jalons datés. Une date vérifiable vaut dix adjectifs.
+ * 2. `Equipe` — les visages et les rôles. Ce sont les mêmes personnes que celles
+ *    qui signent les rubriques du blog : Aïcha, Owona, Kamdem.
+ * 3. `Agences` — Douala, Yaoundé, Bafoussam, avec photographies. Un cabinet qu'on
+ *    peut situer sur une carte est un cabinet qui existe.
+ * 4. `Partenaires` — les familles de partenaires, en ruban défilant. Une bande en
+ *    mouvement se lit au passage ; quatre encadrés figés se survolent sans être
+ *    lus.
+ *
+ * ⚠️ Ne pas confondre cette section avec le ruban d'institutions de l'accueil
+ * (`RubanPartenaires`) : celui-ci montre DGI, CNPS, ONECCA et OHADA, qui ne sont
+ * pas des partenaires commerciaux mais le cadre légal du métier.
+ */
 export default async function LeCabinet({
   params,
 }: {
@@ -42,7 +62,7 @@ function Ouverture() {
       kicker={t("kicker")}
       titre={t("titre")}
       detail={t("detail")}
-      image="/images/pages/cabinet-a.jpg"
+      images={["/images/pages/cabinet-a.jpg", "/images/pages/cabinet-b.jpg"]}
     />
   );
 }
@@ -51,7 +71,7 @@ function Histoire() {
   const t = useTranslations("pages.cabinet");
   const jalons = t.raw("histoire") as { annee: string; titre: string; detail: string }[];
   return (
-    <section id="histoire" className="section">
+    <section id="histoire" className="section section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("histoireKicker")}</span>
         <h2 className="titre-section">{t("histoireTitre")}</h2>
@@ -96,7 +116,7 @@ function Equipe() {
     photo: string;
   }[];
   return (
-    <section id="equipe" className="section section--teinte">
+    <section id="equipe" className="section section--teinte section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("equipeKicker")}</span>
         <h2 className="titre-section">{t("equipeTitre")}</h2>
@@ -156,7 +176,7 @@ function Agences() {
     photo: string;
   }[];
   return (
-    <section id="agences" className="section">
+    <section id="agences" className="section section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("agencesKicker")}</span>
         <h2 className="titre-section">{t("agencesTitre")}</h2>
@@ -195,43 +215,50 @@ function Partenaires() {
   const t = useTranslations("pages.cabinet");
   const partenaires = t.raw("partenaires") as { titre: string; detail: string }[];
   return (
-    <section id="partenaires" className="section section--teinte">
+    <section id="partenaires" className="section section--teinte section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("partenairesKicker")}</span>
         <h2 className="titre-section">{t("partenairesTitre")}</h2>
-        <div className="grille grille--4">
-          {partenaires.map((partenaire) => (
-            <article
-              key={partenaire.titre}
-              style={{
-                padding: 20,
-                border: "1px solid var(--line-200)",
-                borderRadius: 12,
-                background: "var(--surface-alt)",
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  font: "600 15.5px/1.35 var(--police-titre)",
-                  color: "var(--ink-900)",
-                }}
-              >
-                {partenaire.titre}
-              </h3>
-              <p
-                style={{
-                  margin: "6px 0 0",
-                  font: "400 13px/1.6 var(--police-texte)",
-                  color: "var(--ink-500)",
-                }}
-              >
-                {partenaire.detail}
-              </p>
-            </article>
-          ))}
+        {/* Les quatre familles défilent, comme les témoignages de l'accueil :
+            une bande en mouvement se lit au passage, quatre encadrés figés se
+            survolent sans être lus. Rendue deux fois pour boucler sans saut. */}
+        <div
+          className="marque-ruban"
+          style={{ ["--duree-defilement" as string]: "26s", marginTop: 30 }}
+        >
+          <div className="marque-ruban__piste">
+            {[0, 1].map((copie) =>
+              partenaires.map((partenaire) => (
+                <article
+                  key={`${copie}-${partenaire.titre}`}
+                  className="partenaire-carte"
+                  aria-hidden={copie === 1}
+                >
+                  <h3
+                    style={{
+                      margin: 0,
+                      font: "600 15.5px/1.35 var(--police-titre)",
+                      color: "var(--ink-900)",
+                    }}
+                  >
+                    {partenaire.titre}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      font: "400 13px/1.6 var(--police-texte)",
+                      color: "var(--ink-500)",
+                      textWrap: "pretty",
+                    }}
+                  >
+                    {partenaire.detail}
+                  </p>
+                </article>
+              )),
+            )}
+          </div>
         </div>
-        <p className="chapeau">{t("partenairesNote")}</p>
+        <p className="chapeau chapeau--une-ligne">{t("partenairesNote")}</p>
       </div>
     </section>
   );

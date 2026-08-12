@@ -41,6 +41,20 @@ import { IconeVitrine } from "./IconeVitrine";
  * la zone. Sans ce délai, le menu se referme au nez du visiteur.
  */
 const GRACE_FERMETURE = 180;
+
+/**
+ * L'entrée de menu est-elle celle de la page affichée ?
+ *
+ * L'égalité stricte ne suffit plus depuis le blog : en lisant
+ * `/blog/mon-article`, le visiteur est bien dans « Blog », et le repère doit y
+ * rester. On accepte donc la section et ce qui est dessous — la barre oblique
+ * est obligatoire, sans quoi `/blog` marquerait aussi une hypothétique page
+ * `/blogueurs`.
+ */
+function estCourante(chemin: string, href: string) {
+  return chemin === href || chemin.startsWith(`${href}/`);
+}
+
 export function EnteteVitrine() {
   const t = useTranslations("vitrine.nav");
   const mega = useTranslations("vitrine.megaMenu");
@@ -131,13 +145,18 @@ export function EnteteVitrine() {
     <header className="entete-vitrine">
       {/* ── 1 · Barre utilitaire ─────────────────────────────────────── */}
       <div className="barre-utile">
-        <a
-          className="barre-utile__element"
-          href={`tel:${commun("cabinet.telephone").replace(/\s/g, "")}`}
-        >
-          <IconeVitrine nom="telephone" taille={14} />
-          {commun("cabinet.telephone")}
-        </a>
+        {/* Les deux mobiles d'abord, le fixe ensuite : au Cameroun on appelle et
+            on écrit sur WhatsApp depuis un mobile, le fixe sert de repli. */}
+        {["cabinet.mobile", "cabinet.mobile2", "cabinet.telephone"].map((cle) => (
+          <a
+            key={cle}
+            className="barre-utile__element"
+            href={`tel:${commun(cle).replace(/\s/g, "")}`}
+          >
+            <IconeVitrine nom="telephone" taille={14} />
+            {commun(cle)}
+          </a>
+        ))}
         <a
           className="barre-utile__element barre-utile__element--courriel"
           href={`mailto:${commun("cabinet.courriel")}`}
@@ -176,7 +195,7 @@ export function EnteteVitrine() {
 
             <nav className="nav-vitrine" aria-label={commun("actions.ouvrirMenu")}>
               {ENTREES_NAV.map((entree) => {
-                const courante = chemin === entree.href;
+                const courante = estCourante(chemin, entree.href);
                 /* Le repère n'existe que sur l'entrée courante : rien à voir
                    ailleurs, donc rien à rendre. */
                 const repere = courante ? (
@@ -459,7 +478,7 @@ export function EnteteVitrine() {
                       key={entree.cle}
                       href={entree.href}
                       className="tiroir__lien"
-                      aria-current={chemin === entree.href ? "page" : undefined}
+                      aria-current={estCourante(chemin, entree.href) ? "page" : undefined}
                     >
                       {t(entree.cle)}
                     </Link>

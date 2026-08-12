@@ -68,6 +68,14 @@ export const ICONES_VITRINE = {
   // ── Divers ──────────────────────────────────────────────────────────────
   guillemet: "M7 15h3l2-4V6H6v5h3zM17 15h3l2-4V6h-6v5h3z",
   lieu: "M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11zM12 10h.01",
+  // Le blog : des feuillets empilés, distincts de `pieces` qui est un document
+  // unique — un journal se reconnaît à sa pile.
+  journal: "M4 5h11a2 2 0 012 2v13H6a2 2 0 01-2-2zM17 8h3v12H6M8 9h6M8 13h6M8 17h4",
+  horloge: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3.5 2",
+  // Deux maillons : le lien qu'on copie pour l'envoyer.
+  copier: "M10 13a4 4 0 005.66 0l2.5-2.5a4 4 0 10-5.66-5.66l-1 1M14 11a4 4 0 00-5.66 0l-2.5 2.5a4 4 0 105.66 5.66l1-1",
+  coche: "M4.5 12.5l5 5 10-11",
+  megaphone: "M4 9v6h3l7 4V5L7 9zM18 9.5a3.5 3.5 0 010 5",
 } as const;
 
 export type NomIcone = keyof typeof ICONES_VITRINE;

@@ -11,6 +11,45 @@ import { basculerRepli, lireRepli, repliParDefaut, souscrireRepli } from "@/app/
 import { Icone } from "./Icone";
 import { SelecteurEntreprise } from "./SelecteurEntreprise";
 
+/**
+ * E00 · Barre latérale de l'espace collaborateur.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * L'ORDRE DES ENTRÉES EST UN CHOIX MÉTIER
+ *
+ * Il suit le trajet réel d'une pièce dans le cabinet : elle arrive, on la
+ * contrôle, on la comptabilise, on déclare, on clôture. Un collaborateur qui
+ * descend la barre suit la vie d'un dossier, et un débutant apprend le métier en
+ * lisant le menu. Le raisonnement complet, et l'organisation alternative « par
+ * rôle » qui a été écartée, sont consignés en tête de `app/lib/navigation.ts` —
+ * c'est là que la décision se change, pas ici.
+ *
+ * CE QUE PORTE LA BARRE, DE HAUT EN BAS
+ *
+ * La marque, le sélecteur d'entreprise, les écrans de travail, le groupe
+ * Administration (réservé), le bouton de repli, puis — en pied — la sortie vers
+ * le site public et le compte connecté.
+ *
+ * LE REPLI EST UNE PRÉFÉRENCE, PAS UN ÉTAT DE PAGE
+ *
+ * Il est lu par `useSyncExternalStore` sur le magasin `preferences` plutôt que
+ * par un `useState` doublé d'un effet. Conséquence directe : le serveur rend la
+ * barre dépliée, le client applique la préférence enregistrée en une seule
+ * passe, et le collaborateur ne voit pas la barre s'ouvrir puis se refermer sous
+ * ses yeux à chaque navigation.
+ *
+ * LES PASTILLES DE COMPTE
+ *
+ * Elles tombent en haut, là où le regard commence, et ne s'affichent qu'à partir
+ * de un : une pastille « 0 » est du bruit. Leur ton distingue ce qui bloque
+ * (`alerte`) de ce qui attend (`neutre`) — la couleur seule ne suffisant pas,
+ * chaque pastille porte aussi son `aria-label`.
+ *
+ * ⚠️ Les compteurs et l'utilisateur viennent de `donnees-demo` : ce sont des
+ * valeurs de démonstration, à remplacer par le contexte K · Transverse quand
+ * l'identité et les rôles existeront.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 export function BarreLaterale({
   entrepriseCourante,
   onChangementEntreprise,
@@ -68,6 +107,23 @@ export function BarreLaterale({
       </button>
 
       <div className="barre__separateur" />
+
+      {/* Retour au site public.
+          L'espace de travail n'a aucune autre sortie : ni en-tête de vitrine, ni
+          pied de page. Un collaborateur qui veut vérifier ce qu'un adhérent voit
+          — un tarif affiché, un article du blog — devait retaper l'adresse. Placé
+          au-dessus du compte, avec la même discrétion : c'est une sortie, pas une
+          entrée de navigation, et il n'a rien à faire dans la liste des écrans. */}
+      <Link
+        href="/"
+        className="barre__retour-vitrine"
+        title="Retour au site public"
+        aria-label="Retour au site public"
+      >
+        <Icone nom="retour" taille={16} />
+        {!repliee && "Retour au site"}
+      </Link>
+
       <div className="barre__compte" title={`${UTILISATEUR.nom} — ${UTILISATEUR.role}`}>
         <span className="barre__compte-jeton">{UTILISATEUR.initiales}</span>
         {!repliee && (

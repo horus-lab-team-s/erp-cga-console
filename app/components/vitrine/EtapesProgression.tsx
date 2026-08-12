@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useTranslations } from "next-intl";
 
 /**
- * « Comment ça se passe » — les trois étapes du parcours.
+ * Un parcours en étapes, dont la progression se ressent à la lecture.
  *
  * Les cartes ne se contentent pas d'être numérotées : elles **s'allument à
  * mesure qu'on les atteint**. Un rail continu relie les trois pastilles et se
@@ -19,7 +18,7 @@ import { useTranslations } from "next-intl";
  * ce qui a déjà été lu.
  */
 
-const ETAPES = ["etape1", "etape2", "etape3"] as const;
+export type Etape = { titre: string; detail: string };
 
 /** Une étape compte comme atteinte quand elle est à plus de moitié visible. */
 const SEUIL = 0.55;
@@ -37,8 +36,7 @@ const lireMouvement = () => window.matchMedia(REQUETE_MOUVEMENT).matches;
 /** Au rendu serveur on suppose le mouvement autorisé ; le client tranche. */
 const lireMouvementServeur = () => false;
 
-export function EtapesProgression() {
-  const t = useTranslations("vitrine.etapes");
+export function EtapesProgression({ etapes }: { etapes: Etape[] }) {
   const cartes = useRef<Array<HTMLElement | null>>([]);
   const [franchies, setFranchies] = useState(0);
 
@@ -65,21 +63,25 @@ export function EtapesProgression() {
 
   // Sans animation, tout est donné d'emblée : la mise en scène disparaît, pas
   // l'information.
-  const atteintes = mouvementReduit ? ETAPES.length : franchies;
+  const atteintes = mouvementReduit ? etapes.length : franchies;
 
-  // Le rail court d'une pastille à l'autre : avec trois étapes il a deux
-  // segments, et la première étape le laisse donc à zéro.
-  const remplissage = Math.max(0, (atteintes - 1) / (ETAPES.length - 1)) * 100;
+  // Le rail court d'une pastille à l'autre : avec n étapes il a n − 1 segments,
+  // et la première les laisse donc tous à zéro.
+  const remplissage =
+    etapes.length > 1 ? Math.max(0, (atteintes - 1) / (etapes.length - 1)) * 100 : 0;
 
   return (
-    <div className="etapes">
+    // Le nombre de colonnes est transmis au style : c'est lui qui cale les
+    // extrémités du rail sur le centre des pastilles extrêmes, quel que soit le
+    // nombre d'étapes.
+    <div className="etapes" style={{ ["--colonnes" as string]: etapes.length }}>
       <span className="etapes__rail" aria-hidden="true">
         <span style={{ width: `${remplissage}%` }} />
       </span>
 
-      {ETAPES.map((cle, index) => (
+      {etapes.map((etape, index) => (
         <article
-          key={cle}
+          key={etape.titre}
           ref={(element) => {
             cartes.current[index] = element;
           }}
@@ -98,7 +100,7 @@ export function EtapesProgression() {
               />
             </span>
             <span className="etape__compte">
-              {index + 1} / {ETAPES.length}
+              {index + 1} / {etapes.length}
             </span>
           </div>
           <h3
@@ -108,7 +110,7 @@ export function EtapesProgression() {
               color: "var(--ink-900)",
             }}
           >
-            {t(`${cle}.titre`)}
+            {etape.titre}
           </h3>
           <p
             style={{
@@ -118,7 +120,7 @@ export function EtapesProgression() {
               textWrap: "pretty",
             }}
           >
-            {t(`${cle}.detail`)}
+            {etape.detail}
           </p>
         </article>
       ))}

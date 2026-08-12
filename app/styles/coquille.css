@@ -181,6 +181,25 @@
   color: #fff;
 }
 
+/* Sortie vers le site public. Volontairement discrète : c'est une sortie, pas
+   une entrée de navigation, et elle ne doit pas concurrencer les écrans de
+   travail dans le regard du collaborateur. */
+.barre__retour-vitrine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--espace-2);
+  color: rgb(255 255 255 / 66%);
+  font: 500 12px/1.3 var(--police-texte);
+  text-decoration: none;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.barre__retour-vitrine:hover {
+  background: var(--survol-sombre);
+  color: #fff;
+}
+
 .barre__compte {
   display: flex;
   align-items: center;

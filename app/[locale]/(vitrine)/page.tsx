@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { EtapesProgression } from "@/app/components/vitrine/EtapesProgression";
 import { Heros } from "@/app/components/vitrine/Heros";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
+import { RubanPartenaires } from "@/app/components/vitrine/RubanPartenaires";
 import { RubanTemoignages } from "@/app/components/vitrine/RubanTemoignages";
 import { SERVICES_VITRINE } from "@/app/lib/services-vitrine";
 import { Link } from "@/i18n/navigation";
@@ -49,6 +50,7 @@ export default async function Accueil({
       <Services />
       <CeQueChangeLAdhesion />
       <Etapes />
+      <RubanPartenaires />
       <RubanTemoignages />
     </>
   );
@@ -165,7 +167,12 @@ function Etapes() {
 
         {/* Les trois cartes vivent dans un composant client : elles s'allument
             au passage du lecteur, ce qu'un rendu serveur ne peut pas faire. */}
-        <EtapesProgression />
+        <EtapesProgression
+          etapes={["etape1", "etape2", "etape3"].map((cle) => ({
+            titre: t(`${cle}.titre`),
+            detail: t(`${cle}.detail`),
+          }))}
+        />
       </div>
     </section>
   );

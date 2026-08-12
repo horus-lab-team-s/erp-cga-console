@@ -17,7 +17,23 @@ export async function generateMetadata({
   return { title: t("titre"), description: t("detail") };
 }
 
-/** Page « Contactez-nous » — maquette, section `surContact`. */
+/**
+ * Page « Contactez-nous » — maquette, section `surContact`.
+ *
+ * Trois sections, dans cet ordre et pas un autre :
+ *
+ * 1. `Ouverture` — la bannière réduite commune aux pages intérieures.
+ * 2. `Canaux` — téléphone, WhatsApp, courriel, agences. **Avant** le formulaire,
+ *    délibérément : au Cameroun, un prospect qui veut une réponse appelle ou
+ *    écrit sur WhatsApp. Le formulaire est le recours de celui qui ne peut pas
+ *    téléphoner, pas le chemin principal.
+ * 3. `Formulaire` — la demande écrite, pour ce qui demande une pièce jointe ou
+ *    une trace.
+ *
+ * Les coordonnées ne sont pas écrites ici : elles viennent de `commun.cabinet`,
+ * seul endroit du dépôt où elles figurent. Un numéro qui change se corrige à un
+ * seul endroit, et le pied de page comme la barre utilitaire suivent.
+ */
 export default async function Contact({
   params,
 }: {
@@ -41,7 +57,7 @@ function Ouverture() {
       kicker={t("kicker")}
       titre={t("titre")}
       detail={t("detail")}
-      image="/images/pages/contact-a.jpg"
+      images={["/images/pages/contact-a.jpg", "/images/pages/contact-b.jpg"]}
     />
   );
 }
@@ -64,7 +80,7 @@ function Canaux() {
   ];
 
   return (
-    <section className="section">
+    <section className="section section--centre section--filigrane">
       <div className="bloc">
         <span className="kicker">{t("canauxKicker")}</span>
         <h2 className="titre-section">{t("canauxTitre")}</h2>
@@ -120,7 +136,7 @@ function Canaux() {
 function Formulaire() {
   const t = useTranslations("pages.contact");
   return (
-    <section className="section section--teinte">
+    <section className="section section--teinte section--centre section--filigrane">
       <div className="bloc" style={{ display: "grid", gap: 32, gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr)" }}>
         <div>
           <span className="kicker">{t("formulaireKicker")}</span>

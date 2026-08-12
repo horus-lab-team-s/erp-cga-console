@@ -86,7 +86,8 @@
       "SAS": "SAS",
       "SCI": "SCI",
       "SA": "Société anonyme"
-    }
+    },
+    "capitalRegle": "Minimum légal {minimum}. Au-delà de {reference}, un droit d'enregistrement proportionnel s'ajoute ; en dessous, il est forfaitaire et le total ne varie pas."
   },
   "adherent": {
     "kicker": "Centre de gestion agréé",
@@ -424,7 +425,7 @@
     "aide": "Pas encore de compte ? Votre lien de connexion vous est envoyé par courriel et par message dès votre souscription réglée.",
     "creer": "Souscrire une prestation",
     "retour": "Retour au site",
-    "note": "La double authentification est exigée pour les collaborateurs du cabinet.",
+    "note": "Accès de démonstration : la vérification a lieu dans le navigateur, elle ne protège rien. L'authentification réelle sera assurée par le backend avant toute mise en ligne de données clients.",
     "profilsTitre": "Quatre populations, une seule porte",
     "profils": [
       {
@@ -445,6 +446,8 @@
       }
     ],
     "demonstration": "Démonstration",
-    "demonstrationDetail": "Ces comptes n'existent que pour la démonstration et ne partiront pas en production. Choisissez un profil pour voir l'espace correspondant."
+    "demonstrationDetail": "Ces comptes n'existent que pour la démonstration et ne partiront pas en production. Choisissez un profil pour voir l'espace correspondant.",
+    "refus": "Identifiant ou mot de passe incorrect. Les identifiants de démonstration sont rappelés ci-dessous.",
+    "demoTitre": "Identifiants de démonstration"
   }
 }

@@ -1,9 +1,11 @@
 import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { BandeauAnnonce } from "@/app/components/vitrine/BandeauAnnonce";
 import { BandeauAppel } from "@/app/components/vitrine/BandeauAppel";
 import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
 import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
+import { lireAnnonce } from "@/app/lib/contenu-vitrine";
 import "@/app/styles/vitrine.css";
 
 /**
@@ -23,6 +25,10 @@ export default async function LayoutVitrine({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  // L'annonce est lue ici, une fois pour toute la vitrine : c'est la coquille qui
+  // la porte, pas les pages. Le calendrier de validité est appliqué au backend.
+  const annonce = await lireAnnonce();
+
   return (
     <div className="vitrine">
       <EnteteVitrine />
@@ -31,6 +37,12 @@ export default async function LayoutVitrine({
           place hors du commutateur de page. */}
       <BandeauAppel />
       <PiedVitrine />
+      {/* L'annonce se superpose au bas de la fenêtre, sur toutes les pages du
+          site, et se réaffiche à chaque changement de page. Dernière du
+          document : elle n'entre donc dans le parcours clavier qu'après le
+          contenu, et n'intercepte pas la première tabulation d'un visiteur qui
+          vient lire. */}
+      <BandeauAnnonce annonce={annonce} />
     </div>
   );
 }

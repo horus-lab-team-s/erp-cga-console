@@ -64,6 +64,8 @@ export const ICONES: Record<string, string> = {
   // 1000 px, il lui faut une poignée.
   menu: "M4 7h16M4 12h16M4 17h16",
   fermer: "M6 6l12 12M18 6L6 18",
+  // Flèche vers la gauche : la sortie de l'espace de travail vers le site public.
+  retour: "M19 12H5M11 18l-6-6 6-6",
   replier: "M9 6l6 6-6 6M4 4v16",
   deplier: "M15 6l-6 6 6 6M20 4v16",
   recherche: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",

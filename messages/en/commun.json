@@ -11,7 +11,8 @@
     "whatsapp": "+237 699 902 184",
     "courriel": "contact@cga-brcgroup.com",
     "siteWeb": "www.cga-brcgroup.com",
-    "boitePostale": "P.O. Box 7761 Douala"
+    "boitePostale": "P.O. Box 7761 Douala",
+    "mobile2": "+237 676 887 686"
   },
   "agences": {
     "douala": {
@@ -42,6 +43,7 @@
     "enSavoirPlus": "Find out more",
     "decouvrir": "Explore",
     "retourAccueil": "Back to home",
+    "retourVitrine": "Back to the site",
     "ouvrirMenu": "Open menu",
     "fermerMenu": "Close menu",
     "precedent": "Previous",

@@ -3,7 +3,8 @@
     "services": "Our services",
     "adherent": "Become a member",
     "formations": "Training",
-    "cabinet": "The firm",
+    "cabinet": "The CGA",
+    "blog": "Blog",
     "estimation": "Estimate",
     "contact": "Contact us"
   },
@@ -82,7 +83,7 @@
     "detail": "As an accounting, audit and advisory firm, we provide accounting, tax and management support to Cameroonian small and medium businesses",
     "creation": {
       "titre": "Company formation",
-      "detail": "Sole trader, LLC, single-member LLC, simplified joint stock, property company, public limited. Articles, registration, trade register, tax number and publication — we lodge the file for you.",
+      "detail": "Sole trader, LLC, single-member LLC, simplified joint stock, property company, public limited. Articles, registration, trade register, tax number and publication: we lodge the file for you.",
       "prix": "from 165,000 FCFA",
       "action": "Estimate"
     },
@@ -139,7 +140,7 @@
     },
     "controle": {
       "titre": "Your documents checked before filing",
-      "detail": "Our specialists verify your return before it reaches the tax office — that is what heads off an adjustment."
+      "detail": "Our specialists verify your return before it reaches the tax office. That is what heads off an adjustment."
     },
     "dialogue": {
       "titre": "Fewer penalties, an easier dialogue",
@@ -168,22 +169,22 @@
     "t1": {
       "texte": "My limited company was registered in three weeks, and I never once had to queue. The firm assembled the file, followed it through the registry, and handed me the trade register entry and taxpayer card on the same day.",
       "nom": "Estelle Mbarga",
-      "role": "Managing director, Éclat Cosmétiques — Douala"
+      "role": "Managing director of Éclat Cosmétiques, in Douala"
     },
     "t2": {
       "texte": "Before joining, I found out about my deadlines the day before. Now the reminder arrives ten days ahead and my return is checked before it is filed. Two financial years, not a single penalty.",
       "nom": "Rodrigue Fotso",
-      "role": "Director, Fotso Matériaux — Bafoussam"
+      "role": "Director of Fotso Matériaux, in Bafoussam"
     },
     "t3": {
-      "texte": "Two days of training and my assistant now enters the purchase invoices herself. I finally understood the 50 % allowance on profit — and I know which documents it takes to qualify.",
+      "texte": "Two days of training and my assistant now enters the purchase invoices herself. I finally understood the 50 % allowance on profit, and I know which documents it takes to qualify.",
       "nom": "Aïcha Ndongo",
-      "role": "Administrative manager, Sahel Agro-Distribution — Yaoundé"
+      "role": "Administrative manager of Sahel Agro-Distribution, in Yaoundé"
     },
     "t4": {
       "texte": "When the audit came, everything was filed, dated and supported. The firm answered on my behalf: the inspection was over in a morning, with no reassessment.",
       "nom": "Serge Ekwalla",
-      "role": "Co-manager, Ekwalla & Fils Transit — Douala"
+      "role": "Co-manager of Ekwalla & Fils Transit, in Douala"
     }
   },
   "cta": {
@@ -211,7 +212,7 @@
     "reseaux": "Follow us",
     "creerTitre": "Set up",
     "gererTitre": "Manage",
-    "cabinetTitre": "The firm",
+    "cabinetTitre": "The CGA",
     "suiviComptable": "Bookkeeping",
     "declarationAnnuelle": "Annual return",
     "domiciliation": "Registered office",
@@ -219,5 +220,52 @@
     "notreEquipe": "Our team",
     "nosPartenaires": "Our partners",
     "contactezNous": "Contact us"
+  },
+  "partenaires": {
+    "kicker": "Our partners",
+    "titre": "The framework we work within",
+    "detail": "Your file passes through these institutions: they receive your returns, govern the profession and set the applicable accounting law."
+  },
+  "annonce": {
+    "region": "Firm announcement",
+    "fermer": "Dismiss announcement"
+  },
+  "blog": {
+    "kicker": "The firm's blog",
+    "titre": "What changed, and what it changes for you",
+    "detail": "Tax and legal rules move, and nobody tells you. Here we explain what changed, in plain language, and what it means for your business.",
+    "sommaireKicker": "All our articles",
+    "sommaireTitre": "Worth reading now",
+    "sommaireDetail": "Our regular features: a fact worth knowing, an accounting how-to, a legal case discussed, and the firm's announcements.",
+    "filtreLabel": "Filter by section",
+    "toutes": "All",
+    "rubriques": {
+      "saviezVous": "Did you know?",
+      "vraiOuFaux": "True or false?",
+      "lundiComptable": "Accounting Monday",
+      "mercrediJuridique": "Legal Wednesday",
+      "coinFiscaliste": "The tax adviser's corner",
+      "annonces": "Announcements"
+    },
+    "rubriquesDetail": {
+      "saviezVous": "One rule, one deadline, one text — explained in three minutes.",
+      "vraiOuFaux": "The costly misconceptions, put to the test.",
+      "lundiComptable": "Every Monday, our accountant Aïcha walks through the work.",
+      "mercrediJuridique": "A real case, handled by our lawyer as it would be at the office.",
+      "coinFiscaliste": "Tax explained by the person who practises it daily.",
+      "annonces": "Our offers, our fees and service information."
+    },
+    "minutes": "{minutes} min read",
+    "lire": "Read the article",
+    "aucun": "No article in this section yet. Come back soon.",
+    "retourSommaire": "All articles",
+    "motsCles": "Article keywords",
+    "appelIntro": "Need support on this?",
+    "provenance": "Published on {date} by CGA Broad Range Consulting. Tax law changes: check with us what is currently in force before relying on it.",
+    "partager": "Share",
+    "copierLien": "Copy link",
+    "lienCopie": "Link copied",
+    "aLireKicker": "In the same vein",
+    "aLireTitre": "Read next"
   }
 }

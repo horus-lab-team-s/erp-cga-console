@@ -16,7 +16,21 @@ export async function generateMetadata({
   return { title: t("titre"), description: t("detail") };
 }
 
-/** Page « Estimation » — maquette, section `surEstimation`. */
+/**
+ * Page « Estimation » — maquette, section `surEstimation`.
+ *
+ * La page la plus courte du site, et c'est voulu : une bannière, puis
+ * l'estimateur. Tout ce qu'on ajouterait entre les deux éloignerait le visiteur
+ * du seul geste qu'il est venu faire.
+ *
+ * Le calcul vit dans `Estimateur`, un composant client : les montants se
+ * recalculent à chaque frappe, ce qu'un rendu serveur ne peut pas faire. Le
+ * barème lui-même est dans `app/lib/bareme-creation.ts`.
+ *
+ * ⚠️ L'estimateur se pré-remplit depuis l'adresse (`?forme=SARL`) : c'est ce qui
+ * permet aux six formes juridiques du pied de page et du méga-menu de mener
+ * directement au bon calcul. Le nom du paramètre est donc public.
+ */
 export default async function Estimation({
   params,
 }: {
@@ -39,14 +53,14 @@ function Ouverture() {
       kicker={t("kicker")}
       titre={t("titre")}
       detail={t("detail")}
-      image="/images/pages/creation-b.jpg"
+      images={["/images/pages/creation-b.jpg", "/images/pages/creation-a.jpg"]}
     />
   );
 }
 
 function Calcul() {
   return (
-    <section className="section">
+    <section className="section section--filigrane">
       <div className="bloc">
         {/* À FAIRE — le barème vit encore dans `lib/bareme-creation.ts`, pas
             dans le référentiel daté ; les montants viennent des proformas du

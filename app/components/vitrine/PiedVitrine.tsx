@@ -132,6 +132,11 @@ export function PiedVitrine() {
               <li>
                 <Link href="/le-cabinet#partenaires">{t("nosPartenaires")}</Link>
               </li>
+              {/* Le blog est aussi au pied : c'est là que descend un lecteur qui
+                  a fini un article et cherche le suivant. */}
+              <li>
+                <Link href="/blog">{nav("blog")}</Link>
+              </li>
               <li>
                 <Link href="/contact">{t("contactezNous")}</Link>
               </li>

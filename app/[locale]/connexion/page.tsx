@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
+import { FormulaireConnexion } from "@/app/components/vitrine/FormulaireConnexion";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
 import { Link } from "@/i18n/navigation";
 import "@/app/styles/vitrine.css";
@@ -55,17 +56,6 @@ function Ecran() {
     textTransform: "uppercase",
     color: "rgb(255 255 255 / 60%)",
   };
-  const saisie: React.CSSProperties = {
-    width: "100%",
-    boxSizing: "border-box",
-    minHeight: 46,
-    padding: "0 12px",
-    border: "1px solid rgb(255 255 255 / 24%)",
-    borderRadius: 9,
-    background: "rgb(255 255 255 / 10%)",
-    color: "#fff",
-    font: "500 14px/1.3 var(--police-texte)",
-  };
 
   return (
     <main
@@ -86,6 +76,18 @@ function Ecran() {
         style={{ position: "relative", zIndex: 2, alignItems: "center" }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Retour à la vitrine, en bouton visible et non en lien discret.
+              Cette page est un cul-de-sac : ni en-tête du site, ni pied, ni menu.
+              Le visiteur qui renonce à se connecter n'a que le bouton
+              « précédent » du navigateur — lequel ne mène nulle part s'il est
+              arrivé par un lien direct. Le logo ramenait déjà à l'accueil, mais
+              rien ne le disait : un logo cliquable est une convention, pas une
+              indication. */}
+          <Link href="/" className="retour-vitrine">
+            <IconeVitrine nom="retour" taille={15} />
+            {commun("actions.retourVitrine")}
+          </Link>
+
           <Link href="/" style={{ alignSelf: "flex-start" }}>
             <Image
               src="/marque/cga-logo-blanc.png"
@@ -117,87 +119,7 @@ function Ecran() {
           </div>
         </div>
 
-        <form className="formulaire-heros">
-          <div>
-            <label style={etiquette} htmlFor="identifiant">
-              {t("identifiant")}
-            </label>
-            <input id="identifiant" type="text" style={saisie} autoComplete="username" disabled />
-          </div>
-
-          <div>
-            <label style={etiquette} htmlFor="motdepasse">
-              {t("motDePasse")}
-            </label>
-            <input
-              id="motdepasse"
-              type="password"
-              style={saisie}
-              autoComplete="current-password"
-              disabled
-            />
-          </div>
-
-          <label
-            style={{
-              display: "flex",
-              gap: 9,
-              alignItems: "center",
-              font: "400 12.5px/1.5 var(--police-texte)",
-              color: "rgb(255 255 255 / 72%)",
-            }}
-          >
-            <input type="checkbox" disabled />
-            {t("garder")}
-          </label>
-
-          <button
-            type="submit"
-            className="bouton bouton--principal formulaire-heros__envoi"
-            disabled
-            style={{ opacity: 0.6, cursor: "not-allowed" }}
-          >
-            {t("bouton")}
-            <IconeVitrine nom="connexion" taille={16} />
-          </button>
-
-          <p className="formulaire-heros__pied">{t("aide")}</p>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              justifyContent: "center",
-              flexWrap: "wrap",
-              paddingTop: 4,
-            }}
-          >
-            <Link
-              href="/estimation"
-              style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "#d9a3d6" }}
-            >
-              {t("creer")}
-            </Link>
-            <Link
-              href="/"
-              style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "rgb(255 255 255 / 72%)" }}
-            >
-              {t("retour")}
-            </Link>
-          </div>
-
-          <p
-            style={{
-              margin: 0,
-              paddingTop: 12,
-              borderTop: "1px solid rgb(255 255 255 / 18%)",
-              font: "400 11.5px/1.6 var(--police-texte)",
-              color: "rgb(255 255 255 / 62%)",
-            }}
-          >
-            {t("note")}
-          </p>
-        </form>
+        <FormulaireConnexion />
       </div>
     </main>
   );
