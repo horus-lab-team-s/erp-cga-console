@@ -26,8 +26,17 @@ const TEMOINS = [
   { cle: "t4", portrait: "/images/temoignages/temoin-4.jpg" },
 ] as const;
 
-/** Environ onze secondes par carte : assez lent pour être lu au passage. */
-const SECONDES_PAR_CARTE = 11;
+/**
+ * Dix-huit secondes par carte — nettement plus lent que le ruban des
+ * institutions, qui tourne juste au-dessus.
+ *
+ * Les deux bandes se suivent à l'écran, et régler leur cadence sur le même
+ * chiffre était une erreur de raisonnement : un logo se **reconnaît** d'un coup
+ * d'œil, un témoignage se **lit**. À vitesse égale, la seconde bande passait
+ * avant qu'on ait fini la première phrase, et l'œil, déjà sollicité par le
+ * mouvement du dessus, décrochait.
+ */
+const SECONDES_PAR_CARTE = 18;
 
 export function RubanTemoignages() {
   const t = useTranslations("vitrine.temoins");

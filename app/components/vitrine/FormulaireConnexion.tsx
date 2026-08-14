@@ -141,7 +141,7 @@ export function FormulaireConnexion() {
 
       <button
         type="submit"
-        className="bouton bouton--principal formulaire-heros__envoi"
+        className="bouton bouton--inverse formulaire-heros__envoi"
         disabled={enCours}
       >
         {t("bouton")}

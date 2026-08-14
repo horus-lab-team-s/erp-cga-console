@@ -8,9 +8,15 @@ import { IconeVitrine } from "./IconeVitrine";
 /**
  * Formulaire de contact — maquette, page `surContact`.
  *
- * « Le téléphone reste le champ principal : beaucoup de nos clients n'utilisent
- * pas de messagerie électronique. » Le courriel est donc facultatif, et c'est le
- * numéro qui est exigé — l'inverse de l'habitude occidentale.
+ * Le **téléphone est le champ exigé**, et le courriel facultatif — l'inverse de
+ * l'habitude occidentale. C'est un constat d'usage : au Cameroun, une part
+ * importante de la clientèle traite par appel et par WhatsApp plutôt que par
+ * messagerie électronique.
+ *
+ * Ce constat guide la mise en page ; il n'est plus **écrit** au bas du
+ * formulaire. La phrase qui s'y trouvait a été retirée le 13 août 2026 à la
+ * demande du cabinet : lue par un prospect, elle donnait de la clientèle une
+ * image peu flatteuse, alors qu'elle n'était qu'une note de conception.
  *
  * Comme celui du héros, il compose un message WhatsApp plutôt que d'appeler une
  * API qui n'existe pas encore. Le consentement est requis avant envoi : ces
@@ -201,9 +207,13 @@ export function FormulaireContact() {
         <IconeVitrine nom="fleche" taille={16} />
       </a>
 
-      <p style={{ margin: 0, font: "400 12.5px/1.7 var(--police-texte)", color: "var(--ink-500)" }}>
-        {t("note")}
-      </p>
+      {/* La note qui figurait ici a été retirée le 13 août 2026, à la demande du
+          cabinet, et le retrait est juste : « beaucoup de nos clients n'utilisent
+          pas de messagerie électronique » est une observation de gestion interne,
+          pas un argument de vente. Lue par un prospect, elle donnait du cabinet
+          l'image d'une clientèle peu équipée — l'inverse de ce qu'on veut dire.
+          Le champ téléphone reste le champ principal ; c'est la mise en page qui
+          le dit, pas une phrase. */}
     </form>
   );
 }

@@ -28,12 +28,25 @@ export function EnteteDePage({
   detail,
   images,
   enfants,
+  detailSurDeuxLignes = false,
 }: {
   kicker: string;
   titre: string;
   detail: string;
   images: string[];
   enfants?: React.ReactNode;
+  /**
+   * Force le chapeau à tenir sur **deux lignes** sur grand écran.
+   *
+   * Le nombre de lignes ne se décrète pas, il se règle par la largeur de ligne
+   * disponible : on élargit donc la colonne de lecture et on demande à
+   * `text-wrap: balance` de répartir les deux lignes à longueur voisine. Sur
+   * mobile, la contrainte tombe d'elle-même et le texte se replie sur ce qu'il
+   * faut de lignes — trois ou quatre selon l'appareil, ce qui est le bon
+   * comportement : deux lignes sur un téléphone donneraient des caractères
+   * minuscules.
+   */
+  detailSurDeuxLignes?: boolean;
 }) {
   const [index, setIndex] = useState(0);
   const anime = images.length > 1;
@@ -78,7 +91,11 @@ export function EnteteDePage({
       <div className="bloc entete-page__contenu">
         <span className="heros__kicker">{kicker}</span>
         <h1 className="heros__titre">{titre}</h1>
-        <p className="heros__detail">{detail}</p>
+        <p
+          className={`heros__detail${detailSurDeuxLignes ? " heros__detail--deux-lignes" : ""}`}
+        >
+          {detail}
+        </p>
         {enfants}
       </div>
 

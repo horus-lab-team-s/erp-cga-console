@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -12,6 +12,7 @@ import {
   estimer,
 } from "@/app/lib/bareme-creation";
 import { montantFcfa } from "@/app/lib/formats";
+import { adresseAbsolue } from "@/app/lib/site";
 import { Link } from "@/i18n/navigation";
 import { IconeVitrine } from "./IconeVitrine";
 
@@ -34,6 +35,7 @@ import { IconeVitrine } from "./IconeVitrine";
 export function Estimateur() {
   const t = useTranslations("pages.estimation");
   const commun = useTranslations("commun");
+  const langue = useLocale();
 
   const parametres = useSearchParams();
   const formeDemandee = parametres.get("forme");
@@ -83,6 +85,30 @@ export function Estimateur() {
   });
 
   const numero = commun("cabinet.whatsapp").replace(/\D/g, "");
+
+  /**
+   * Les réponses du visiteur, transportées dans l'adresse du devis.
+   *
+   * C'est ce qui rend le devis partageable sans base de données ni identifiant à
+   * conserver : le lien contient tout ce qu'il faut pour le reconstruire.
+   */
+  const parametresDevis = new URLSearchParams({
+    forme: forme.code,
+    capital: String(capitalRetenu),
+    associes: String(associesRetenu),
+    ville,
+    domiciliation: domiciliation ? "1" : "0",
+    suivi: suivi ? "1" : "0",
+  }).toString();
+
+  /**
+   * Le message WhatsApp.
+   *
+   * Le récapitulatif chiffré d'abord, le lien ensuite. L'ordre compte : un
+   * destinataire sans réseau au moment où il reçoit le message doit déjà pouvoir
+   * lire les montants, et non se retrouver devant un lien qu'il ne peut pas
+   * ouvrir.
+   */
   const devis = [
     `${t("votreEstimation")} — ${commun("cabinet.nomCourt")}`,
     `${t("q1")} ${t(`formes.${forme.code}`)}`,
@@ -94,8 +120,10 @@ export function Estimateur() {
     `${t("totalRegler")} : ${montantFcfa(estimation.total)}`,
     `${t("delaiAnnonce")} : ${estimation.semaines} ${t("semaines")}`,
     suivi ? `${t("suiviComptable")} : ${t("parMois")}` : null,
+    "",
+    `${t("devisTelecharger")} : ${adresseAbsolue(`/${langue}/estimation/devis?${parametresDevis}`)}`,
   ]
-    .filter(Boolean)
+    .filter((ligne) => ligne !== null)
     .join("\n");
 
   const etiquette: React.CSSProperties = {
@@ -346,6 +374,19 @@ export function Estimateur() {
           {t("souscrire")}
           <IconeVitrine nom="fleche" taille={16} />
         </Link>
+        {/* Le devis mis en page, sur sa propre adresse. Toutes les réponses
+            voyagent en paramètres : le lien est donc partageable tel quel, et la
+            page se recalcule au barème courant plutôt que de figer un chiffre. */}
+        <Link href={`/estimation/devis?${parametresDevis}`} className="bouton bouton--clair bouton--large">
+          <IconeVitrine nom="ponctuel" taille={16} />
+          {t("devisTelecharger")}
+        </Link>
+
+        {/* ⚠️ Un lien `wa.me` ne transporte que du texte : il est impossible d'y
+            joindre un fichier. Le message porte donc le récapitulatif chiffré —
+            lisible seul, même sans réseau pour ouvrir la page — suivi du lien
+            vers le devis mis en page, que le destinataire enregistre en PDF d'un
+            geste s'il le souhaite. */}
         <a
           className="bouton bouton--clair bouton--large"
           href={`https://wa.me/${numero}?text=${encodeURIComponent(devis)}`}

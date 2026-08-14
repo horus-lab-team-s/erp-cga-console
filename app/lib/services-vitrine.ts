@@ -41,14 +41,14 @@ export const SERVICES_VITRINE: ServiceVitrine[] = [
   },
   {
     cle: "ponctuel",
-    href: "/contact",
+    href: "/services/prestations-ponctuelles",
     icone: "ponctuel",
     image: "/images/services/prestations-ponctuelles.jpg",
     accent: false,
   },
   {
     cle: "domiciliation",
-    href: "/contact",
+    href: "/services/domiciliation",
     icone: "domiciliation",
     image: "/images/services/domiciliation.jpg",
     accent: false,
@@ -62,19 +62,72 @@ export const SERVICES_VITRINE: ServiceVitrine[] = [
   },
   {
     cle: "juridique",
-    href: "/contact",
+    href: "/services/assistance-juridique",
     icone: "juridique",
     image: "/images/services/juridique.jpg",
     accent: false,
   },
   {
     cle: "conseil",
-    href: "/contact",
+    href: "/services/conseil-et-audit",
     icone: "conseil",
     image: "/images/services/conseil.jpg",
     accent: false,
   },
 ];
+
+/**
+ * Les services qui ont leur **fiche détaillée**, à `/services/<slug>`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * POURQUOI CES FICHES EXISTENT
+ *
+ * Quatre entrées du méga-menu renvoyaient à la page Contact. C'était une
+ * impasse : un visiteur qui clique sur « Domiciliation » veut savoir ce que
+ * couvre la domiciliation, pas remplir un formulaire. On lui demandait de
+ * s'engager avant de lui avoir dit ce qu'on vendait.
+ *
+ * Trois services gardent leur page propre, plus riche qu'une fiche : la création
+ * d'entreprise (`/creer-mon-entreprise`), l'adhésion (`/devenir-adherent`) et
+ * les formations (`/formations`). Elles ne passent donc pas par ici.
+ *
+ * `slug` entre dans l'adresse publique : le changer casse les liens déjà
+ * partagés. `cle` renvoie au bloc de messages `pages.fiches.<cle>`.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export const FICHES_SERVICE = [
+  {
+    slug: "prestations-ponctuelles",
+    cle: "ponctuel",
+    icone: "ponctuel",
+    images: ["/images/services/prestations-ponctuelles.jpg", "/images/pages/contact-a.jpg"],
+  },
+  {
+    slug: "domiciliation",
+    cle: "domiciliation",
+    icone: "domiciliation",
+    images: ["/images/services/domiciliation.jpg", "/images/agences/douala.jpg"],
+  },
+  {
+    slug: "assistance-juridique",
+    cle: "juridique",
+    icone: "juridique",
+    images: ["/images/services/juridique.jpg", "/images/pages/cabinet-a.jpg"],
+  },
+  {
+    slug: "conseil-et-audit",
+    cle: "conseil",
+    icone: "conseil",
+    images: ["/images/services/conseil.jpg", "/images/heros/reunion-equipe.jpg"],
+  },
+] as const;
+
+export type FicheService = (typeof FICHES_SERVICE)[number];
+
+/** La fiche portant ce slug, ou `undefined`. */
+export function ficheParSlug(slug: string): FicheService | undefined {
+  return FICHES_SERVICE.find((fiche) => fiche.slug === slug);
+}
 
 /**
  * Les formes juridiques proposées à la création, dans l'ordre du pied de page.

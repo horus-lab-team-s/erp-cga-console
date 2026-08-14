@@ -53,6 +53,7 @@ function Ouverture() {
       kicker={t("kicker")}
       titre={t("titre")}
       detail={t("detail")}
+      detailSurDeuxLignes
       images={["/images/pages/creation-b.jpg", "/images/pages/creation-a.jpg"]}
     />
   );

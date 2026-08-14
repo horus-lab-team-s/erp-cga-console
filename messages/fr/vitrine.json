@@ -267,5 +267,22 @@
     "lienCopie": "Lien copié",
     "aLireKicker": "Dans la même veine",
     "aLireTitre": "À lire ensuite"
+  },
+  "demande": {
+    "titre": "Demander ce service",
+    "detail": "Le service est déjà rempli. Indiquez-nous comment vous joindre : nous revenons vers vous sous 48 heures ouvrées.",
+    "champSujet": "Service demandé",
+    "champNom": "Nom et prénom",
+    "champTelephone": "Téléphone",
+    "champCourriel": "Adresse électronique",
+    "champMessage": "Précisions",
+    "facultatif": "(facultatif)",
+    "messagePlaceholder": "Votre situation en deux lignes, si vous le souhaitez.",
+    "consentement": "J'accepte que le cabinet utilise ces informations pour traiter ma demande.",
+    "envoyer": "Envoyer ma demande",
+    "envoyerWhatsapp": "Envoyer sur WhatsApp",
+    "objet": "Demande — {sujet}",
+    "corpsIntro": "Bonjour,\n\nJe souhaite être contacté au sujet de : {sujet}.",
+    "confirmation": "Votre messagerie s'ouvre : envoyez le message pour que la demande nous parvienne."
   }
 }

@@ -180,7 +180,13 @@ export function FormulaireDemarche({ onInteraction }: { onInteraction?: () => vo
       )}
 
       <a
-        className="bouton bouton--principal formulaire-heros__envoi"
+        /* `bouton--inverse` et non `bouton--principal` : la bannière porte déjà
+           une action magenta, celle du carrousel. Deux boutons de la même
+           couleur primaire dans le même écran ne hiérarchisent plus rien — l'œil
+           ne sait plus lequel est l'action principale. Le blanc plein tranche sur
+           le panneau sombre du formulaire, reste au même niveau d'importance, et
+           laisse le magenta désigner une seule chose à la fois. */
+        className="bouton bouton--inverse formulaire-heros__envoi"
         href={lien}
         target="_blank"
         rel="noreferrer noopener"

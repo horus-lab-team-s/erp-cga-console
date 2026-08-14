@@ -119,11 +119,46 @@
    de la photographie.
    ========================================================================= */
 
+/* ── L'en-tête reste à l'écran pendant le défilement ──────────────────────
+
+   `fixed` et non `absolute` : la navigation était posée en superposition de la
+   bannière et disparaissait dès la première section. Il fallait remonter toute
+   la page pour changer de rubrique — sur un article de blog, cela faisait
+   beaucoup de chemin.
+
+   `fixed` et non `sticky`, et le choix compte : les deux gardent la barre à
+   l'écran, mais `sticky` occupe sa place dans le flux et pousserait donc toute
+   la page de 126 px vers le bas. Or les bannières compensent **déjà** un en-tête
+   en superposition — `.entete-page` réserve exactement ces 126 px, et le héros
+   de l'accueil est calé dessus. `fixed` reste hors du flux, comme `absolute` :
+   le cadrage de chaque bannière est conservé au pixel près, et il n'y a rien à
+   compenser nulle part.
+
+   Le fond n'est teinté qu'une fois la page défilée (`[data-defile="oui"]`) : sur
+   la bannière, la barre doit rester transparente pour ne pas couper la
+   photographie ; plus bas, sur fond clair, elle doit redevenir lisible. C'est
+   `EnteteVitrine` qui pose l'attribut. */
 .entete-vitrine {
-  position: absolute;
+  position: fixed;
   inset-inline: 0;
   top: 0;
   z-index: 40;
+  transition: background 0.24s ease, box-shadow 0.24s ease;
+}
+
+.entete-vitrine[data-defile="oui"] {
+  background: var(--brand-indigo-900);
+  box-shadow: 0 6px 22px rgb(0 0 0 / 26%);
+}
+
+/* Décollée, la pilule perd son ombre portée : elle ferait doublon avec celle de
+   la barre, et deux ombres superposées donnent un liseré sale. */
+.entete-vitrine[data-defile="oui"] .pilule {
+  box-shadow: none;
+}
+
+.entete-vitrine[data-defile="oui"] .entete-vitrine__rangee {
+  padding-bottom: 10px;
 }
 
 /* ── Barre utilitaire, 38 px ────────────────────────────────────────────── */
@@ -542,6 +577,22 @@
   color: #fff;
 }
 
+/* Blanc plein sur fond sombre. Réservé au cas où **une seconde action forte**
+   cohabite avec l'action magenta dans un même écran sombre : le formulaire de la
+   bannière d'accueil, celui de la connexion. Deux boutons magenta côte à côte ne
+   hiérarchisent plus rien — l'œil ne sait plus lequel est l'action principale.
+   Le blanc garde le même poids visuel sans disputer la couleur de marque. */
+.bouton--inverse {
+  background: #fff;
+  border-color: #fff;
+  color: var(--brand-indigo-900);
+}
+
+.bouton--inverse:hover {
+  background: rgb(255 255 255 / 88%);
+  color: var(--brand-indigo-900);
+}
+
 .bouton--large {
   min-height: 44px;
   padding-inline: 20px;
@@ -658,16 +709,25 @@
   pointer-events: none;
 }
 
+/* Le bloc de texte est **centré dans la bannière**, pas collé à la marge gauche.
+   Le formulaire garde sa colonne de droite : centrer le texte sur la largeur
+   entière le ferait passer dessous. On centre donc dans la place qui reste, et
+   les éléments s'alignent entre eux sur ce même axe. */
 .heros__texte {
   pointer-events: auto;
   max-width: 620px;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 18px;
+  text-align: center;
 }
 
 .heros__kicker {
-  align-self: flex-start;
+  /* `center` et non `flex-start` : la pastille suit désormais l'axe du bloc.
+     `flex-start` la laissait accrochée à la marge gauche d'un texte centré. */
+  align-self: center;
   padding: 7px 14px;
   border-radius: 14px;
   background: rgb(255 255 255 / 14%);
@@ -687,11 +747,32 @@
   max-width: 54ch;
   font: 400 15.5px/1.7 var(--police-texte);
   color: rgb(255 255 255 / 85%);
-  text-wrap: pretty;
+  /* `balance` et non `pretty` : sur un texte centré, ce qui se voit d'abord est
+     l'inégalité des lignes. `balance` les répartit à longueur voisine. */
+  text-wrap: balance;
+}
+
+/* « Deux lignes sur PC ».
+   Le nombre de lignes ne se décrète pas : il se règle par la largeur de ligne
+   disponible. On élargit donc la colonne de lecture — 54ch la coupait en trois
+   ou quatre — et `balance` répartit les deux lignes à longueur voisine plutôt
+   que de laisser une ligne veuve de deux mots.
+
+   Sous 900 px la contrainte tombe : le texte se replie sur ce qu'il faut de
+   lignes. Deux lignes sur un téléphone donneraient des caractères minuscules. */
+.heros__detail--deux-lignes {
+  max-width: 92ch;
+  text-wrap: balance;
+}
+
+@media (max-width: 900px) {
+  .heros__detail--deux-lignes {
+    max-width: 54ch;
+  }
 }
 
 .heros__action {
-  align-self: flex-start;
+  align-self: center;
   padding: 16px 26px;
   font-size: 15px;
   border-radius: 8px;
@@ -985,39 +1066,106 @@
   display: block;
 }
 
-/* L'icône de la maquette est conservée, posée sur la photographie : le repère
-   visuel du service reste identique d'un écran à l'autre, y compris là où la
-   photo est absente — méga-menu, mobile. */
-.carte__pastille {
+/* ── L'icône chevauche le bord supérieur de la carte ───────────────────────
+
+   L'icône ronde est posée **à cheval sur l'arête haute** : sa moitié supérieure
+   dépasse au-dessus de la carte, sa moitié inférieure entre dedans. Sous elle,
+   la carte est échancrée d'un demi-disque de rayon légèrement supérieur, si bien
+   qu'un liseré régulier fait le tour de l'icône et qu'on voit le fond de la
+   section à travers l'arc.
+
+   POURQUOI L'ICÔNE EST HORS DE LA CARTE
+
+   Un masque s'applique à toute la descendance de l'élément masqué. Placée à
+   l'intérieur de la carte, l'icône aurait été rognée par l'échancrure même qui
+   doit l'accueillir — c'est-à-dire coupée en deux. D'où `.carte-enveloppe`, qui
+   n'est masquée par rien et porte les deux : l'icône et la carte.
+
+   L'ACCORD DES TROIS MESURES
+
+   Icône 60 px de diamètre (rayon 30), échancrure de rayon 38, réserve haute de
+   l'enveloppe 30 px — soit exactement la moitié de l'icône. Les trois vont
+   ensemble : changer l'une sans les autres décale l'icône de son creux ou la
+   fait mordre le contenu de la section précédente. */
+
+.carte-enveloppe {
+  position: relative;
+  display: flex;
+  /* Exactement la moitié de l'icône : elle dépasse dans cette réserve sans
+     empiéter sur ce qui précède. */
+  padding-top: 30px;
+}
+
+.carte-enveloppe > .carte,
+.carte-enveloppe > .carte-creusee {
+  flex: 1;
+  /* L'échancrure. Le rayon dépasse celui de l'icône de 8 px, ce qui donne le
+     liseré tout autour. */
+  -webkit-mask-image: radial-gradient(circle 38px at 50% 0, transparent 0 38px, #000 38px);
+  mask-image: radial-gradient(circle 38px at 50% 0, transparent 0 38px, #000 38px);
+}
+
+.carte-enveloppe__icone {
   position: absolute;
-  left: 14px;
-  bottom: -18px;
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  width: 60px;
+  height: 60px;
+  transform: translateX(-50%);
+  border-radius: 50%;
   background: var(--brand-indigo-700);
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 16px rgb(0 0 0 / 28%);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 26%);
+  transition: transform 0.18s ease, background 0.18s ease;
 }
 
-.carte--accent .carte__pastille {
+/* Le survol se déclenche sur l'enveloppe : l'icône étant hors de la carte, un
+   survol posé sur la carte l'aurait laissée immobile pendant que le reste
+   monte. */
+.carte-enveloppe:hover .carte-enveloppe__icone {
+  /* La translation d'origine doit être répétée : `transform` est une seule
+     propriété, et l'oublier renverrait l'icône contre le bord gauche. */
+  transform: translateX(-50%) scale(1.08);
   background: var(--brand-magenta-600);
 }
 
+/* ⚠️ Pas de couleur d'accent par défaut sur l'icône.
+   La carte « Création d'entreprise » porte `carte--accent`, ce qui allumait son
+   icône en magenta au repos : une seule pastille colorée sur sept, sans qu'on
+   ait cliqué ni survolé quoi que ce soit. Cela ressemblait à une sélection
+   active, pas à une mise en avant. L'accent reste sur la bordure de la carte ;
+   le magenta de l'icône est réservé au survol, et signifie alors exactement une
+   chose : « le curseur est ici ». */
+
+/* ⚠️ Pas de soulèvement au survol pour une carte échancrée.
+   La carte montait de 3 px pendant que l'icône, qui vit dans l'enveloppe,
+   restait en place : l'échancrure se décalait sous elle et le liseré devenait
+   inégal d'un côté. Le changement de bordure suffit à marquer le survol, et le
+   grossissement de l'icône s'en charge par ailleurs. */
+.carte-enveloppe > .carte:hover,
+.carte-enveloppe > .carte-creusee:hover {
+  transform: none;
+}
+
 .carte__corps {
-  padding: 28px 18px 18px;
+  padding: 22px 18px 18px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   flex: 1;
+  text-align: center;
+  background: var(--surface);
 }
 
 .carte__titre {
   margin: 0;
   font: 600 16.5px/1.3 var(--police-titre);
   color: var(--ink-900);
+  text-wrap: balance;
 }
 
 .carte__detail {
@@ -1030,19 +1178,37 @@
 
 .carte__pied {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding-top: 4px;
+  padding-top: 6px;
+  width: 100%;
 }
 
+/* Le prix dans sa propre pastille, à l'intérieur de la carte.
+   En simple ligne de texte au bas du corps, il se lisait comme une mention
+   légale et se perdait à côté du lien d'action. Encadré, il redevient ce qu'il
+   est : l'information que le visiteur cherche en premier. */
 .carte__prix {
-  font: 600 13px/1 var(--police-texte);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid var(--brand-magenta-600);
+  border-radius: 999px;
+  background: var(--brand-magenta-100);
+  font: 700 14px/1.2 var(--police-texte);
   color: var(--brand-magenta-600);
   font-variant-numeric: tabular-nums;
 }
 
+.carte:hover .carte__prix {
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+/* Le pied de carte est passé en colonne centrée : plus de `margin-left: auto`,
+   qui poussait l'action à droite d'une ligne qui n'existe plus. */
 .carte__action {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -1337,12 +1503,16 @@
   color: #fff;
 }
 
+/* Tout sur l'axe central, et les actions **sous** le texte. Auparavant le texte
+   était à gauche et les boutons à droite : sur un écran large, un mètre séparait
+   la phrase de l'action qu'elle appelait. */
 .appel__contenu {
   padding-block: clamp(40px, 6vw, 64px);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 28px;
-  flex-wrap: wrap;
+  gap: 0;
+  text-align: center;
 }
 
 .appel__titre {
@@ -1353,10 +1523,38 @@
 }
 
 .appel__detail {
-  margin: 10px 0 0;
+  margin: 12px auto 0;
   max-width: 62ch;
   font: 400 14px/1.7 var(--police-texte);
   color: rgb(255 255 255 / 74%);
+}
+
+/* `chapeau--une-ligne` retire la largeur de lecture au-delà de 1100 px pour que
+   la phrase tienne sur une ligne ; il faut alors lui rendre sa marge nulle,
+   `max-width: none` ne suffisant pas à la recentrer. */
+.appel__detail.chapeau--une-ligne {
+  max-width: none;
+}
+
+.appel__actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+@media (max-width: 520px) {
+  /* Au doigt, deux boutons côte à côte tombent sous la largeur prenable : ils
+     passent l'un sous l'autre, pleine largeur. */
+  .appel__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .appel__actions .bouton {
+    width: 100%;
+  }
 }
 
 /* ── Pied de page ───────────────────────────────────────────────────────── */
@@ -1561,14 +1759,27 @@
   padding-top: 126px;
 }
 
+/* Bannière de page intérieure, sur l'axe central.
+   Rien n'occupe la droite ici — pas de formulaire, contrairement à l'accueil :
+   le bloc peut donc être vraiment centré sur toute la largeur. Le titre, le
+   chapeau et les boutons s'alignent entre eux sur ce même axe. */
 .entete-page__contenu {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   max-width: 900px;
+  margin-inline: auto;
+}
+
+/* Les boutons d'une bannière de page sont dans un conteneur en ligne posé par
+   la page elle-même : on le centre à son tour, sans quoi il resterait accroché
+   à la marge gauche du bloc. */
+.entete-page__contenu > div {
+  justify-content: center;
 }
 
 /* ── Listes numérotées, cartes de formule, frise ────────────────────────── */
@@ -2986,4 +3197,968 @@
 .retour-vitrine:hover {
   border-color: rgb(255 255 255 / 55%);
   background: rgb(255 255 255 / 16%);
+}
+
+/* ── Flèche de retour en haut ─────────────────────────────────────────────
+   Les pages sont longues : arrivé au pied, le visiteur qui veut changer de
+   rubrique n'aurait que le défilement inverse, plusieurs secondes de balayage
+   au téléphone.
+
+   Elle est posée **au-dessus** du bandeau d'annonce en hauteur : les deux
+   occupent le bas de la fenêtre, et la flèche ne doit pas recouvrir le bouton
+   de fermeture de l'annonce. */
+
+.retour-haut {
+  position: fixed;
+  z-index: 55;
+  right: clamp(12px, 3vw, 28px);
+  /* 118 px : la hauteur du bandeau d'annonce, plus sa marge basse. */
+  bottom: 118px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line-200);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--brand-indigo-900);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 18%);
+  cursor: pointer;
+  /* La flèche du jeu d'icônes pointe vers le bas : on la retourne plutôt que
+     d'ajouter un tracé de plus au jeu. */
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.16s ease;
+}
+
+.retour-haut svg {
+  transform: rotate(180deg);
+}
+
+.retour-haut:hover {
+  background: var(--brand-indigo-900);
+  color: #fff;
+}
+
+/* Invisible tant qu'on n'a pas descendu : `opacity` et `pointer-events` plutôt
+   que `display: none`, pour que l'apparition soit fondue et non brutale. */
+.retour-haut[data-visible="non"] {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.retour-haut[data-visible="oui"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retour-haut {
+    transition: none;
+  }
+}
+
+/* ── Cartes à icône en échancrure ─────────────────────────────────────────
+   Même dispositif que les cartes de service : le corps est entaillé d'un
+   demi-disque en tête, l'icône ronde vient s'y loger. Employé par les agences
+   de la page « Le CGA », section « Nous trouver ».
+
+   Les trois rayons restent accordés : entaille de 32 px, icône de 50 px de
+   diamètre, soit un liseré régulier de 7 px tout autour. */
+
+.carte-creusee {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  background: var(--surface-alt);
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.carte-creusee:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-magenta-600);
+}
+
+.carte-creusee__media {
+  position: relative;
+  height: 160px;
+  background: var(--brand-indigo-100);
+}
+
+.carte-creusee__photo {
+  object-fit: cover;
+}
+
+.carte-creusee__corps {
+  padding: 22px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  text-align: center;
+  background: var(--surface-alt);
+}
+
+.carte-creusee__titre {
+  margin: 0;
+  font: 600 17px/1.3 var(--police-titre);
+  color: var(--ink-900);
+  text-wrap: balance;
+}
+
+.carte-creusee__sous-titre {
+  margin: 0;
+  font: 600 12px/1.4 var(--police-texte);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--brand-magenta-600);
+}
+
+.carte-creusee__detail {
+  margin: 0;
+  font: 400 13.5px/1.65 var(--police-texte);
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+/* ── Mise en avant d'une personne ─────────────────────────────────────────
+   La direction générale, sur la page « Le CGA ». Une carte de la même grille
+   que le reste de l'équipe l'aurait noyée parmi ses collaborateurs. */
+
+.direction {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: center;
+  margin-top: 34px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line-200);
+  border-radius: 16px;
+  background: var(--surface-alt);
+  text-align: left;
+}
+
+.direction__portrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--brand-indigo-100);
+}
+
+.direction__portrait img {
+  object-fit: cover;
+}
+
+.direction__corps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.direction__role {
+  font: 600 12px/1.4 var(--police-texte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-magenta-600);
+}
+
+.direction__nom {
+  margin: 0;
+  font: 600 clamp(20px, 2.4vw, 28px) / 1.2 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.direction__detail {
+  margin: 0;
+  font: 400 14.5px/1.75 var(--police-texte);
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+@media (max-width: 780px) {
+  .direction {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .direction__portrait {
+    max-width: 280px;
+    margin-inline: auto;
+  }
+
+  .direction__corps {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* ── Devis imprimable ─────────────────────────────────────────────────────
+   La même page sert à lire à l'écran et à produire un PDF : il n'y a pas de
+   seconde mise en page à tenir à jour. La règle d'impression, en bas de ce
+   bloc, retire ce qui n'a pas de sens sur papier. */
+
+.devis {
+  padding-top: 150px;
+  padding-bottom: 60px;
+  background: var(--surface);
+}
+
+.devis__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+/* La feuille : un rectangle blanc posé sur le fond, comme une page. */
+.devis__feuille {
+  padding: clamp(22px, 4vw, 44px);
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  background: var(--surface-alt);
+}
+
+.devis__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  border-bottom: 2px solid var(--brand-indigo-900);
+}
+
+.devis__coordonnees {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+  font: 400 12px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.devis__coordonnees strong {
+  font: 600 13.5px/1.4 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.devis__titre-zone {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.devis__titre {
+  margin: 0;
+  font: 600 clamp(20px, 2.6vw, 27px) / 1.2 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.devis__date {
+  margin: 0;
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.devis__chapeau {
+  margin: 12px 0 0;
+  font: 400 13.5px/1.7 var(--police-texte);
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.devis__section {
+  margin: 30px 0 12px;
+  font: 600 12px/1.4 var(--police-texte);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--brand-magenta-600);
+}
+
+/* Les éléments retenus, en paires libellé/valeur. La grille garde les valeurs
+   alignées entre elles, ce qu'une liste de définitions ne fait pas seule. */
+.devis__hypotheses {
+  margin: 0;
+  display: grid;
+  gap: 8px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.devis__hypotheses > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--line-200);
+}
+
+.devis__hypotheses dt {
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.devis__hypotheses dd {
+  margin: 0;
+  font: 600 13.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.devis__table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.devis__table td,
+.devis__table th {
+  padding: 9px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--line-200);
+}
+
+.devis__montant {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.devis__groupe th {
+  padding-top: 18px;
+  font: 600 12px/1.4 var(--police-texte);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+  border-bottom-color: var(--ink-500);
+}
+
+.devis__sous-total td {
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.devis__total td {
+  padding-top: 14px;
+  border-bottom: none;
+  border-top: 2px solid var(--brand-indigo-900);
+  font: 700 clamp(16px, 2.2vw, 20px) / 1.3 var(--police-titre);
+  color: var(--brand-indigo-900);
+}
+
+.devis__delai,
+.devis__option {
+  margin: 16px 0 0;
+  font: 400 13.5px/1.7 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* L'avertissement est dans le corps du document, pas en petits caractères : un
+   document chiffré, daté et au nom du cabinet sera lu comme un engagement s'il
+   ne dit pas franchement le contraire. */
+.devis__avertissement {
+  margin: 26px 0 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--brand-magenta-600);
+  border-radius: 0 10px 10px 0;
+  background: var(--brand-indigo-100);
+  font: 400 13px/1.7 var(--police-texte);
+  color: var(--ink-900);
+  text-wrap: pretty;
+}
+
+.devis__pied {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-200);
+  font: 400 12px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* ── Impression ───────────────────────────────────────────────────────────
+   « Enregistrer au format PDF » est proposé par la boîte d'impression sur
+   toutes les plateformes visées, Android et iOS compris. C'est ce qui permet
+   d'obtenir un PDF sans embarquer de bibliothèque de génération — quelques
+   centaines de kilo-octets épargnés à chaque visiteur. */
+
+@media print {
+  /* Tout ce qui n'est pas le document disparaît : navigation, pied de site,
+     bandeau d'appel, annonce, flèche de remontée, boutons. */
+  .entete-vitrine,
+  .pied-vitrine,
+  .appel,
+  .annonce,
+  .retour-haut,
+  .devis__actions {
+    display: none !important;
+  }
+
+  .devis {
+    padding: 0;
+    background: #fff;
+  }
+
+  .devis__feuille {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  .bloc {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  /* Les couleurs de fond sont conservées : sans cela, l'encadré
+     d'avertissement et le filet de total disparaissent à l'impression, et le
+     document perd sa hiérarchie. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Le tableau ne doit pas se couper au milieu d'un groupe. */
+  .devis__table tr {
+    break-inside: avoid;
+  }
+
+  .devis__avertissement {
+    break-inside: avoid;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Revue du 13 août 2026 (soir) — direction artistique et corrections
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Les boutons sont carrés et sans bordure ───────────────────────────────
+   Direction artistique arrêtée par le cabinet, dans la ligne de la pilule de
+   navigation dont les angles avaient déjà été redressés le 10 août. Les
+   bordures partent avec les arrondis : elles doublaient le fond des boutons
+   pleins et faisaient bavocher les angles vifs.
+
+   `.bouton--clair` garde la sienne : sur une photographie, un bouton clair sans
+   contour se dissout dans l'image. C'est la seule exception, et elle est
+   dictée par la lisibilité, pas par le goût. */
+
+.bouton {
+  border-radius: 0;
+  border-color: transparent;
+}
+
+.bouton--principal,
+.bouton--secondaire,
+.bouton--inverse {
+  border-color: transparent;
+}
+
+/* Même règle pour tout ce qui se comporte en bouton ailleurs sur le site. */
+.retour-vitrine,
+.filtre-rubriques__lien,
+.partage__bouton,
+.article__mots-cles li,
+.carte__prix,
+.annonce__action,
+.annonce__fermer {
+  border-radius: 0;
+}
+
+.retour-vitrine,
+.filtre-rubriques__lien,
+.partage__bouton,
+.article__mots-cles li {
+  border-color: transparent;
+}
+
+.filtre-rubriques__lien,
+.partage__bouton,
+.article__mots-cles li {
+  background: var(--brand-indigo-100);
+}
+
+.filtre-rubriques__lien:hover,
+.partage__bouton:hover {
+  border-color: transparent;
+  background: var(--brand-magenta-100);
+}
+
+/* Le prix garde son cerclage : c'est lui qui le détache du corps de la carte.
+   Il devient un rectangle plein, cohérent avec les boutons. */
+.carte__prix {
+  border-color: transparent;
+}
+
+/* ── Le panneau des services : une liste, et rien d'autre ──────────────────
+   Il portait sept fiches détaillées, six formes juridiques et un encart à deux
+   boutons — la moitié de l'écran, pour redire ce que la page du service allait
+   de toute façon expliquer. Un menu conduit quelque part ; il n'informe pas. */
+
+.mega {
+  padding: 8px 0;
+  min-width: 280px;
+}
+
+.mega__liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Le filet fin qui sépare deux entrées. Sur la dernière, il ferait une ligne
+   flottante sous le panneau. */
+.mega__liste li + li .mega__entree {
+  border-top: 1px solid var(--brand-magenta-100);
+}
+
+.mega__entree {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 22px;
+  font: 500 14px/1.3 var(--police-texte);
+  color: var(--ink-900);
+  text-decoration: none;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.mega__entree:hover {
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+  text-decoration: none;
+}
+
+.mega__entree-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 0;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.mega__entree:hover .mega__entree-icone {
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+/* ── Formulaire de demande, commun à tous les services ─────────────────────
+   Il vit au bas de chaque fiche, pré-rempli sur le service que le visiteur
+   vient de lire. */
+
+.formulaire-service {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 30px;
+  padding: clamp(20px, 3vw, 32px);
+  background: var(--surface-alt);
+  border: 1px solid var(--line-200);
+  text-align: left;
+}
+
+.formulaire-service__titre {
+  margin: 0;
+  font: 600 clamp(18px, 2.2vw, 22px) / 1.3 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.formulaire-service__detail {
+  margin: -8px 0 0;
+  font: 400 13.5px/1.7 var(--police-texte);
+  color: var(--ink-500);
+  text-wrap: pretty;
+}
+
+.formulaire-service__etiquette {
+  display: block;
+  margin-bottom: 6px;
+  font: 600 11.5px/1.4 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.formulaire-service__facultatif {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.formulaire-service__champ {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line-200);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink-900);
+  font: 500 14px/1.3 var(--police-texte);
+}
+
+.formulaire-service__zone {
+  min-height: 110px;
+  padding: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.formulaire-service__paire {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.formulaire-service__consentement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.formulaire-service__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.formulaire-service__actions .bouton[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.formulaire-service__confirmation {
+  margin: 0;
+  min-height: 1.6em;
+  font: 500 12.5px/1.6 var(--police-texte);
+  color: var(--brand-magenta-600);
+}
+
+/* ── Documents à télécharger ───────────────────────────────────────────────
+   Les proformas de la page Création. Toute la ligne est cliquable : sur un
+   téléphone, viser une icône de 22 px demande de la précision. */
+
+.documents {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  text-align: left;
+}
+
+.document {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--line-200);
+  background: var(--surface);
+  text-decoration: none;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.document:hover {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-100);
+  text-decoration: none;
+}
+
+.document__icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.document:hover .document__icone {
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+.document__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.document__titre {
+  font: 600 15px/1.35 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.document__detail {
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.document__action {
+  flex: none;
+  color: var(--brand-magenta-600);
+}
+
+/* ── Cartes « pour qui » sur fond clair ────────────────────────────────────
+   ⚠️ `.avantage` a été dessinée pour le fond indigo de l'accueil : texte blanc
+   sur voile blanc translucide. Reprise telle quelle sur les fiches de service,
+   qui sont sur fond clair, elle donnait du blanc sur blanc — le texte y était
+   simplement invisible. */
+
+.avantage--clair {
+  background: var(--surface);
+  border-color: var(--line-200);
+}
+
+.avantage--clair .avantage__icone {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.avantage--clair .avantage__titre {
+  color: var(--ink-900);
+}
+
+.avantage--clair .avantage__detail {
+  color: var(--ink-500);
+}
+
+.avantage--clair::after {
+  background: var(--brand-magenta-600);
+}
+
+/* ── La frise revient au fer à gauche ──────────────────────────────────────
+   Elle est posée dans une section centrée, qui centrait aussi son contenu : on
+   ne savait plus quel texte allait avec quelle date. La colonne est donc
+   ramenée à gauche et bornée en largeur — étalée sur 1344 px, l'année et son
+   récit se retrouvaient à un mètre l'un de l'autre. */
+
+.section--centre .frise {
+  max-width: 780px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+/* ── Filigrane : entier, et deux fois par page au plus ─────────────────────
+   Il débordait de 60 px à droite, si bien que la marque était coupée. Elle est
+   désormais entièrement dans le cadre. L'opacité baisse d'un cran : plus le
+   logo est grand et complet, plus il pèse sur le texte qu'il traverse. */
+
+.section--filigrane::before {
+  right: 32px;
+  width: min(420px, 38vw);
+  opacity: 0.035;
+}
+
+.section-cga.section--filigrane::before {
+  opacity: 0.06;
+}
+
+[data-theme="sombre"] .section--filigrane::before {
+  opacity: 0.04;
+}
+
+/* ── Pied de page allégé ───────────────────────────────────────────────────
+   L'infolettre en est partie pour le bandeau d'appel, et l'agrément
+   ministériel — déjà présent dans la barre utilitaire de chaque page — a été
+   retiré. Ce qui reste tient sur une ligne. */
+
+.pied-vitrine__reseaux {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.pied-vitrine__reseaux .pied-vitrine__titre {
+  margin: 0;
+}
+
+.pied-vitrine__reseaux .reseaux {
+  margin: 0;
+}
+
+.pied-vitrine__reseaux .reseaux__numero {
+  margin: 0;
+}
+
+.pied-vitrine__signature {
+  margin: 16px 0 0;
+  font: 400 12px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 45%);
+}
+
+.pied-vitrine__signature strong {
+  color: rgb(255 255 255 / 72%);
+  font-weight: 600;
+}
+
+/* ── Infolettre dans le bandeau d'appel ────────────────────────────────────
+   Réduite au champ et au bouton : le titre de la section dit déjà pourquoi on
+   écrirait au cabinet. */
+
+.appel .infolettre {
+  width: min(520px, 100%);
+  margin-top: 22px;
+}
+
+.appel .infolettre__ligne {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.appel .infolettre__champ {
+  flex: 1 1 240px;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 0;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font: 500 14px/1.3 var(--police-texte);
+}
+
+.appel .infolettre__champ::placeholder {
+  color: rgb(255 255 255 / 60%);
+}
+
+.appel .infolettre__confirmation {
+  margin: 8px 0 0;
+  min-height: 1.5em;
+  font: 500 12.5px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 80%);
+}
+
+/* ── Le panneau des services s'ajuste à son contenu ────────────────────────
+   Il gardait la largeur héritée de l'ancien méga-menu — trois colonnes, sept
+   fiches, un encart — alors qu'il ne porte plus qu'une liste de sept intitulés.
+   Il occupait donc une bande vide sur la moitié de sa surface.
+
+   `width: max-content` le fait mesurer sa plus longue entrée, ni plus ni moins.
+   `max-width` le borne pour qu'un libellé exceptionnellement long ne le fasse
+   pas déborder de la fenêtre ; `min-width` l'empêche de se réduire à une
+   colonne étriquée quand les intitulés sont courts. */
+
+.mega {
+  width: max-content;
+  min-width: 240px;
+  max-width: min(360px, calc(100vw - 32px));
+}
+
+/* ── Pied de page : plus court, et vraiment compact au téléphone ───────────
+
+   Trois retraits successifs l'ont allégé : l'infolettre est partie au bandeau
+   d'appel, la bande « Suivez-nous » encadrée de deux filets a disparu — ses
+   logos ont rejoint la première colonne — et l'agrément ministériel, déjà
+   présent dans la barre du haut, n'est plus répété.
+
+   Le téléphone et le courriel ont suivi le même raisonnement : la barre
+   utilitaire est désormais **fixe**, donc lisible à tout moment, y compris au
+   bas d'une page longue. */
+
+.pied-vitrine__identite {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pied-vitrine__nom {
+  margin: 0;
+  font: 600 16px/1.3 var(--police-titre);
+  color: #fff;
+}
+
+.pied-vitrine__description {
+  margin: 0;
+  max-width: 44ch;
+  font: 400 13.5px/1.7 var(--police-texte);
+}
+
+.pied-vitrine__identite .pied-vitrine__titre {
+  margin: 8px 0 0;
+}
+
+.pied-vitrine__identite .reseaux {
+  margin: 0;
+}
+
+.pied-vitrine__signature {
+  margin: 16px 0 0;
+  text-align: center;
+  font: 400 12px/1.6 var(--police-texte);
+}
+
+.pied-vitrine__signature a {
+  color: rgb(255 255 255 / 50%);
+  text-decoration: none;
+  transition: color 0.16s ease;
+}
+
+.pied-vitrine__signature a:hover {
+  color: #fff;
+}
+
+.pied-vitrine__signature strong {
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  /* Au téléphone, quatre colonnes empilées font un pied interminable : on passe
+     à deux colonnes pour les listes de liens, et l'identité prend la largeur.
+     Les interlignes sont resserrés — un pied de page se parcourt du pouce, il
+     ne se lit pas. */
+  .pied-vitrine__grille {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 18px;
+  }
+
+  .pied-vitrine__identite {
+    grid-column: 1 / -1;
+  }
+
+  .pied-vitrine__description {
+    max-width: none;
+  }
+
+  .pied-vitrine__liste {
+    gap: 6px;
+  }
+
+  .pied-vitrine__liste a {
+    font-size: 13px;
+  }
+
+  .pied-vitrine__bas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pied-vitrine__bas > span:last-child {
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  /* En dessous, deux colonnes de liens deviennent illisibles : on revient à une
+     seule, mais le pied est déjà bien plus court qu'avant. */
+  .pied-vitrine__grille {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

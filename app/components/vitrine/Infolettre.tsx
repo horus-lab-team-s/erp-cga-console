@@ -37,10 +37,13 @@ export function Infolettre() {
   }
 
   return (
-    <form className="infolettre" onSubmit={envoyer}>
-      <h2 className="pied-vitrine__titre">{t("infolettreTitre")}</h2>
-      <p className="infolettre__detail">{t("infolettreDetail")}</p>
-
+    /* Ni titre ni explication : le champ et le bouton suffisent.
+       L'infolettre vivait au pied de page avec un titre et deux lignes de
+       présentation, ce qui doublait la hauteur du pied pour un formulaire d'un
+       seul champ. Elle a rejoint le bandeau « Parlons de votre projet », où le
+       contexte est déjà posé par la section elle-même : répéter « Restez
+       informé » sous un titre qui invite déjà à écrire n'apprenait rien. */
+    <form className="infolettre" onSubmit={envoyer} aria-label={t("infolettreTitre")}>
       <div className="infolettre__ligne">
         <label className="visuellement-masque" htmlFor="infolettre-courriel">
           {t("infolettreChamp")}

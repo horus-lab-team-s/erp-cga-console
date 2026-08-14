@@ -22,6 +22,6 @@ export const config = {
   // Lister les dossiers statiques est plus long mais ne peut pas se retourner ainsi.
   matcher: [
     "/",
-    "/((?!api|_next|_vercel|images|marque|favicon|robots|sitemap).*)",
+    "/((?!api|_next|_vercel|images|marque|documents|favicon|robots|sitemap).*)",
   ],
 };

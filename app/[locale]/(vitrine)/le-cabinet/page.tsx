@@ -116,10 +116,13 @@ function Equipe() {
     photo: string;
   }[];
   return (
-    <section id="equipe" className="section section--teinte section--centre section--filigrane">
+    <section id="equipe" className="section section--teinte section--centre">
       <div className="bloc">
         <span className="kicker">{t("equipeKicker")}</span>
         <h2 className="titre-section">{t("equipeTitre")}</h2>
+
+        <Direction />
+
         <div className="grille grille--3">
           {membres.map((membre) => (
             <article key={membre.nom} className="membre">
@@ -167,6 +170,47 @@ function Equipe() {
   );
 }
 
+/**
+ * La direction générale, mise en avant au-dessus de l'équipe.
+ *
+ * Une carte de la même grille que ses collaborateurs l'aurait noyée parmi eux.
+ * Or c'est la personne qui engage le cabinet : sur un site de conseil, savoir
+ * qui dirige compte autant que savoir ce qu'on vend.
+ *
+ * Le lien vers le site personnel s'ouvre dans un nouvel onglet — on ne fait pas
+ * quitter la vitrine à un visiteur en cours de lecture — et porte
+ * `rel="noopener"` comme tout lien sortant.
+ */
+function Direction() {
+  const t = useTranslations("pages.cabinet.direction");
+  return (
+    <div className="direction">
+      <div className="direction__portrait">
+        <Image
+          src="/images/equipe/Mme-paul-diane-himsta.png"
+          alt={t("nom")}
+          fill
+          sizes="(max-width: 780px) 280px, 320px"
+        />
+      </div>
+      <div className="direction__corps">
+        <span className="direction__role">{t("role")}</span>
+        <h3 className="direction__nom">{t("nom")}</h3>
+        <p className="direction__detail">{t("detail")}</p>
+        <a
+          className="bouton bouton--secondaire"
+          href="https://www.paule-diane-himsta.com/a-propos/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t("siteWeb")}
+          <IconeVitrine nom="fleche" taille={15} />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function Agences() {
   const t = useTranslations("pages.cabinet");
   const agences = t.raw("agences") as {
@@ -181,29 +225,41 @@ function Agences() {
         <span className="kicker">{t("agencesKicker")}</span>
         <h2 className="titre-section">{t("agencesTitre")}</h2>
         <div className="grille grille--3">
+          {/* Même dispositif que les cartes de service de l'accueil : le corps
+              est entaillé d'un demi-disque en tête, où vient se loger l'épingle
+              ronde. La ville, l'adresse et la précision sont centrées dans la
+              carte et hiérarchisées — ville, puis quartier en capitales, puis
+              détail. Auparavant les trois lignes se suivaient au fer à gauche
+              dans un même paragraphe, et l'adresse se confondait avec la note. */}
+          {/* Même dispositif que les cartes de service de l'accueil : l'épingle
+              chevauche le bord supérieur, moitié dehors, moitié dedans, et la
+              carte est échancrée juste sous elle. La ville, le quartier et la
+              précision sont centrés et hiérarchisés — ils se suivaient
+              auparavant au fer à gauche dans un même paragraphe, où l'adresse se
+              confondait avec la note. */}
           {agences.map((agence) => (
-            <article key={agence.ville} className="carte">
-              <div className="carte__media">
-                <Image
-                  src={agence.photo}
-                  alt=""
-                  width={800}
-                  height={420}
-                  className="carte__image"
-                  sizes="(max-width: 980px) 100vw, 400px"
-                />
-                <span className="carte__pastille">
-                  <IconeVitrine nom="lieu" taille={20} epaisseur={1.6} />
-                </span>
-              </div>
-              <div className="carte__corps">
-                <h3 className="carte__titre">{agence.ville}</h3>
-                <p className="carte__detail">
-                  {agence.adresse}
-                  <span style={{ display: "block" }}>{agence.detail}</span>
-                </p>
-              </div>
-            </article>
+            <div key={agence.ville} className="carte-enveloppe">
+              <span className="carte-enveloppe__icone">
+                <IconeVitrine nom="lieu" taille={24} epaisseur={1.6} />
+              </span>
+
+              <article className="carte-creusee">
+                <div className="carte-creusee__media">
+                  <Image
+                    src={agence.photo}
+                    alt=""
+                    fill
+                    className="carte-creusee__photo"
+                    sizes="(max-width: 980px) 100vw, 400px"
+                  />
+                </div>
+                <div className="carte-creusee__corps">
+                  <h3 className="carte-creusee__titre">{agence.ville}</h3>
+                  <p className="carte-creusee__sous-titre">{agence.adresse}</p>
+                  <p className="carte-creusee__detail">{agence.detail}</p>
+                </div>
+              </article>
+            </div>
           ))}
         </div>
       </div>
@@ -215,7 +271,7 @@ function Partenaires() {
   const t = useTranslations("pages.cabinet");
   const partenaires = t.raw("partenaires") as { titre: string; detail: string }[];
   return (
-    <section id="partenaires" className="section section--teinte section--centre section--filigrane">
+    <section id="partenaires" className="section section--teinte section--centre">
       <div className="bloc">
         <span className="kicker">{t("partenairesKicker")}</span>
         <h2 className="titre-section">{t("partenairesTitre")}</h2>

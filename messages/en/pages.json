@@ -32,7 +32,20 @@
         "q": "Is the eight-week timeframe guaranteed?",
         "r": "It is the timeframe observed at the Douala one-stop shop. We chase as soon as a deadline slips."
       }
-    ]
+    ],
+    "proformasKicker": "Our sample quotes",
+    "proformasTitre": "See the quote before you call us",
+    "proformasDetail": "Two sample quotes for setting up a private-deed limited company, exactly as we issue them. You will know what each line covers before the first meeting.",
+    "proformas": {
+      "avecSuivi": {
+        "titre": "Private-deed LLC, with bookkeeping",
+        "detail": "Full formation plus first-year support. PDF, 360 KB."
+      },
+      "sansSuivi": {
+        "titre": "Private-deed LLC, formation only",
+        "detail": "Formation alone, with no bookkeeping commitment. PDF, 527 KB."
+      }
+    }
   },
   "estimation": {
     "kicker": "Estimator",
@@ -68,6 +81,18 @@
     "semaines": "weeks",
     "nonRetenu": "not selected",
     "parMois": "12,500 FCFA per month",
+    "devisTelecharger": "Download the quote (PDF)",
+    "devisTitre": "Estimated quote for company formation",
+    "devisSousTitre": "Estimate based on the official fees currently in force and on our fee scale, using the details you provided.",
+    "devisDate": "Issued on {date}",
+    "devisHypotheses": "Details used",
+    "devisDetail": "Breakdown of the estimate",
+    "sousTotal": "Subtotal",
+    "devisImprimer": "Print or save as PDF",
+    "devisRetour": "Back to the estimator",
+    "devisSuiviNote": "This subscription is billed monthly: it is not included in the amount due at formation.",
+    "devisAvertissement": "⚠️ This document is an estimate, not an invoice, and does not commit the firm. Official fees depend on the actual file and the scale may change. A firm quote is confirmed after we review your project, at no charge.",
+    "devisPied": "CGA Broad Range Consulting Group — Douala, Yaoundé, Bafoussam. Contact us to turn this estimate into a firm quote.",
     "lignes": {
       "cfce": "One-stop shop fee",
       "rccmNiu": "Trade register and tax number",
@@ -261,6 +286,12 @@
     "detail": "An accounting, audit and advisory firm approved by the Minister of Finance, providing accounting, tax and management support to small and medium businesses.",
     "histoireKicker": "Our story",
     "histoireTitre": "From an insight to an approved centre",
+    "direction": {
+      "role": "Chief Executive",
+      "nom": "Mrs Paule-Diane Himsta",
+      "detail": "She heads CGA Broad Range Consulting Group. A chartered accountant and management adviser, she has spent more than fifteen years supporting Cameroonian business owners through incorporation, bookkeeping and tax compliance. She is the person who commits the firm before the tax authorities and its members.",
+      "siteWeb": "Learn more"
+    },
     "equipeKicker": "Our team",
     "equipeTitre": "A named contact for every file",
     "agencesKicker": "Find us",
@@ -449,5 +480,369 @@
     "demonstrationDetail": "These accounts exist for demonstration only and will not ship to production. Pick a profile to see the matching workspace.",
     "refus": "Wrong username or password. The demonstration credentials are shown below.",
     "demoTitre": "Demonstration credentials"
+  },
+  "fiches": {
+    "ponctuel": {
+      "kicker": "Prestations ponctuelles",
+      "titre": "Une démarche précise, traitée et close",
+      "detail": "Vous n'avez pas besoin d'un abonnement : vous avez besoin qu'une chose soit faite. Nous prenons la démarche en charge du début à la fin, avec un devis ferme et une date de remise.",
+      "action": "Décrire ma démarche",
+      "prestationsKicker": "Ce que nous traitons",
+      "prestationsTitre": "Les démarches les plus demandées",
+      "prestations": [
+        "Attestation de non-redevance, à obtenir ou à renouveler",
+        "Mise à jour du registre du commerce : gérance, siège, objet social, capital",
+        "Régularisation de déclarations en retard, et négociation des pénalités",
+        "Établissement d'états financiers pour une banque ou un appel d'offres",
+        "Reconstitution d'une comptabilité sur un ou plusieurs exercices",
+        "Cession de parts, entrée ou sortie d'associé",
+        "Dissolution et liquidation d'une société",
+        "Assistance pendant un contrôle fiscal, jusqu'à la réponse à l'administration"
+      ],
+      "pourQuiKicker": "Pour qui",
+      "pourQuiTitre": "Trois situations où l'on vient nous voir",
+      "pourQui": [
+        {
+          "titre": "L'entreprise déjà suivie ailleurs",
+          "detail": "Votre comptable habituel ne traite pas cette démarche, ou vous voulez un second regard sur un dossier sensible. Nous intervenons sur ce point précis, sans toucher au reste."
+        },
+        {
+          "titre": "Le dossier qui presse",
+          "detail": "Un appel d'offres à rendre, une banque qui réclame des états financiers, un contrôle annoncé. Nous priorisons ce qui a une date."
+        },
+        {
+          "titre": "Le retard à rattraper",
+          "detail": "Des déclarations non déposées, une comptabilité arrêtée depuis deux ans. Nous établissons d'abord l'état des lieux, puis le coût réel de la régularisation."
+        }
+      ],
+      "deroulementKicker": "Comment ça se passe",
+      "deroulementTitre": "Quatre temps, et une date de remise",
+      "deroulement": [
+        {
+          "titre": "Vous décrivez la démarche",
+          "detail": "Par téléphone, sur WhatsApp ou au bureau. Dix minutes suffisent en général à cerner ce qui est en jeu."
+        },
+        {
+          "titre": "Nous établissons un devis ferme",
+          "detail": "Montant, pièces à fournir, date de remise. Le devis est gratuit et n'engage à rien tant que vous ne l'avez pas accepté."
+        },
+        {
+          "titre": "Nous traitons le dossier",
+          "detail": "Vous n'allez à aucun guichet : nous déposons, nous suivons, nous relançons. Vous êtes tenu informé à chaque étape franchie."
+        },
+        {
+          "titre": "Nous vous remettons le résultat",
+          "detail": "Les documents originaux, plus une copie numérique que nous conservons. La démarche est close, sans abonnement qui court derrière."
+        }
+      ],
+      "tarifKicker": "Combien",
+      "tarifTitre": "Un devis ferme, jamais une fourchette",
+      "tarifDetail": "Le montant dépend de la démarche et de l'état du dossier : reconstituer deux exercices n'a rien à voir avec un renouvellement d'attestation. Nous chiffrons après avoir vu les pièces, et le devis ne bouge plus une fois accepté.",
+      "tarifAppel": "Décrivez-nous votre démarche : le devis vous revient sous 48 heures ouvrées."
+    },
+    "domiciliation": {
+      "kicker": "Domiciliation commerciale",
+      "titre": "Une adresse professionnelle, et quelqu'un derrière",
+      "detail": "Votre siège social à Douala, Yaoundé ou Bafoussam, avec réception du courrier et signalement des plis administratifs — parce qu'une adresse où personne ne relève le courrier ne vaut rien.",
+      "action": "Domicilier mon entreprise",
+      "prestationsKicker": "Ce qui est compris",
+      "prestationsTitre": "Douze mois, tout compris",
+      "prestations": [
+        "Une adresse commerciale utilisable comme siège social, opposable à l'administration",
+        "Le contrat de domiciliation, exigé au registre du commerce",
+        "La réception de votre courrier et de vos colis",
+        "Le signalement immédiat de tout pli administratif — impôts, CNPS, greffe, huissier",
+        "La réexpédition selon la fréquence que vous choisissez, ou la mise à disposition au bureau",
+        "L'usage de nos salles de réunion pour recevoir un client, sur réservation",
+        "Le renouvellement annuel, sans frais de dossier"
+      ],
+      "pourQuiKicker": "Pour qui",
+      "pourQuiTitre": "Trois cas de figure",
+      "pourQui": [
+        {
+          "titre": "L'entreprise qui se crée",
+          "detail": "Vous n'avez pas encore de local, ou vous ne voulez pas domicilier la société chez vous. La domiciliation lève l'obstacle sans engager un bail."
+        },
+        {
+          "titre": "L'activité sans bureau",
+          "detail": "Conseil, commerce, prestation de services : votre travail se fait chez le client. Il vous faut une adresse, pas des murs."
+        },
+        {
+          "titre": "L'entreprise venue d'ailleurs",
+          "detail": "Vous ouvrez au Cameroun depuis l'étranger ou depuis une autre région. Nous tenons l'adresse et relevons le courrier à votre place."
+        }
+      ],
+      "deroulementKicker": "Comment ça se passe",
+      "deroulementTitre": "De la signature à l'adresse utilisable",
+      "deroulement": [
+        {
+          "titre": "Vous choisissez la ville",
+          "detail": "Douala (Akwa ou Bercy), Yaoundé (Elig-Essono) ou Bafoussam (quartier Haoussa). L'adresse est celle de nos bureaux, pas une boîte postale."
+        },
+        {
+          "titre": "Nous établissons le contrat",
+          "detail": "C'est la pièce que le greffe exige pour inscrire le siège. Elle est prête sous 48 heures."
+        },
+        {
+          "titre": "L'adresse devient opposable",
+          "detail": "Vous l'utilisez sur vos statuts, vos factures et vos déclarations. Nous la confirmons à l'administration si elle le demande."
+        },
+        {
+          "titre": "Le courrier suit",
+          "detail": "Nous relevons, nous trions, et nous vous signalons tout de suite ce qui vient d'une administration. Le reste part selon la fréquence convenue."
+        }
+      ],
+      "tarifKicker": "Combien",
+      "tarifTitre": "180 000 FCFA pour douze mois",
+      "tarifDetail": "Tout compris : contrat, adresse, réception du courrier, signalement des plis administratifs et renouvellement sans frais de dossier. La réexpédition à l'étranger et l'usage prolongé des salles de réunion se facturent à part.",
+      "tarifAppel": "Souscrite en même temps que votre création, la domiciliation entre dans l'estimation en ligne."
+    },
+    "juridique": {
+      "kicker": "Assistance juridique",
+      "titre": "Le droit des sociétés, appliqué à votre dossier",
+      "detail": "Statuts, actes, contrats, contentieux fiscal : nos juristes traitent ce qui engage juridiquement votre entreprise, en OHADA et en droit camerounais.",
+      "action": "Poser ma question juridique",
+      "prestationsKicker": "Ce que nous traitons",
+      "prestationsTitre": "Du montage à la défense",
+      "prestations": [
+        "Rédaction et refonte des statuts, sous seing privé ou par acte notarié",
+        "Procès-verbaux d'assemblée, décisions de gérance, registres obligatoires",
+        "Cession de parts, augmentation de capital, entrée d'un investisseur",
+        "Pactes d'associés : ce que les statuts ne disent pas et qu'il faudra un jour",
+        "Contrats commerciaux, baux, contrats de travail et de prestation",
+        "Contentieux fiscal : réponse à notification, recours gracieux, recours contentieux",
+        "Transformation de forme juridique, fusion, dissolution et liquidation",
+        "Veille sur les textes OHADA et les lois de finances qui vous concernent"
+      ],
+      "pourQuiKicker": "Pour qui",
+      "pourQuiTitre": "Trois moments où le droit devient urgent",
+      "pourQui": [
+        {
+          "titre": "À la création",
+          "detail": "Les statuts décident de la gouvernance, de la responsabilité et de la sortie. Ils se rédigent une fois ; ils se corrigent difficilement."
+        },
+        {
+          "titre": "Quand l'entreprise change",
+          "detail": "Un associé entre, un autre part, le capital augmente, l'activité s'élargit. Chaque mouvement laisse une trace juridique, ou devrait en laisser une."
+        },
+        {
+          "titre": "Quand l'administration écrit",
+          "detail": "Une notification de redressement a des délais courts. Y répondre seul, ou trop tard, coûte souvent plus que le redressement lui-même."
+        }
+      ],
+      "deroulementKicker": "Comment ça se passe",
+      "deroulementTitre": "Du premier échange à l'acte signé",
+      "deroulement": [
+        {
+          "titre": "Vous exposez la situation",
+          "detail": "Un premier échange avec un juriste, sans engagement, pour savoir s'il s'agit d'un acte à rédiger, d'un délai à tenir, ou d'un problème plus large."
+        },
+        {
+          "titre": "Nous qualifions le dossier",
+          "detail": "Quel texte s'applique, quel délai court, quelles pièces existent. C'est là que se décide la stratégie, et c'est le temps le plus utile."
+        },
+        {
+          "titre": "Nous rédigeons ou nous répondons",
+          "detail": "L'acte, le contrat ou le mémoire en réponse. Vous le relisez, nous l'expliquons ligne à ligne, puis nous le déposons."
+        },
+        {
+          "titre": "Nous suivons jusqu'à la clôture",
+          "detail": "Inscription au greffe, réponse de l'administration, exécution. Un dossier n'est clos que lorsque l'autre partie a répondu."
+        }
+      ],
+      "tarifKicker": "Combien",
+      "tarifTitre": "À l'acte, ou compris dans l'adhésion",
+      "tarifDetail": "Les actes courants sont tarifés à l'unité et annoncés avant d'être engagés. Les adhérents du centre bénéficient de l'assistance juridique courante sans facturation supplémentaire ; seuls les actes lourds et le contentieux sont chiffrés à part.",
+      "tarifAppel": "Une question juridique n'attend pas : le premier échange est gratuit."
+    },
+    "conseil": {
+      "kicker": "Conseil et audit",
+      "titre": "Savoir où vous en êtes, avant de décider",
+      "detail": "Audit de la situation comptable et fiscale, diagnostic de gestion, business plan chiffré : de quoi prendre une décision sur des chiffres plutôt que sur une impression.",
+      "action": "Demander un diagnostic",
+      "prestationsKicker": "Ce que nous produisons",
+      "prestationsTitre": "Des documents qui servent à décider",
+      "prestations": [
+        "Audit comptable : ce que disent réellement vos comptes, et ce qui y manque",
+        "Audit fiscal : votre exposition en cas de contrôle, chiffrée poste par poste",
+        "Diagnostic de gestion : marge par activité, seuil de rentabilité, besoin en trésorerie",
+        "Business plan chiffré, présentable à une banque ou à un investisseur",
+        "Dossier de financement : états financiers, prévisionnel, note de présentation",
+        "Évaluation d'entreprise, avant cession ou entrée d'un associé",
+        "Accompagnement à la mise en place d'une organisation comptable interne",
+        "Restitution commentée, avec le dirigeant, plutôt qu'un rapport envoyé par courriel"
+      ],
+      "pourQuiKicker": "Pour qui",
+      "pourQuiTitre": "Trois décisions qui méritent des chiffres",
+      "pourQui": [
+        {
+          "titre": "Emprunter ou investir",
+          "detail": "Une banque ne finance pas un projet, elle finance des états financiers. Le dossier se prépare, il ne s'improvise pas la veille du rendez-vous."
+        },
+        {
+          "titre": "Reprendre la main",
+          "detail": "L'activité tourne mais vous ne savez pas ce qui rapporte. Le diagnostic de gestion sépare ce qui porte l'entreprise de ce qui la freine."
+        },
+        {
+          "titre": "Vendre ou faire entrer un associé",
+          "detail": "Une valorisation défendable se construit sur des comptes tenus. C'est aussi le moment où les faiblesses du passé ressortent."
+        }
+      ],
+      "deroulementKicker": "Comment ça se passe",
+      "deroulementTitre": "De la collecte à la restitution",
+      "deroulement": [
+        {
+          "titre": "Nous définissons la question",
+          "detail": "« Puis-je emprunter ? », « où part ma marge ? », « que vaut mon entreprise ? ». Un audit sans question précise produit un rapport que personne ne lit."
+        },
+        {
+          "titre": "Nous rassemblons les pièces",
+          "detail": "Comptes, relevés, contrats, déclarations. Nous travaillons sur ce qui existe et signalons ce qui manque, sans jugement."
+        },
+        {
+          "titre": "Nous analysons et chiffrons",
+          "detail": "Chaque constat est rattaché à une pièce : un chiffre qu'on ne peut pas justifier ne se défend pas devant une banque ni devant un contrôleur."
+        },
+        {
+          "titre": "Nous restituons avec vous",
+          "detail": "Une séance de travail avec le dirigeant, document en main, et une liste d'actions classées par ce qu'elles rapportent. Pas un rapport envoyé par courriel."
+        }
+      ],
+      "tarifKicker": "Combien",
+      "tarifTitre": "Selon l'étendue, annoncé avant de commencer",
+      "tarifDetail": "Le coût dépend du périmètre et du nombre d'exercices à examiner : un business plan ne demande pas le même travail qu'un audit fiscal sur trois ans. Nous cadrons l'étendue avec vous, puis nous annonçons un montant ferme.",
+      "tarifAppel": "Le premier entretien de cadrage est gratuit, et il suffit souvent à savoir quoi regarder."
+    }
+  },
+  "legal": {
+    "mentions": {
+      "kicker": "Informations légales",
+      "titre": "Mentions légales",
+      "detail": "Qui édite ce site, qui l'héberge, et à qui s'adresser. Les informations ci-dessous engagent le cabinet et sont tenues à jour.",
+      "editeurTitre": "Éditeur du site",
+      "aCompleter": "⚠️ Page à compléter par le cabinet avant mise en ligne : numéro RCCM, numéro de contribuable, capital social, responsable de la publication nommé, et coordonnées de l'hébergeur. Ces mentions sont obligatoires et ne figurent pas encore ici, faute d'avoir été communiquées.",
+      "sections": [
+        {
+          "titre": "Responsable de la publication",
+          "corps": [
+            "La direction générale du CGA Broad Range Consulting Group est responsable de la publication de ce site.",
+            "Toute demande relative au contenu publié peut être adressée à contact@cga-brcgroup.com."
+          ]
+        },
+        {
+          "titre": "Hébergement",
+          "corps": [
+            "Le site est hébergé par un prestataire dont les coordonnées complètes seront précisées ici avant la mise en ligne."
+          ]
+        },
+        {
+          "titre": "Propriété intellectuelle",
+          "corps": [
+            "Les textes, la charte graphique et les documents publiés sur ce site sont la propriété du cabinet, sauf mention contraire. Leur reproduction à des fins commerciales est soumise à autorisation écrite.",
+            "Les logos des institutions mentionnées — DGI, CNPS, ONECCA, OHADA — restent la propriété de leurs titulaires. Ils sont affichés pour situer le cadre dans lequel le cabinet exerce, et n'impliquent aucun partenariat commercial."
+          ]
+        },
+        {
+          "titre": "Valeur des informations publiées",
+          "corps": [
+            "Les montants, délais et règles fiscales présentés sur ce site sont indicatifs. Ils sont établis à partir des tarifs officiels et des textes en vigueur à la date de rédaction, et peuvent évoluer.",
+            "Seul un devis établi après examen de votre dossier engage le cabinet. Aucune estimation en ligne ne vaut engagement contractuel."
+          ]
+        }
+      ]
+    },
+    "confidentialite": {
+      "kicker": "Vos données",
+      "titre": "Politique de confidentialité",
+      "detail": "Ce que nous collectons, pourquoi, combien de temps nous le gardons, et comment vous reprenez la main sur vos informations.",
+      "editeurTitre": "Responsable du traitement",
+      "aCompleter": "⚠️ Page à compléter par le cabinet avant mise en ligne : durée exacte de conservation par catégorie de données, liste des sous-traitants et prestataires techniques, et personne référente pour les demandes d'accès. Ces éléments dépendent de l'organisation interne du cabinet.",
+      "sections": [
+        {
+          "titre": "Ce que nous collectons",
+          "corps": [
+            "Les informations que vous nous transmettez volontairement : nom, numéro de téléphone, adresse électronique, et la description de votre demande. Elles proviennent des formulaires du site, des messages WhatsApp et des inscriptions à l'infolettre.",
+            "Le site ne dépose pas de traceur publicitaire et ne revend aucune donnée."
+          ]
+        },
+        {
+          "titre": "Pourquoi nous les collectons",
+          "corps": [
+            "Pour répondre à votre demande, établir un devis, et assurer le suivi de votre dossier si vous devenez client. Pour vous adresser l'infolettre si vous y avez souscrit.",
+            "Aucune de ces données n'est utilisée à d'autres fins que celles pour lesquelles vous nous les avez confiées."
+          ]
+        },
+        {
+          "titre": "Combien de temps nous les gardons",
+          "corps": [
+            "Une demande restée sans suite est effacée à l'issue d'un délai raisonnable. Les dossiers de clients sont conservés le temps de la relation contractuelle, puis pendant la durée légale de conservation des pièces comptables.",
+            "Vous pouvez demander l'effacement de vos données à tout moment, sous réserve des obligations légales de conservation qui s'imposent au cabinet."
+          ]
+        },
+        {
+          "titre": "Vos droits",
+          "corps": [
+            "Vous pouvez demander l'accès à vos données, leur rectification ou leur effacement, et retirer votre consentement à l'infolettre à tout moment.",
+            "Il suffit d'écrire à contact@cga-brcgroup.com ou d'appeler le cabinet. Nous répondons dans un délai d'un mois."
+          ]
+        },
+        {
+          "titre": "Sécurité",
+          "corps": [
+            "Les données sont accessibles aux seuls collaborateurs du cabinet qui en ont besoin pour traiter votre dossier. Elles ne sont transmises à un tiers que lorsque la démarche l'exige — administration fiscale, greffe, CNPS — et dans la limite de ce qui est nécessaire."
+          ]
+        }
+      ]
+    },
+    "cgv": {
+      "kicker": "Conditions",
+      "titre": "Conditions générales de vente",
+      "detail": "Le cadre des prestations que le cabinet réalise : ce sur quoi il s'engage, ce qui vous revient, et comment se règlent les honoraires.",
+      "editeurTitre": "Prestataire",
+      "aCompleter": "⚠️ Page à compléter par le cabinet avant mise en ligne : modalités de paiement acceptées et échéances, conditions de rétractation, clause de médiation et juridiction compétente. Ces clauses engagent juridiquement le cabinet et doivent être validées par son juriste.",
+      "sections": [
+        {
+          "titre": "Objet",
+          "corps": [
+            "Les présentes conditions régissent les prestations d'assistance comptable, fiscale, juridique et administrative réalisées par le cabinet pour ses clients et ses adhérents.",
+            "Elles sont complétées, pour chaque mission, par le devis accepté, qui prévaut en cas de divergence."
+          ]
+        },
+        {
+          "titre": "Formation du contrat",
+          "corps": [
+            "Toute prestation fait l'objet d'un devis préalable, gratuit et sans engagement. Le contrat est formé par l'acceptation écrite du devis par le client.",
+            "Les estimations affichées sur ce site sont indicatives et ne valent pas devis."
+          ]
+        },
+        {
+          "titre": "Obligations du cabinet",
+          "corps": [
+            "Le cabinet s'engage à exécuter la mission avec la diligence attendue d'un professionnel, dans le respect des textes en vigueur et des règles de sa profession.",
+            "Sauf mention contraire au devis, il est tenu d'une obligation de moyens : les délais d'obtention de documents auprès des administrations ne dépendent pas de lui."
+          ]
+        },
+        {
+          "titre": "Obligations du client",
+          "corps": [
+            "Le client fournit en temps utile les pièces et informations nécessaires à la mission, et répond de leur exactitude.",
+            "Un retard ou une inexactitude dans les pièces transmises peut décaler les délais annoncés et, le cas échéant, entraîner des pénalités dont le cabinet ne peut être tenu responsable."
+          ]
+        },
+        {
+          "titre": "Honoraires et paiement",
+          "corps": [
+            "Les honoraires sont ceux du devis accepté. Les frais officiels avancés par le cabinet pour le compte du client sont refacturés à l'euro près, sur justificatif.",
+            "Les abonnements de suivi comptable et de domiciliation se règlent selon la périodicité indiquée au devis."
+          ]
+        },
+        {
+          "titre": "Confidentialité",
+          "corps": [
+            "Le cabinet et ses collaborateurs sont tenus au secret professionnel sur l'ensemble des informations dont ils ont connaissance dans le cadre de leur mission."
+          ]
+        }
+      ]
+    }
   }
 }

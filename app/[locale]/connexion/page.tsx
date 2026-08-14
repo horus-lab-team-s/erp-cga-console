@@ -3,8 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
+import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
 import { FormulaireConnexion } from "@/app/components/vitrine/FormulaireConnexion";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
+import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
 import { Link } from "@/i18n/navigation";
 import "@/app/styles/vitrine.css";
 
@@ -21,17 +23,33 @@ export async function generateMetadata({
 /**
  * Page de connexion — maquette, section `surConnexion`.
  *
- * Elle vit HORS du groupe `(vitrine)` : pas d'en-tête de navigation, pas de pied,
- * pas de bandeau d'appel. Une page de connexion qui propose dix autres chemins
- * détourne de la seule action attendue.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ELLE PORTE L'EN-TÊTE ET LE PIED DU SITE
+ *
+ * Décision du 13 août 2026, qui **renverse** le choix initial. La page vivait
+ * auparavant sans navigation ni pied, au motif qu'une page de connexion offrant
+ * dix autres chemins détourne de la seule action attendue. Le raisonnement
+ * valait pour la concentration, mais il coûtait plus cher ailleurs : dépouillée
+ * de tout repère, la page donnait au visiteur le sentiment d'avoir **quitté le
+ * site** pour un service tiers — exactement l'inquiétude qu'on ne veut pas
+ * susciter au moment de saisir un identifiant.
+ *
+ * L'en-tête et le pied sont donc rendus ici, à la main, plutôt que par le
+ * gabarit `(vitrine)` : la page garde sa mise en page plein écran et son fond
+ * photographique, tout en montrant qu'elle fait partie du même ensemble.
+ *
+ * Le groupe de routes reste distinct de `(vitrine)` pour une raison qui n'a pas
+ * changé : cette page ne porte ni bandeau d'appel, ni annonce. On ne relance pas
+ * commercialement quelqu'un qui est en train de se connecter.
  *
  * Point d'entrée unique pour les quatre populations. Le routage vers le bon
  * espace se fait APRÈS authentification, selon le profil — il n'y a donc rien à
  * choisir ici.
  *
- * ⚠️ Le formulaire n'authentifie pas encore : le contexte K · Transverse, qui
- * porte l'identité et les rôles, n'est pas implémenté. Les champs sont présents
- * et désactivés plutôt qu'absents, pour que la structure soit recettable.
+ * ⚠️ Le formulaire n'authentifie pas : voir l'avertissement en tête de
+ * `FormulaireConnexion`. Le contexte K · Transverse, qui portera l'identité et
+ * les rôles, n'est pas implémenté.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 export default async function Connexion({
   params,
@@ -40,7 +58,13 @@ export default async function Connexion({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <Ecran />;
+  return (
+    <div className="vitrine">
+      <EnteteVitrine />
+      <Ecran />
+      <PiedVitrine />
+    </div>
+  );
 }
 
 function Ecran() {
@@ -61,7 +85,11 @@ function Ecran() {
     <main
       style={{
         position: "relative",
+        /* L'en-tête est fixe et se superpose : la réserve en tête évite que le
+           bloc de connexion passe dessous. Même valeur que `.entete-page`. */
         minHeight: "100vh",
+        paddingTop: 126,
+        paddingBottom: 40,
         background: "var(--brand-indigo-900)",
         overflow: "hidden",
         display: "flex",

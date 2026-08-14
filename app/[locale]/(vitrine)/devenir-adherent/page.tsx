@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { EnteteDePage } from "@/app/components/vitrine/EnteteDePage";
 import { EtapesProgression } from "@/app/components/vitrine/EtapesProgression";
+import { FormulaireService } from "@/app/components/vitrine/FormulaireService";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
 import { Link } from "@/i18n/navigation";
 
@@ -38,17 +39,22 @@ export async function generateMetadata({
  */
 export default async function DevenirAdherent({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ service?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { service } = await searchParams;
+
   return (
     <>
       <Ouverture />
       <Avantages />
       <Formules />
       <Parcours />
+      <Demande formuleChoisie={service} />
     </>
   );
 }
@@ -62,10 +68,10 @@ function Ouverture() {
       detail={t("detail")}
       images={["/images/pages/adherent-b.jpg", "/images/heros/slide-2.jpg"]}
       enfants={
-        <Link href="/contact" className="bouton bouton--principal heros__action">
+        <a href="#demande" className="bouton bouton--principal heros__action">
           {t("bulletin")}
           <IconeVitrine nom="fleche" taille={17} />
-        </Link>
+        </a>
       }
     />
   );
@@ -117,7 +123,7 @@ function Formules() {
   const conditions = t.raw("conditions") as { libelle: string; valeur: string }[];
 
   return (
-    <section id="formules" className="section section--centre section--filigrane">
+    <section id="formules" className="section section--centre">
       <div className="bloc">
         <span className="kicker">{t("formulesKicker")}</span>
         <h2 className="titre-section">{t("formulesTitre")}</h2>
@@ -152,8 +158,11 @@ function Formules() {
                   </li>
                 ))}
               </ul>
+              {/* Vers le formulaire de la **même page**, la formule déjà
+                  nommée. Renvoyer vers Contact obligeait le visiteur à
+                  retrouver, dans une liste, la formule qu'il venait de choisir. */}
               <Link
-                href="/contact"
+                href={`/devenir-adherent?service=${encodeURIComponent(f.nom)}#demande`}
                 className={`bouton bouton--${f.marque ? "principal" : "secondaire"} bouton--large`}
               >
                 {t("bulletin")}
@@ -200,6 +209,29 @@ function Parcours() {
             adhésion se déroule en quatre temps, et c'est ce déroulé qu'il faut
             faire sentir, pas quatre encadrés côte à côte. */}
         <EtapesProgression etapes={etapes} />
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Le bulletin d'adhésion, en bas de page, pré-rempli sur la formule choisie.
+ *
+ * La formule voyage dans l'adresse plutôt que dans un état client : « Demander
+ * mon bulletin » reste un simple lien, la page demeure rendue par le serveur, et
+ * une demande portant sur une formule précise se partage telle quelle.
+ */
+function Demande({ formuleChoisie }: { formuleChoisie?: string }) {
+  const t = useTranslations("pages.adherent");
+  const commun = useTranslations("commun");
+
+  return (
+    <section className="section section--centre">
+      <div className="bloc bloc--etroit">
+        <FormulaireService
+          sujetInitial={formuleChoisie ? `${t("titre")} — ${formuleChoisie}` : t("titre")}
+          numeroWhatsapp={commun("cabinet.whatsapp").replace(/\D/g, "")}
+        />
       </div>
     </section>
   );

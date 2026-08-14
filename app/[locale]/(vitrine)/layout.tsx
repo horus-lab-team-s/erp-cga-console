@@ -5,6 +5,7 @@ import { BandeauAnnonce } from "@/app/components/vitrine/BandeauAnnonce";
 import { BandeauAppel } from "@/app/components/vitrine/BandeauAppel";
 import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
 import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
+import { RetourEnHaut } from "@/app/components/vitrine/RetourEnHaut";
 import { lireAnnonce } from "@/app/lib/contenu-vitrine";
 import "@/app/styles/vitrine.css";
 
@@ -43,6 +44,10 @@ export default async function LayoutVitrine({
           contenu, et n'intercepte pas la première tabulation d'un visiteur qui
           vient lire. */}
       <BandeauAnnonce annonce={annonce} />
+
+      {/* La flèche de remontée, en bas à droite. Posée au-dessus de l'annonce en
+          hauteur pour ne pas recouvrir son bouton de fermeture. */}
+      <RetourEnHaut />
     </div>
   );
 }

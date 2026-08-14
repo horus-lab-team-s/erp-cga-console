@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
 import { EnteteDePage } from "@/app/components/vitrine/EnteteDePage";
+import { FormulaireService } from "@/app/components/vitrine/FormulaireService";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
 import { Link } from "@/i18n/navigation";
 
@@ -36,17 +37,95 @@ export async function generateMetadata({
  */
 export default async function CreerMonEntreprise({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ service?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { service } = await searchParams;
+
   return (
     <>
       <Ouverture />
       <PiecesDuDossier />
+      <Proformas />
       <Questions />
+      <Demande formeChoisie={service} />
     </>
+  );
+}
+
+/**
+ * Les proformas à télécharger.
+ *
+ * Deux devis type, fournis par le cabinet, pour la forme la plus demandée. Ils
+ * répondent à la question que l'estimateur ne traite pas : « à quoi ressemble le
+ * document que je vais recevoir ». Un prospect qui peut lire la proforma avant
+ * d'appeler arrive à l'entretien en sachant ce qu'il achète.
+ *
+ * Servis depuis `public/documents/` sous un nom normalisé — les fichiers
+ * d'origine portaient des espaces et des majuscules, qui font des adresses
+ * fragiles une fois partagées par message.
+ */
+function Proformas() {
+  const t = useTranslations("pages.creation");
+  const documents = [
+    { fichier: "proforma-sarl-sous-seing-prive.pdf", cle: "avecSuivi" },
+    { fichier: "proforma-sarl-sous-seing-prive-sans-suivi.pdf", cle: "sansSuivi" },
+  ] as const;
+
+  return (
+    <section className="section section--teinte section--centre">
+      <div className="bloc bloc--etroit">
+        <span className="kicker">{t("proformasKicker")}</span>
+        <h2 className="titre-section">{t("proformasTitre")}</h2>
+        <p className="chapeau chapeau--deux-lignes">{t("proformasDetail")}</p>
+
+        <div className="documents">
+          {documents.map((document) => (
+            <a
+              key={document.fichier}
+              className="document"
+              href={`/documents/${document.fichier}`}
+              /* `download` plutôt qu'une ouverture dans l'onglet : sur un
+                 téléphone, un PDF ouvert dans le navigateur se referme au
+                 premier retour arrière et le visiteur ne le retrouve plus. */
+              download
+            >
+              <span className="document__icone" aria-hidden="true">
+                <IconeVitrine nom="ponctuel" taille={22} epaisseur={1.6} />
+              </span>
+              <span className="document__texte">
+                <span className="document__titre">{t(`proformas.${document.cle}.titre`)}</span>
+                <span className="document__detail">{t(`proformas.${document.cle}.detail`)}</span>
+              </span>
+              <span className="document__action" aria-hidden="true">
+                <IconeVitrine nom="fleche" taille={16} />
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Le formulaire de demande, pré-rempli sur la création d'entreprise. */
+function Demande({ formeChoisie }: { formeChoisie?: string }) {
+  const t = useTranslations("pages.creation");
+  const commun = useTranslations("commun");
+
+  return (
+    <section className="section section--centre">
+      <div className="bloc bloc--etroit">
+        <FormulaireService
+          sujetInitial={formeChoisie ? `${t("titre")} — ${formeChoisie}` : t("titre")}
+          numeroWhatsapp={commun("cabinet.whatsapp").replace(/\D/g, "")}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -65,9 +144,9 @@ function Ouverture() {
             {commun("actions.estimerProjet")}
             <IconeVitrine nom="fleche" taille={17} />
           </Link>
-          <Link href="/contact" className="bouton bouton--clair heros__action">
+          <a href="#demande" className="bouton bouton--clair heros__action">
             {commun("actions.etreRappele")}
-          </Link>
+          </a>
         </div>
       }
     />

@@ -5,12 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { basculerTheme, lireTheme, souscrireTheme, themeParDefaut } from "@/app/lib/preferences";
-import {
-  ENTREES_NAV,
-  FORMES_JURIDIQUES,
-  SERVICES_VITRINE,
-  lienForme,
-} from "@/app/lib/services-vitrine";
+import { ENTREES_NAV, SERVICES_VITRINE } from "@/app/lib/services-vitrine";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { LANGUES } from "@/i18n/routing";
 import { IconeVitrine } from "./IconeVitrine";
@@ -57,7 +52,6 @@ function estCourante(chemin: string, href: string) {
 
 export function EnteteVitrine() {
   const t = useTranslations("vitrine.nav");
-  const mega = useTranslations("vitrine.megaMenu");
   const services = useTranslations("vitrine.services");
   const commun = useTranslations("commun");
   const chemin = usePathname();
@@ -67,6 +61,7 @@ export function EnteteVitrine() {
   const [megaOuvert, setMegaOuvert] = useState(false);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   const [niveauServices, setNiveauServices] = useState(false);
+  const [defile, setDefile] = useState(false);
   const zoneMega = useRef<HTMLDivElement>(null);
   const boutonServices = useRef<HTMLButtonElement>(null);
   const minuterieFermeture = useRef<number | null>(null);
@@ -124,6 +119,24 @@ export function EnteteVitrine() {
   // La minuterie de grâce ne doit pas survivre au démontage.
   useEffect(() => annulerFermeture, []);
 
+  /**
+   * La barre se teinte dès qu'on quitte le haut de la page.
+   *
+   * Elle est fixe, donc superposée en permanence. Sur la bannière, un fond opaque
+   * couperait la photographie ; plus bas, sur fond clair, du texte blanc sur rien
+   * serait illisible. Le seuil est haut (80 px) pour que la bascule se produise
+   * franchement, et non à la moindre secousse du doigt.
+   *
+   * `passive: true` : l'écouteur ne bloque jamais le défilement, ce qui compte
+   * sur un téléphone d'entrée de gamme.
+   */
+  useEffect(() => {
+    const surDefilement = () => setDefile(window.scrollY > 80);
+    surDefilement();
+    window.addEventListener("scroll", surDefilement, { passive: true });
+    return () => window.removeEventListener("scroll", surDefilement);
+  }, []);
+
   // Le corps ne défile plus derrière le tiroir : sans cela, refermer le menu
   // ramène le lecteur à un autre endroit de la page que celui qu'il a quitté.
   useEffect(() => {
@@ -142,7 +155,7 @@ export function EnteteVitrine() {
   }
 
   return (
-    <header className="entete-vitrine">
+    <header className="entete-vitrine" data-defile={defile ? "oui" : "non"}>
       {/* ── 1 · Barre utilitaire ─────────────────────────────────────── */}
       <div className="barre-utile">
         {/* Les deux mobiles d'abord, le fixe ensuite : au Cameroun on appelle et
@@ -288,74 +301,37 @@ export function EnteteVitrine() {
         </div>
 
         {/* ── 3 · Méga-menu ──────────────────────────────────────────── */}
+        {/* ── Le panneau des services : une liste, et rien d'autre ──────────
+            Il portait auparavant sept fiches détaillées, la liste des six formes
+            juridiques et un encart « Vous hésitez ? » avec deux boutons. Il
+            couvrait la moitié de l'écran, et surtout il faisait relire le
+            contenu que la page du service allait de toute façon donner.
+
+            Un menu n'est pas une page d'accueil : il conduit quelque part, le
+            plus vite possible. D'où une simple liste, séparée par un filet fin,
+            où l'on choisit et où l'on part.
+
+            Les formes juridiques ont disparu d'ici : la page « Créer mon
+            entreprise » les présente déjà toutes, et les répéter au menu
+            revenait à entretenir deux inventaires de la même chose. */}
         {megaOuvert && (
           <div className="mega" onMouseEnter={annulerFermeture}>
-            <div className="mega__grille">
+            <ul className="mega__liste">
               {SERVICES_VITRINE.map((service) => (
-                <Link
-                  key={service.cle}
-                  href={service.href}
-                  className={`mega__carte${service.accent ? " mega__carte--accent" : ""}`}
-                  onClick={() => setMegaOuvert(false)}
-                >
-                  <span className="mega__icone">
-                    <IconeVitrine nom={service.icone} epaisseur={1.6} />
-                  </span>
-                  <span style={{ minWidth: 0, flex: 1 }}>
-                    <span className="mega__titre">{services(`${service.cle}.titre`)}</span>
-                    <span className="mega__detail">{services(`${service.cle}.detail`)}</span>
-                    <span className="mega__prix">{services(`${service.cle}.prix`)}</span>
-                  </span>
-                </Link>
+                <li key={service.cle}>
+                  <Link
+                    href={service.href}
+                    className="mega__entree"
+                    onClick={() => setMegaOuvert(false)}
+                  >
+                    <span className="mega__entree-icone">
+                      <IconeVitrine nom={service.icone} taille={17} epaisseur={1.6} />
+                    </span>
+                    {services(`${service.cle}.titre`)}
+                  </Link>
+                </li>
               ))}
-            </div>
-
-            {/* Colonne des formes juridiques : le visiteur qui vient créer sait
-                déjà quelle société il veut, il ne veut pas relire les six
-                services pour la trouver. */}
-            <div className="mega__formes">
-              <p className="mega__formes-titre">{mega("creerTitre")}</p>
-              <ul className="mega__formes-liste">
-                {FORMES_JURIDIQUES.map((forme) => (
-                  <li key={forme.cle}>
-                    <Link href={lienForme(forme)} onClick={() => setMegaOuvert(false)}>
-                      {mega(`formes.${forme.cle}`)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mega__aparte">
-              <p style={{ margin: 0, font: "600 16px/1.35 var(--police-titre)", color: "#fff" }}>
-                {mega("hesitez")}
-              </p>
-              <p
-                style={{
-                  margin: 0,
-                  font: "400 12.5px/1.7 var(--police-texte)",
-                  color: "rgb(255 255 255 / 75%)",
-                  textWrap: "pretty",
-                }}
-              >
-                {mega("hesitezDetail")}
-              </p>
-              <Link
-                href="/estimation"
-                className="bouton bouton--principal bouton--large"
-                style={{ marginTop: "auto" }}
-                onClick={() => setMegaOuvert(false)}
-              >
-                {commun("actions.estimerProjet")}
-              </Link>
-              <Link
-                href="/contact"
-                className="bouton bouton--clair bouton--large"
-                onClick={() => setMegaOuvert(false)}
-              >
-                {commun("actions.etreRappele")}
-              </Link>
-            </div>
+            </ul>
           </div>
         )}
       </div>
@@ -424,38 +400,16 @@ export function EnteteVitrine() {
 
             {niveauServices ? (
               <>
+                {/* Au doigt comme au méga-menu : une liste, on choisit, on part.
+                    Ni prix ni description ici — la page du service les donne. */}
                 {SERVICES_VITRINE.map((service) => (
                   <Link key={service.cle} href={service.href} className="tiroir__lien">
-                    <span className="mega__icone" style={{ width: 32, height: 32 }}>
+                    <span className="mega__entree-icone">
                       <IconeVitrine nom={service.icone} taille={16} />
                     </span>
-                    <span style={{ minWidth: 0 }}>
-                      <span style={{ display: "block" }}>{services(`${service.cle}.titre`)}</span>
-                      <span
-                        style={{
-                          display: "block",
-                          font: "600 11.5px/1.4 var(--police-texte)",
-                          color: "var(--brand-magenta-600)",
-                        }}
-                      >
-                        {services(`${service.cle}.prix`)}
-                      </span>
-                    </span>
+                    {services(`${service.cle}.titre`)}
                   </Link>
                 ))}
-
-                {/* Mêmes raccourcis qu'au méga-menu : au doigt aussi, celui qui
-                    sait quelle société il veut doit y aller directement. */}
-                <p className="mega__formes-titre" style={{ marginTop: 16 }}>
-                  {mega("creerTitre")}
-                </p>
-                <div className="tiroir__formes">
-                  {FORMES_JURIDIQUES.map((forme) => (
-                    <Link key={forme.cle} href={lienForme(forme)} className="tiroir__forme">
-                      {mega(`formes.${forme.cle}`)}
-                    </Link>
-                  ))}
-                </div>
               </>
             ) : (
               <>

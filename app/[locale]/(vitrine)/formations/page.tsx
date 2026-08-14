@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
 import { EnteteDePage } from "@/app/components/vitrine/EnteteDePage";
+import { FormulaireService } from "@/app/components/vitrine/FormulaireService";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
 import { Link } from "@/i18n/navigation";
 
@@ -34,15 +35,25 @@ export async function generateMetadata({
  */
 export default async function Formations({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ service?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  /* La session choisie voyage dans l'adresse plutôt que dans un état client.
+     Trois avantages : « Réserver une place » reste un simple lien, la page
+     demeure rendue par le serveur, et l'inscription à une session précise
+     s'envoie par message telle quelle. */
+  const { service } = await searchParams;
+
   return (
     <>
       <Ouverture />
       <Catalogue />
+      <Demande sessionChoisie={service} />
     </>
   );
 }
@@ -138,8 +149,11 @@ function Catalogue() {
                 >
                   {t("parPersonne")}
                 </span>
+                {/* Vers le formulaire de la **même page**, avec la session déjà
+                    nommée : le visiteur ne doit pas avoir à retaper l'intitulé
+                    qu'il vient de lire. */}
                 <Link
-                  href="/contact"
+                  href={`/formations?service=${encodeURIComponent(session.titre)}#demande`}
                   className="bouton bouton--principal"
                   style={{ marginLeft: "auto" }}
                 >
@@ -182,10 +196,33 @@ function Catalogue() {
               {t("surMesureDetail")}
             </p>
           </div>
-          <Link href="/contact" className="bouton bouton--principal bouton--large">
+          <a href="#demande" className="bouton bouton--principal bouton--large">
             {commun("actions.demanderDevis")}
-          </Link>
+          </a>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Le formulaire d'inscription, en bas de page.
+ *
+ * `sessionChoisie` vient de l'adresse : cliquer « Réserver une place » sur une
+ * session amène ici avec son intitulé déjà rempli. Sans session choisie, le
+ * sujet reste générique — quelqu'un peut vouloir une formation sur mesure.
+ */
+function Demande({ sessionChoisie }: { sessionChoisie?: string }) {
+  const t = useTranslations("pages.formations");
+  const commun = useTranslations("commun");
+
+  return (
+    <section className="section section--teinte section--centre">
+      <div className="bloc bloc--etroit">
+        <FormulaireService
+          sujetInitial={sessionChoisie ? `${t("titre")} — ${sessionChoisie}` : t("titre")}
+          numeroWhatsapp={commun("cabinet.whatsapp").replace(/\D/g, "")}
+        />
       </div>
     </section>
   );

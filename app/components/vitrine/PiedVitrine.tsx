@@ -3,7 +3,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { FORMES_JURIDIQUES, lienForme } from "@/app/lib/services-vitrine";
 import { IconeVitrine } from "./IconeVitrine";
-import { Infolettre } from "./Infolettre";
 
 /**
  * Pied de page.
@@ -51,27 +50,39 @@ export function PiedVitrine() {
     <footer className="pied-vitrine">
       <div className="bloc">
         <div className="pied-vitrine__grille">
-          <div>
-            <p style={{ margin: "0 0 10px", font: "600 16px/1.3 var(--police-titre)", color: "#fff" }}>
-              {commun("cabinet.nom")}
-            </p>
-            <p style={{ margin: 0, font: "400 13.5px/1.7 var(--police-texte)", maxWidth: "48ch" }}>
-              {t("description")}
-            </p>
-            <p
-              style={{
-                margin: "16px 0 0",
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                font: "400 14px/1.5 var(--police-texte)",
-              }}
-            >
-              <a href={`tel:${commun("cabinet.telephone").replace(/\s/g, "")}`}>
-                {commun("cabinet.telephone")}
-              </a>
-              <a href={`mailto:${commun("cabinet.courriel")}`}>{commun("cabinet.courriel")}</a>
-            </p>
+          {/* ── Première colonne : le nom, la phrase, et les comptes publics ──
+              Elle portait aussi le téléphone fixe et le courriel du cabinet. Ils
+              en sont retirés : la barre utilitaire les affiche déjà en haut de
+              chaque page, et elle est désormais **fixe** — donc visible à tout
+              moment, y compris au bas d'un article. Les répéter ici ne servait
+              qu'à allonger le pied.
+
+              Les réseaux, eux, remontent dans cette colonne : ils occupaient
+              plus bas une bande à eux seuls, encadrée de deux filets, pour trois
+              logos et un numéro. */}
+          <div className="pied-vitrine__identite">
+            <p className="pied-vitrine__nom">{commun("cabinet.nom")}</p>
+            <p className="pied-vitrine__description">{t("description")}</p>
+
+            <h2 className="pied-vitrine__titre">{t("reseaux")}</h2>
+            <ul className="reseaux" aria-label={t("reseaux")}>
+              {RESEAUX.map((reseau) => (
+                <li key={reseau.cle}>
+                  <a
+                    className="reseaux__lien"
+                    href={reseau.href}
+                    target="_blank"
+                    /* `noreferrer` autant que `noopener` : on n'envoie pas
+                       l'adresse de la page consultée à un tiers. */
+                    rel="noopener noreferrer"
+                    aria-label={reseau.libelle}
+                    title={reseau.libelle}
+                  >
+                    <IconeVitrine nom={reseau.icone} taille={19} plein />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Créer — les six formes, chacune vers l'estimateur pré-rempli. */}
@@ -101,8 +112,10 @@ export function PiedVitrine() {
               <li>
                 <Link href="/devenir-adherent#formules">{t("declarationAnnuelle")}</Link>
               </li>
+              {/* La domiciliation a désormais sa fiche : elle renvoyait vers
+                  Contact du temps où elle n'en avait pas. */}
               <li>
-                <Link href="/contact">{t("domiciliation")}</Link>
+                <Link href="/services/domiciliation">{t("domiciliation")}</Link>
               </li>
               <li>
                 <Link href="/formations">{nav("formations")}</Link>
@@ -144,37 +157,14 @@ export function PiedVitrine() {
           </div>
         </div>
 
-        <div className="pied-vitrine__lien">
-          <Infolettre />
+        {/* La bande qui portait ici « Suivez-nous », trois logos et un numéro —
+            encadrée de deux filets, sur toute la largeur — a été supprimée. Les
+            logos ont rejoint la première colonne ; le numéro WhatsApp est déjà
+            dans la barre utilitaire, désormais fixe et donc lisible à tout
+            moment. Une bande entière pour trois icônes ne se justifiait pas.
 
-          <div>
-            <h2 className="pied-vitrine__titre">{t("reseaux")}</h2>
-            <ul className="reseaux" aria-label={t("reseaux")}>
-              {RESEAUX.map((reseau) => (
-                <li key={reseau.cle}>
-                  <a
-                    className="reseaux__lien"
-                    href={reseau.href}
-                    target="_blank"
-                    /* `noreferrer` autant que `noopener` : on n'envoie pas
-                       l'adresse de la page consultée à un tiers. */
-                    rel="noopener noreferrer"
-                    aria-label={reseau.libelle}
-                    title={reseau.libelle}
-                  >
-                    <IconeVitrine nom={reseau.icone} taille={19} plein />
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className="reseaux__numero">
-              <a href="https://wa.me/237699902184" target="_blank" rel="noopener noreferrer">
-                +237 699 902 184
-              </a>
-            </p>
-          </div>
-        </div>
-
+            L'agrément ministériel, qui suivait, est parti pour la même raison :
+            il figurait pour la troisième fois de la page. */}
         <div className="pied-vitrine__bas">
           <span>
             © {annee} {commun("cabinet.nom")}. {t("droits")}
@@ -186,14 +176,12 @@ export function PiedVitrine() {
           </span>
         </div>
 
-        <p
-          style={{
-            margin: "18px 0 0",
-            font: "400 12px/1.6 var(--police-texte)",
-            color: "rgb(255 255 255 / 55%)",
-          }}
-        >
-          {commun("cabinet.agrement")}
+        {/* La signature de l'atelier qui a réalisé le site, centrée en dernière
+            ligne. Lien sortant : `noopener noreferrer` comme partout ailleurs. */}
+        <p className="pied-vitrine__signature">
+          <a href="https://horus-lab.com" target="_blank" rel="noopener noreferrer">
+            Powered by <strong>BïdaSoft</strong>
+          </a>
         </p>
       </div>
     </footer>
