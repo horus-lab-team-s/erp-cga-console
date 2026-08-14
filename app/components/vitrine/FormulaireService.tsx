@@ -53,15 +53,36 @@ const DESTINATAIRE = "contact@cga-brcgroup.com";
 export function FormulaireService({
   sujetInitial,
   numeroWhatsapp,
+  formes,
+  formeInitiale,
 }: {
   /** Le service, la session ou la formule dont on part. Modifiable ensuite. */
   sujetInitial: string;
   /** Numéro du cabinet, chiffres seuls. */
   numeroWhatsapp: string;
+  /**
+   * Les formes juridiques à proposer, si le service en demande une.
+   *
+   * Absent partout ailleurs, et c'est voulu : demander « SARL ou SAS ? » à qui
+   * veut une domiciliation ou une formation n'a pas de sens, et un champ qui ne
+   * concerne pas le lecteur est un champ qu'il remplit au hasard.
+   */
+  formes?: readonly string[];
+  /** Code pré-sélectionné — celui du lien d'où l'on vient. */
+  formeInitiale?: string;
 }) {
   const t = useTranslations("vitrine.demande");
+  /* Les libellés viennent de l'estimateur : « SARL unipersonnelle », « Société
+     anonyme ». Un seul jeu de noms pour les deux écrans, sinon la forme choisie
+     ici ne se reconnaît plus dans le devis. */
+  const nomsFormes = useTranslations("pages.estimation.formes");
 
   const [sujet, setSujet] = useState(sujetInitial);
+  /* Une forme inconnue au barème est ignorée : l'adresse est modifiable à la
+     main, et mieux vaut un champ vide qu'une valeur inventée. */
+  const [forme, setForme] = useState(
+    formeInitiale && formes?.includes(formeInitiale) ? formeInitiale : "",
+  );
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [courriel, setCourriel] = useState("");
@@ -77,6 +98,7 @@ export function FormulaireService({
       `${t("champNom")} : ${nom}`,
       `${t("champTelephone")} : ${telephone}`,
       courriel ? `${t("champCourriel")} : ${courriel}` : null,
+      forme ? `${t("champForme")} : ${nomsFormes(forme)}` : null,
       message ? `\n${t("champMessage")} :\n${message}` : null,
     ]
       .filter((ligne) => ligne !== null)
@@ -112,6 +134,37 @@ export function FormulaireService({
           required
         />
       </div>
+
+      {/* La forme juridique, quand le service en appelle une.
+          Elle est exigée : c'est elle qui détermine le capital minimum, le
+          nombre d'associés, le passage ou non chez le notaire et le montant des
+          frais. Une demande de création qui ne la dit pas oblige le cabinet à
+          rappeler pour la poser — un aller-retour de plus, sur la démarche où
+          le visiteur est déjà le plus hésitant. */}
+      {formes && formes.length > 0 && (
+        <div>
+          <label className={etiquette} htmlFor="demande-forme">
+            {t("champForme")}
+          </label>
+          <select
+            id="demande-forme"
+            className="formulaire-service__champ"
+            value={forme}
+            onChange={(e) => setForme(e.target.value)}
+            required
+          >
+            {/* Aucune forme n'est cochée d'office quand le visiteur arrive sans
+                en avoir choisi une : un choix par défaut serait pris pour un
+                conseil du cabinet. */}
+            <option value="">{t("choisirForme")}</option>
+            {formes.map((code) => (
+              <option key={code} value={code}>
+                {nomsFormes(code)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="formulaire-service__paire">
         <div>

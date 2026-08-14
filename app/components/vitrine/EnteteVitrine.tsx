@@ -216,25 +216,72 @@ export function EnteteVitrine() {
                 ) : null;
 
                 return entree.megaMenu ? (
-                  <button
-                    key={entree.cle}
-                    ref={boutonServices}
-                    type="button"
-                    className="nav-vitrine__lien"
-                    aria-current={courante ? "page" : undefined}
-                    aria-expanded={megaOuvert}
-                    aria-haspopup="true"
-                    onMouseEnter={ouvrirMega}
-                    onFocus={ouvrirMega}
-                    /* Un bouton qui annonce `aria-haspopup` doit ouvrir le
-                       panneau, pas naviguer : le clic le bascule. La page
-                       « Nos services » reste atteignable depuis les fiches. */
-                    onClick={() => setMegaOuvert((ouvert) => !ouvert)}
-                  >
-                    {t(entree.cle)}
-                    <IconeVitrine nom="chevronBas" taille={15} epaisseur={1.8} />
-                    {repere}
-                  </button>
+                  /* Le panneau est rendu **dans** ce groupe, et non plus à côté
+                     de la pilule : c'est ce qui l'aligne sur le bouton. Posé
+                     plus haut dans l'arbre, il n'avait aucun repère et se calait
+                     sur le conteneur, à 48 px du bord de l'écran — d'où le
+                     décalage vers la gauche. Le groupe porte le `position:
+                     relative` dont le panneau se sert d'origine. */
+                  <div key={entree.cle} className="nav-vitrine__groupe">
+                    <button
+                      ref={boutonServices}
+                      type="button"
+                      className="nav-vitrine__lien"
+                      aria-current={courante ? "page" : undefined}
+                      aria-expanded={megaOuvert}
+                      aria-haspopup="true"
+                      onMouseEnter={ouvrirMega}
+                      onFocus={ouvrirMega}
+                      /* Un bouton qui annonce `aria-haspopup` doit ouvrir le
+                         panneau, pas naviguer : le clic le bascule. La page
+                         « Nos services » reste atteignable depuis les fiches. */
+                      onClick={() => setMegaOuvert((ouvert) => !ouvert)}
+                    >
+                      {t(entree.cle)}
+                      <IconeVitrine nom="chevronBas" taille={15} epaisseur={1.8} />
+                      {repere}
+                    </button>
+
+                    {/* ── Le panneau des services : une liste, et rien d'autre ──
+                        Il portait auparavant sept fiches détaillées, la liste des
+                        six formes juridiques et un encart « Vous hésitez ? » avec
+                        deux boutons. Il couvrait la moitié de l'écran, et surtout
+                        il faisait relire le contenu que la page du service allait
+                        de toute façon donner.
+
+                        Un menu n'est pas une page d'accueil : il conduit quelque
+                        part, le plus vite possible. D'où une simple liste,
+                        séparée par un filet fin, où l'on choisit et où l'on part.
+
+                        Les formes juridiques ont disparu d'ici : la page « Créer
+                        mon entreprise » les présente déjà toutes, et les répéter
+                        au menu revenait à entretenir deux inventaires de la même
+                        chose. */}
+                    {megaOuvert && (
+                      <div className="mega" onMouseEnter={annulerFermeture}>
+                        <ul className="mega__liste">
+                          {SERVICES_VITRINE.map((service) => (
+                            <li key={service.cle}>
+                              <Link
+                                href={service.href}
+                                className="mega__entree"
+                                onClick={() => setMegaOuvert(false)}
+                              >
+                                <span className="mega__entree-icone">
+                                  <IconeVitrine
+                                    nom={service.icone}
+                                    taille={17}
+                                    epaisseur={1.6}
+                                  />
+                                </span>
+                                {services(`${service.cle}.titre`)}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <Link
                     key={entree.cle}
@@ -300,40 +347,6 @@ export function EnteteVitrine() {
           </div>
         </div>
 
-        {/* ── 3 · Méga-menu ──────────────────────────────────────────── */}
-        {/* ── Le panneau des services : une liste, et rien d'autre ──────────
-            Il portait auparavant sept fiches détaillées, la liste des six formes
-            juridiques et un encart « Vous hésitez ? » avec deux boutons. Il
-            couvrait la moitié de l'écran, et surtout il faisait relire le
-            contenu que la page du service allait de toute façon donner.
-
-            Un menu n'est pas une page d'accueil : il conduit quelque part, le
-            plus vite possible. D'où une simple liste, séparée par un filet fin,
-            où l'on choisit et où l'on part.
-
-            Les formes juridiques ont disparu d'ici : la page « Créer mon
-            entreprise » les présente déjà toutes, et les répéter au menu
-            revenait à entretenir deux inventaires de la même chose. */}
-        {megaOuvert && (
-          <div className="mega" onMouseEnter={annulerFermeture}>
-            <ul className="mega__liste">
-              {SERVICES_VITRINE.map((service) => (
-                <li key={service.cle}>
-                  <Link
-                    href={service.href}
-                    className="mega__entree"
-                    onClick={() => setMegaOuvert(false)}
-                  >
-                    <span className="mega__entree-icone">
-                      <IconeVitrine nom={service.icone} taille={17} epaisseur={1.6} />
-                    </span>
-                    {services(`${service.cle}.titre`)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
       {/* ── Tiroir mobile, à deux niveaux ────────────────────────────── */}

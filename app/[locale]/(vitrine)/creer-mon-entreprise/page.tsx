@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { EnteteDePage } from "@/app/components/vitrine/EnteteDePage";
 import { FormulaireService } from "@/app/components/vitrine/FormulaireService";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
+import { FORMES_JURIDIQUES } from "@/app/lib/services-vitrine";
 import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
@@ -40,11 +41,16 @@ export default async function CreerMonEntreprise({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ service?: string }>;
+  /**
+   * `service` porte un intitulé libre — ce que le visiteur venait demander.
+   * `forme` porte un code du barème, posé par les liens du pied de page.
+   * Les deux sont distincts : l'un nomme la demande, l'autre la qualifie.
+   */
+  searchParams: Promise<{ service?: string; forme?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { service } = await searchParams;
+  const { service, forme } = await searchParams;
 
   return (
     <>
@@ -52,7 +58,7 @@ export default async function CreerMonEntreprise({
       <PiecesDuDossier />
       <Proformas />
       <Questions />
-      <Demande formeChoisie={service} />
+      <Demande sujetPrecise={service} formeChoisie={forme} />
     </>
   );
 }
@@ -113,7 +119,13 @@ function Proformas() {
 }
 
 /** Le formulaire de demande, pré-rempli sur la création d'entreprise. */
-function Demande({ formeChoisie }: { formeChoisie?: string }) {
+function Demande({
+  sujetPrecise,
+  formeChoisie,
+}: {
+  sujetPrecise?: string;
+  formeChoisie?: string;
+}) {
   const t = useTranslations("pages.creation");
   const commun = useTranslations("commun");
 
@@ -121,8 +133,13 @@ function Demande({ formeChoisie }: { formeChoisie?: string }) {
     <section className="section section--centre">
       <div className="bloc bloc--etroit">
         <FormulaireService
-          sujetInitial={formeChoisie ? `${t("titre")} — ${formeChoisie}` : t("titre")}
+          sujetInitial={sujetPrecise ? `${t("titre")} — ${sujetPrecise}` : t("titre")}
           numeroWhatsapp={commun("cabinet.whatsapp").replace(/\D/g, "")}
+          /* La forme n'entre pas dans le sujet : elle a son propre champ, et
+             l'écrire aux deux endroits ferait diverger les deux le jour où le
+             visiteur en change. */
+          formes={FORMES_JURIDIQUES.map((f) => f.codeBareme)}
+          formeInitiale={formeChoisie}
         />
       </div>
     </section>

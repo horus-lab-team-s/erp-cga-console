@@ -145,9 +145,22 @@ export const FORMES_JURIDIQUES = [
   { cle: "ETS", codeBareme: "ETS" },
 ] as const;
 
-/** Où mène une forme : l'estimateur, pré-rempli sur elle. */
+/**
+ * Où mène une forme : la page « Créer mon entreprise », **au formulaire**, avec
+ * le service et la forme déjà remplis.
+ *
+ * Elle menait à l'estimateur, et c'était répondre à côté. Qui clique « Créer une
+ * SARL » a décidé ; il veut lancer la démarche, pas se voir présenter une
+ * addition. L'estimateur reste accessible depuis la page et depuis la barre,
+ * pour qui hésite encore entre deux formes.
+ *
+ * L'ancre `#demande` est la moitié utile du lien : la page raconte les pièces du
+ * dossier, les proformas et la foire aux questions avant d'arriver au
+ * formulaire. Déposer le visiteur en haut lui ferait chercher ce qu'il vient
+ * de demander.
+ */
 export function lienForme(forme: (typeof FORMES_JURIDIQUES)[number]) {
-  return `/estimation?forme=${forme.codeBareme}`;
+  return `/creer-mon-entreprise?forme=${forme.codeBareme}#demande`;
 }
 
 /**

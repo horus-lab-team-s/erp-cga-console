@@ -392,18 +392,30 @@
 
 /* ── Méga-menu ──────────────────────────────────────────────────────────── */
 
+/* Le groupe qui tient « Nos services » et son panneau. Il s'étire sur toute la
+   hauteur de la pilule pour que `top: 100%` tombe sous la barre, et non sous la
+   ligne de texte du bouton. */
+.nav-vitrine__groupe {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Le panneau s'aligne sur le bord gauche du bouton qui l'ouvre.
+   Il portait `left: 48px; right: 48px`, hérité du temps où il s'étalait sur
+   trois colonnes et toute la largeur de l'écran. Réduit à une simple liste, il
+   gardait cette largeur : le cadre restait collé au bord de la fenêtre pendant
+   que le bouton, lui, est au centre — d'où le décalage vers la gauche. */
 .mega {
   position: absolute;
-  left: 48px;
-  right: 48px;
-  top: 110px;
+  left: 0;
+  top: calc(100% + 6px);
   background: var(--surface);
   border: 0;
   border-radius: 0;
   box-shadow: 0 20px 44px rgb(0 0 0 / 30%);
   padding: 24px;
-  display: flex;
-  gap: 24px;
   z-index: 50;
   animation: monte 0.25s ease;
 }
@@ -2048,18 +2060,6 @@
   background: var(--brand-magenta-100);
   color: var(--brand-magenta-600);
   text-decoration: none;
-}
-
-/* Sous 1180 px les trois régions ne tiennent plus de front : l'encart d'appel
-   passe à la ligne plutôt que d'étrangler les fiches. */
-@media (max-width: 1180px) {
-  .mega {
-    flex-wrap: wrap;
-  }
-
-  .mega__aparte {
-    width: 100%;
-  }
 }
 
 /* Raccourcis de formes dans le tiroir : deux colonnes de cibles larges, la

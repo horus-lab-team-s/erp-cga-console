@@ -272,6 +272,8 @@
     "titre": "Demander ce service",
     "detail": "Le service est déjà rempli. Indiquez-nous comment vous joindre : nous revenons vers vous sous 48 heures ouvrées.",
     "champSujet": "Service demandé",
+    "champForme": "Forme juridique",
+    "choisirForme": "Choisissez une forme…",
     "champNom": "Nom et prénom",
     "champTelephone": "Téléphone",
     "champCourriel": "Adresse électronique",

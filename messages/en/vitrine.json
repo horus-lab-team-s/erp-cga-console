@@ -272,6 +272,8 @@
     "titre": "Request this service",
     "detail": "The service is already filled in. Tell us how to reach you: we reply within two working days.",
     "champSujet": "Service requested",
+    "champForme": "Legal form",
+    "choisirForme": "Choose a legal form…",
     "champNom": "Full name",
     "champTelephone": "Phone",
     "champCourriel": "Email address",
