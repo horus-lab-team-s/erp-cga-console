@@ -1,14 +1,15 @@
-# Front CGA — image de production.
+# Console CGA — image de production : la console du cabinet et l'espace de l'adhérent.
 #
-# ⚠️ SE CONSTRUIT DEPUIS LA RACINE DU DÉPÔT, PAS DEPUIS CE DOSSIER :
+# Se construit depuis la racine de ce dépôt :
 #
-#     docker build -f Frontend_erp_cga/Dockerfile -t cga-front .
+#     docker build -t cga-console .
 #
-# C'est un workspace pnpm : `pnpm-lock.yaml` et `pnpm-workspace.yaml` sont à la
-# racine, et les dépendances réelles vivent dans le `node_modules` hissé du
-# parent. Construire depuis ce dossier installerait un arbre différent de celui
-# qu'emploient les développeurs — la classe de panne la plus longue à
-# diagnostiquer, parce qu'elle ne se reproduit sur aucun poste.
+# ⚠️ CELA A CHANGÉ À LA SCISSION. L'image se construisait depuis la racine du
+# monodépôt, avec `-f Frontend_erp_cga/Dockerfile`, parce que le verrou pnpm et
+# le `node_modules` hissé vivaient au-dessus du projet. Ce dépôt est seul et
+# porte son propre `package-lock.json` : le contexte de construction est donc
+# le dépôt lui-même, et tous les chemins qui commençaient par
+# « Frontend_erp_cga/ » désignaient un dossier qui n'existe plus.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # TROIS ÉTAGES
@@ -27,14 +28,13 @@
 
 # ── Étage 1 · dépendances ───────────────────────────────────────────────────
 FROM node:22-alpine AS dependances
-# `corepack` fournit la version de pnpm déclarée par le dépôt, plutôt qu'une
-# version quelconque installée globalement. Un gestionnaire de paquets qui n'est
-# pas celui du verrou peut résoudre un arbre différent.
-RUN corepack enable
 WORKDIR /construction
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY Frontend_erp_cga/package.json Frontend_erp_cga/
+# ⚠️ npm et non pnpm depuis la scission. Le monodépôt était un workspace pnpm :
+# un verrou unique à la racine, un `node_modules` hissé au-dessus du projet. Ce
+# dépôt est seul, il porte son propre `package-lock.json`, et faire semblant
+# d'avoir un workspace reviendrait à garder la complexité sans la raison.
+COPY package.json package-lock.json ./
 
 # ⚠️ Réglages de patience, et ils ne sont pas décoratifs : la première
 # construction de cette image a échoué sur un `fetch failed` du registre npm,
@@ -49,31 +49,30 @@ ENV npm_config_fetch_retries=5 \
     npm_config_fetch_retry_mintimeout=10000 \
     npm_config_fetch_retry_maxtimeout=120000 \
     npm_config_fetch_timeout=300000 \
-    npm_config_network_concurrency=4 \
-    PNPM_HOME=/pnpm \
-    npm_config_store_dir=/pnpm/store
+    npm_config_maxsockets=4
 
-# `--frozen-lockfile` : la construction échoue si le verrou ne correspond pas au
-# manifeste, au lieu de le mettre à jour en silence. Une image ne doit jamais
-# décider quelle version d'une dépendance elle installe.
+# `npm ci` et non `npm install` : la construction échoue si le verrou ne
+# correspond pas au manifeste, au lieu de le mettre à jour en silence. Une image
+# ne doit jamais décider quelle version d'une dépendance elle installe.
 #
-# ⚠️ Le magasin pnpm est monté en **cache BuildKit**, et ce n'est pas qu'une
+# ⚠️ Le cache npm est monté en **cache BuildKit**, et ce n'est pas qu'une
 # optimisation de vitesse. Sans lui, chaque tentative repart de zéro : sur une
 # liaison qui lâche au bout de quelques centaines de paquets, aucune tentative
 # n'aboutit jamais, quel que soit le nombre d'essais. Avec lui, chaque essai
 # conserve ce qu'il a obtenu et la construction converge.
 #
 # Le cache ne contient que des archives publiques identifiées par leur
-# empreinte — rien de confidentiel, et rien qui puisse dériver du verrou.
+# empreinte : rien de confidentiel, et rien qui puisse dériver du verrou.
+#
 # La boucle mérite d'être justifiée, parce qu'une reprise automatique masque
-# souvent un vrai défaut. Ici elle ne peut pas : `--frozen-lockfile` rend chaque
-# tentative **identique et déterministe**. Une seule cause d'échec varie d'un
-# essai à l'autre — le réseau —, et le cache fait que chaque passe reprend là où
-# la précédente s'est arrêtée. Trois essais qui échouent tous signalent donc un
+# souvent un vrai défaut. Ici elle ne peut pas : `npm ci` rend chaque tentative
+# **identique et déterministe**. Une seule cause d'échec varie d'un essai à
+# l'autre, le réseau, et le cache fait que chaque passe reprend là où la
+# précédente s'est arrêtée. Trois essais qui échouent tous signalent donc un
 # vrai problème, et la construction s'arrête pour de bon.
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     for essai in 1 2 3; do \
-      pnpm install --frozen-lockfile && exit 0; \
+      npm ci && exit 0; \
       echo "── Tentative $essai interrompue (réseau). Reprise sur le cache. ──"; \
       sleep 5; \
     done; \
@@ -81,16 +80,13 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 
 # ── Étage 2 · construction ──────────────────────────────────────────────────
 FROM node:22-alpine AS construction
-RUN corepack enable
 WORKDIR /construction
 
 COPY --from=dependances /construction/node_modules ./node_modules
-COPY --from=dependances /construction/Frontend_erp_cga/node_modules ./Frontend_erp_cga/node_modules
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY Frontend_erp_cga ./Frontend_erp_cga
+COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter ./Frontend_erp_cga build
+RUN npm run build
 
 # ── Étage 3 · exécution ─────────────────────────────────────────────────────
 FROM node:22-alpine AS execution
@@ -104,18 +100,20 @@ ENV NODE_ENV=production \
 # ⚠️ Un utilisateur sans privilège — même raison que côté API.
 RUN addgroup --system --gid 1001 cga && adduser --system --uid 1001 cga
 
-# Le traçage de Next reconstruit l'arborescence du workspace : la sortie
-# `standalone` porte donc le chemin du projet dans le monorepo.
+# ⚠️ La sortie `standalone` est PLATE depuis la scission : `server.js` est à sa
+# racine. Elle portait auparavant le chemin du projet dans le monodépôt, parce
+# que le traçage prenait le dossier parent pour racine. Voir
+# `outputFileTracingRoot` dans `next.config.ts`.
 COPY --from=construction --chown=cga:cga \
-     /construction/Frontend_erp_cga/.next/standalone ./
+     /construction/.next/standalone ./
 # ⚠️ `standalone` n'emporte **ni** `public/` **ni** `.next/static/` : la
 # documentation de Next les suppose servis par un réseau de diffusion. Il n'y en
 # a pas ici, et sans ces deux copies l'application se charge sans aucune feuille
 # de style — une page nue, sans la moindre erreur au journal.
 COPY --from=construction --chown=cga:cga \
-     /construction/Frontend_erp_cga/.next/static ./Frontend_erp_cga/.next/static
+     /construction/.next/static ./.next/static
 COPY --from=construction --chown=cga:cga \
-     /construction/Frontend_erp_cga/public ./Frontend_erp_cga/public
+     /construction/public ./public
 
 USER cga
 EXPOSE 3000
@@ -123,4 +121,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD ["node", "-e", "fetch('http://127.0.0.1:3000/fr').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
 
-CMD ["node", "Frontend_erp_cga/server.js"]
+CMD ["node", "server.js"]

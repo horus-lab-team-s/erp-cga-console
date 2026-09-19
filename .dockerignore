@@ -1,0 +1,17 @@
+# ⚠️ Sans ce fichier, `COPY . .` emporte `node_modules` et `.next` du poste de
+# travail dans le contexte de construction : plusieurs centaines de mégaoctets
+# envoyés au démon, un cache invalidé à chaque compilation locale, et surtout
+# des dépendances compilées pour la machine du développeur recopiées par-dessus
+# celles que l'image vient d'installer.
+node_modules
+.next
+out
+
+.git
+.gitignore
+
+.env
+.env*.local
+
+*.log
+.DS_Store

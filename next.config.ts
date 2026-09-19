@@ -4,16 +4,29 @@ import type { NextConfig } from "next";
 
 const avecInternationalisation = createNextIntlPlugin("./i18n/request.ts");
 
-/** La racine du workspace pnpm — le dossier parent, qui porte `pnpm-lock.yaml`
- *  et le `node_modules` hissé. */
-const racineWorkspace = path.resolve(import.meta.dirname, "..");
+/** La racine de ce dépôt.
+ *
+ *  ⚠️ C'était le dossier PARENT, du temps du monodépôt : le workspace pnpm y
+ *  portait le verrou et le `node_modules` hissé. Depuis la scission, ce dépôt
+ *  est seul et installe ses dépendances chez lui. Laisser la racine au-dessus
+ *  avait deux effets, tous deux discrets :
+ *
+ *    · le traçage sortait du dépôt et recopiait le chemin du dossier parent
+ *      dans `.next/standalone/`, si bien que `server.js` n'était plus là où on
+ *      l'attendait — et, dans une image, à un endroit qui dépend du répertoire
+ *      de construction ;
+ *    · Turbopack remontait chez le voisin, c'est-à-dire dans un autre dépôt du
+ *      produit.
+ */
+const racineDuDepot = path.resolve(import.meta.dirname);
 
 const nextConfig: NextConfig = {
   turbopack: {
     // Sans cette borne, Turbopack remonte l'arborescence à la recherche d'un
-    // workspace et sort du dépôt sur les postes qui portent un
-    // pnpm-workspace.yaml à la racine du profil utilisateur.
-    root: racineWorkspace,
+    // workspace et sort du dépôt : sur les postes qui portent un
+    // pnpm-workspace.yaml à la racine du profil utilisateur, et depuis la
+    // scission, jusque chez les dépôts voisins du produit.
+    root: racineDuDepot,
   },
 
   // ── Déploiement ───────────────────────────────────────────────────────────
@@ -28,12 +41,12 @@ const nextConfig: NextConfig = {
   // élargit d'autant la surface exposée.
   output: "standalone",
 
-  // ⚠️ Indispensable ici : par défaut, le traçage prend le dossier du projet
-  // pour racine et **ignore tout ce qui est au-dessus**. Avec pnpm, les
-  // dépendances réelles sont dans le `node_modules` hissé du parent : sans
-  // cette ligne, l'image se construit sans erreur et le serveur meurt au
-  // premier import manquant, à l'exécution.
-  outputFileTracingRoot: racineWorkspace,
+  // Le traçage prend le dossier du projet pour racine et ignore tout ce qui est
+  // au-dessus. C'est désormais ce qu'il faut : les dépendances de ce dépôt sont
+  // dans son propre `node_modules`. ⚠️ Du temps du monodépôt, cette ligne
+  // désignait le parent, faute de quoi l'image se construisait sans erreur et le
+  // serveur mourait au premier import manquant, à l'exécution.
+  outputFileTracingRoot: racineDuDepot,
 
   // ── Dépôt de pièces (pas 81) ─────────────────────────────────────────────
   //
