@@ -39,7 +39,25 @@ const nextConfig: NextConfig = {
   // ⚠️ Sans cela, une image Next exige tout `node_modules` — plusieurs
   // centaines de mégaoctets dont l'essentiel ne sert qu'à construire, et qui
   // élargit d'autant la surface exposée.
-  output: "standalone",
+  // ⚠️ PAS DE SORTIE AUTONOME SUR VERCEL, ET CE N'EST PAS UN CAPRICE.
+  //
+  // Next.js 16.3 a un défaut connu (vercel/next.js#96646) : dès qu'un
+  // adaptateur de déploiement est présent — celui de Vercel l'est —, Turbopack
+  // CESSE d'écrire `.next/next-server.js.nft.json`, le relevé des fichiers dont
+  // le serveur a besoin. Or le finalisateur de `standalone` continue de le lire,
+  // sans rattrapage. La construction s'effondre sur un `ENOENT` à la toute fin,
+  // après avoir engendré les soixante-cinq pages.
+  //
+  // ⚠️ Le défaut NE SE REPRODUIT PAS en local : sans adaptateur, le relevé est
+  // bien écrit, et la construction passe des deux façons. Chercher la cause ici
+  // ne mène donc nulle part, et c'est pour cela que ce commentaire existe.
+  //
+  // Sur Vercel, la sortie autonome ne sert de toute façon à rien : la plateforme
+  // fait son propre traçage. Elle sert pour Docker et pour la pile de
+  // démonstration, qui lancent `node .next/standalone/server.js`.
+  //
+  // À retirer quand le correctif sera livré (prévu pour 16.4).
+  output: process.env.VERCEL ? undefined : "standalone",
 
   // Le traçage prend le dossier du projet pour racine et ignore tout ce qui est
   // au-dessus. C'est désormais ce qu'il faut : les dépendances de ce dépôt sont
