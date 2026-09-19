@@ -1,41 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 
-import { Link, useRouter } from "@/i18n/navigation";
+import { connexion, type EtatConnexion } from "@/app/lib/actions-session";
+import { Link } from "@/i18n/navigation";
 import { IconeVitrine } from "./IconeVitrine";
 
 /**
  * Formulaire de connexion à l'espace client.
  *
- * ⚠️ CE N'EST PAS UNE AUTHENTIFICATION. La comparaison se fait **dans le
- * navigateur**, contre deux constantes présentes dans le code livré au visiteur.
- * N'importe qui peut les lire, et n'importe qui peut atteindre
- * `/tableau-de-bord` en tapant l'adresse : rien ne garde cette page.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * L'AUTHENTIFICATION SE FAIT CÔTÉ SERVEUR, ET RIEN NE TRANSITE PAR LE NAVIGATEUR
  *
- * C'est un ouvre-porte de démonstration, assumé comme tel, pour que le parcours
- * « vitrine → espace client → tableau de bord » se parcoure du doigt pendant les
- * recettes. La vraie authentification appartient au backend : jeton signé émis
- * par FastAPI, session en cookie `httpOnly`, et vérification côté serveur dans
- * le layout `(collaborateur)`. Tant que ce n'est pas fait, aucune donnée réelle
- * ne doit être exposée derrière cet écran.
+ * Ce composant ne compare rien, ne connaît aucun identifiant, et ne sait pas
+ * décider. Il envoie un formulaire à une action serveur, qui appelle le backend,
+ * pose le témoin `HttpOnly` et redirige. Voir `app/lib/actions-session.ts`.
  *
- * Les identifiants sont affichés à l'écran : les cacher ne protégerait rien
- * puisqu'ils sont dans le code, et les montrer évite d'avoir à les demander.
+ * Il en découle une propriété qui manquait à la version précédente : **la page
+ * de destination est réellement gardée**. Taper `/tableau-de-bord` dans la barre
+ * d'adresse sans session renvoie ici, parce que le gabarit `(collaborateur)`
+ * vérifie la session avant de rendre quoi que ce soit.
+ *
+ * LE ROUTAGE APRÈS CONNEXION N'EST PAS UN CHOIX OFFERT
+ *
+ * La page ne demande pas « êtes-vous collaborateur ou adhérent ». Le backend rend
+ * `interne`, et l'action serveur route en conséquence. Poser la question
+ * apprendrait au visiteur qu'il existe deux espaces, et laisserait un adhérent
+ * atterrir sur des écrans dont aucune donnée ne le concerne.
+ *
+ * LE MESSAGE D'ÉCHEC VIENT DU BACKEND, TEL QUEL
+ *
+ * Il est **le même** quelle que soit la cause — compte inconnu, mot de passe
+ * faux, compte suspendu, jamais activé, verrouillé. Le préciser ici rouvrirait
+ * l'oracle d'énumération que le backend prend soin de refermer : on essaie une
+ * liste d'adresses, on note ce qui répond différemment, et l'on obtient la liste
+ * des adhérents du cabinet.
+ *
+ * LE FORMULAIRE FONCTIONNE SANS JAVASCRIPT
+ *
+ * `action={...}` sur un `<form>` : la soumission est un POST ordinaire tant que
+ * le script n'a pas pris la main. Sur les connexions visées, c'est la différence
+ * entre « je peux me connecter » et « la page ne fait rien ».
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const IDENTIFIANT_DEMO = "demo@cga-brcgroup.com";
-const MOT_DE_PASSE_DEMO = "CGA-demo-2026";
+const ETAT_INITIAL: EtatConnexion = { echec: null };
 
 export function FormulaireConnexion() {
   const t = useTranslations("pages.connexion");
-  const routeur = useRouter();
-
-  const [identifiant, setIdentifiant] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
-  const [refuse, setRefuse] = useState(false);
-  const [enCours, setEnCours] = useState(false);
+  const [etat, envoyer, enCours] = useActionState(connexion, ETAT_INITIAL);
 
   const etiquette: React.CSSProperties = {
     display: "block",
@@ -56,73 +70,41 @@ export function FormulaireConnexion() {
     font: "500 14px/1.3 var(--police-texte)",
   };
 
-  function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
-    evenement.preventDefault();
-    const juste =
-      identifiant.trim().toLowerCase() === IDENTIFIANT_DEMO && motDePasse === MOT_DE_PASSE_DEMO;
-    if (!juste) {
-      setRefuse(true);
-      return;
-    }
-    setRefuse(false);
-    setEnCours(true);
-    routeur.push("/tableau-de-bord");
-  }
-
   return (
-    <form className="formulaire-heros" onSubmit={soumettre}>
+    <form className="formulaire-heros" action={envoyer}>
       <div>
-        <label style={etiquette} htmlFor="identifiant">
+        <label style={etiquette} htmlFor="courriel">
           {t("identifiant")}
         </label>
         <input
-          id="identifiant"
-          type="text"
+          id="courriel"
+          name="courriel"
+          type="email"
+          required
           style={saisie}
           autoComplete="username"
-          value={identifiant}
-          onChange={(e) => {
-            setIdentifiant(e.target.value);
-            setRefuse(false);
-          }}
-          aria-invalid={refuse}
+          aria-invalid={etat.echec !== null}
         />
       </div>
 
       <div>
-        <label style={etiquette} htmlFor="motdepasse">
+        <label style={etiquette} htmlFor="motDePasse">
           {t("motDePasse")}
         </label>
         <input
-          id="motdepasse"
+          id="motDePasse"
+          name="motDePasse"
           type="password"
+          required
           style={saisie}
           autoComplete="current-password"
-          value={motDePasse}
-          onChange={(e) => {
-            setMotDePasse(e.target.value);
-            setRefuse(false);
-          }}
-          aria-invalid={refuse}
+          aria-invalid={etat.echec !== null}
         />
       </div>
 
-      <label
-        style={{
-          display: "flex",
-          gap: 9,
-          alignItems: "center",
-          font: "400 12.5px/1.5 var(--police-texte)",
-          color: "rgb(255 255 255 / 72%)",
-        }}
-      >
-        <input type="checkbox" />
-        {t("garder")}
-      </label>
-
       {/* `role="alert"` : le refus est annoncé sans déplacer le focus, la
           correction se fait dans le champ où l'on est déjà. */}
-      {refuse && (
+      {etat.echec && (
         <p
           role="alert"
           style={{
@@ -135,7 +117,7 @@ export function FormulaireConnexion() {
             color: "#fff",
           }}
         >
-          {t("refus")}
+          {etat.echec}
         </p>
       )}
 
@@ -144,29 +126,11 @@ export function FormulaireConnexion() {
         className="bouton bouton--inverse formulaire-heros__envoi"
         disabled={enCours}
       >
-        {t("bouton")}
+        {enCours ? "Connexion…" : t("bouton")}
         <IconeVitrine nom="connexion" taille={16} />
       </button>
 
       <p className="formulaire-heros__pied">{t("aide")}</p>
-
-      {/* Les identifiants de démonstration, à l'écran. Ils sont de toute façon
-          dans le code envoyé au navigateur : les masquer ne protégerait rien. */}
-      <div
-        style={{
-          padding: "10px 12px",
-          borderRadius: 9,
-          background: "rgb(255 255 255 / 8%)",
-          border: "1px dashed rgb(255 255 255 / 30%)",
-          font: "400 12px/1.7 var(--police-texte)",
-          color: "rgb(255 255 255 / 82%)",
-        }}
-      >
-        <strong style={{ display: "block", marginBottom: 2 }}>{t("demoTitre")}</strong>
-        <code style={{ fontFamily: "var(--police-mono, monospace)" }}>{IDENTIFIANT_DEMO}</code>
-        <br />
-        <code style={{ fontFamily: "var(--police-mono, monospace)" }}>{MOT_DE_PASSE_DEMO}</code>
-      </div>
 
       <div
         style={{
@@ -177,8 +141,19 @@ export function FormulaireConnexion() {
           paddingTop: 4,
         }}
       >
+        {/* ⚠️ Ce lien manquait. « Mot de passe oublié ? » figurait dans les
+            traductions depuis l'origine et n'était rendu nulle part : la route
+            backend, le gabarit de courriel et le jeton de deux heures
+            existaient tous, sans aucun moyen de les déclencher depuis le site.
+            Un adhérent qui oubliait son mot de passe n'avait que le téléphone. */}
         <Link
-          href="/estimation"
+          href="/mot-de-passe-oublie"
+          style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "rgb(255 255 255 / 72%)" }}
+        >
+          {t("oubli")}
+        </Link>
+        <Link
+          href="/devenir-adherent"
           style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "#d9a3d6" }}
         >
           {t("creer")}

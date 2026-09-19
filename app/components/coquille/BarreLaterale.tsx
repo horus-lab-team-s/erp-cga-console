@@ -5,9 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
-import { COMPTEURS, UTILISATEUR, type Entreprise } from "@/app/lib/donnees-demo";
-import { NAVIGATION, NAVIGATION_ADMINISTRATION, type EntreeNav } from "@/app/lib/navigation";
+import { deconnexion } from "@/app/lib/actions-session";
+import {
+  NAVIGATION,
+  NAVIGATION_ADMINISTRATION,
+  entreesVisibles,
+  type EntreeNav,
+} from "@/app/lib/navigation";
+import type { Compteurs, Dossier } from "@/app/lib/portefeuille";
 import { basculerRepli, lireRepli, repliParDefaut, souscrireRepli } from "@/app/lib/preferences";
+import { initiales, LIBELLES_ROLE, type Acces } from "@/app/lib/acces";
 import { Icone } from "./Icone";
 import { SelecteurEntreprise } from "./SelecteurEntreprise";
 
@@ -45,23 +52,45 @@ import { SelecteurEntreprise } from "./SelecteurEntreprise";
  * (`alerte`) de ce qui attend (`neutre`) — la couleur seule ne suffisant pas,
  * chaque pastille porte aussi son `aria-label`.
  *
- * ⚠️ Les compteurs et l'utilisateur viennent de `donnees-demo` : ce sont des
- * valeurs de démonstration, à remplacer par le contexte K · Transverse quand
- * l'identité et les rôles existeront.
+ * CE QUE LA BARRE MONTRE DÉPEND DE QUI REGARDE
+ *
+ * Les entrées sont filtrées sur les permissions rendues par `GET /transverse/moi`.
+ * Un adhérent ne voit pas « Comptabilité », un comptable ne voit pas
+ * « Référentiel ».
+ *
+ * ⚠️ **Masquer n'est pas protéger.** Ce filtre sert à ne pas proposer un écran
+ * dont l'API refuserait les données — un bouton qui échoue est pire qu'un bouton
+ * absent. La protection est côté serveur, à chaque appel.
+ *
+ * CE QUI N'EST PAS ENCORE CONSTRUIT EST MONTRÉ INERTE
+ *
+ * Grisé, non cliquable, marqué « à venir ». Le raisonnement est en tête de
+ * `navigation.ts` : entre un lien qui tombe en 404 et une entrée absente, la
+ * troisième voie dit à la fois où l'on en est et où l'on va.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export function BarreLaterale({
+  acces,
+  dossiers,
+  compteurs,
   entrepriseCourante,
   onChangementEntreprise,
 }: {
-  entrepriseCourante: Entreprise | null;
-  onChangementEntreprise: (entreprise: Entreprise | null) => void;
+  acces: Acces;
+  dossiers: Dossier[];
+  compteurs: Compteurs;
+  entrepriseCourante: Dossier | null;
+  onChangementEntreprise: (entreprise: Dossier | null) => void;
 }) {
   const chemin = usePathname();
   // Le repli est persisté par utilisateur — § 10.6. Il est lu comme un magasin
   // externe : le serveur rend la barre dépliée, le client applique la préférence
   // en une seule passe, sans clignotement.
   const repliee = useSyncExternalStore(souscrireRepli, lireRepli, repliParDefaut);
+
+  const ecrans = entreesVisibles(NAVIGATION, acces.permissions);
+  const administration = entreesVisibles(NAVIGATION_ADMINISTRATION, acces.permissions);
+  const role = acces.roles.map((r) => LIBELLES_ROLE[r]).join(", ") || "Sans rôle";
 
   return (
     <nav
@@ -85,21 +114,40 @@ export function BarreLaterale({
 
       <SelecteurEntreprise
         repliee={repliee}
+        dossiers={dossiers}
         entrepriseCourante={entrepriseCourante}
         onChangement={onChangementEntreprise}
       />
 
       <div className="barre__separateur" />
 
-      {NAVIGATION.map((entree) => (
-        <Entree key={entree.href} entree={entree} chemin={chemin} repliee={repliee} />
+      {ecrans.map((entree) => (
+        <Entree
+          key={entree.href}
+          entree={entree}
+          chemin={chemin}
+          repliee={repliee}
+          compteurs={compteurs}
+        />
       ))}
 
-      <div className="barre__separateur" />
-      {!repliee && <div className="barre__groupe">Administration</div>}
-      {NAVIGATION_ADMINISTRATION.map((entree) => (
-        <Entree key={entree.href} entree={entree} chemin={chemin} repliee={repliee} />
-      ))}
+      {/* Le groupe Administration ne s'affiche que s'il contient quelque chose :
+          un intitulé suivi du vide laisse croire à une panne. */}
+      {administration.length > 0 && (
+        <>
+          <div className="barre__separateur" />
+          {!repliee && <div className="barre__groupe">Administration</div>}
+          {administration.map((entree) => (
+            <Entree
+              key={entree.href}
+              entree={entree}
+              chemin={chemin}
+              repliee={repliee}
+              compteurs={compteurs}
+            />
+          ))}
+        </>
+      )}
 
       <button type="button" className="barre__bouton-repli" onClick={basculerRepli}>
         <Icone nom={repliee ? "deplier" : "replier"} taille={16} />
@@ -124,10 +172,10 @@ export function BarreLaterale({
         {!repliee && "Retour au site"}
       </Link>
 
-      <div className="barre__compte" title={`${UTILISATEUR.nom} — ${UTILISATEUR.role}`}>
-        <span className="barre__compte-jeton">{UTILISATEUR.initiales}</span>
+      <div className="barre__compte" title={`${acces.nom_complet} — ${role}`}>
+        <span className="barre__compte-jeton">{initiales(acces.nom_complet)}</span>
         {!repliee && (
-          <span style={{ minWidth: 0 }}>
+          <span style={{ minWidth: 0, flex: 1 }}>
             <span
               style={{
                 display: "block",
@@ -137,13 +185,26 @@ export function BarreLaterale({
                 whiteSpace: "nowrap",
               }}
             >
-              {UTILISATEUR.nom}
+              {acces.nom_complet}
             </span>
             <span style={{ display: "block", font: "400 10.5px/1.4 var(--police-texte)" }}>
-              {UTILISATEUR.role}
+              {role}
             </span>
           </span>
         )}
+        {/* La déconnexion est une action serveur : elle révoque réellement la
+            session côté backend avant d'effacer le témoin. Effacer le témoin seul
+            laisserait une session vivante que plus personne ne saurait fermer. */}
+        <form action={deconnexion}>
+          <button
+            type="submit"
+            className="barre__deconnexion"
+            title="Se déconnecter"
+            aria-label="Se déconnecter"
+          >
+            <Icone nom="retour" taille={15} />
+          </button>
+        </form>
       </div>
     </nav>
   );
@@ -153,16 +214,42 @@ function Entree({
   entree,
   chemin,
   repliee,
+  compteurs,
 }: {
   entree: EntreeNav;
   chemin: string;
   repliee: boolean;
+  compteurs: Compteurs;
 }) {
   // Une entrée est active sur son propre chemin et sur ses sous-chemins, sinon
   // « Comptabilité » s'éteindrait dès qu'on ouvre « Saisie ».
   const actif = chemin === entree.href || chemin.startsWith(`${entree.href}/`);
-  const compteur = entree.compteur ? COMPTEURS[entree.compteur.cle] : 0;
+  const compteur = entree.compteur ? compteurs[entree.compteur.cle] : 0;
   const enfantsVisibles = actif && !repliee && entree.enfants?.length;
+
+  // Un écran qui n'existe pas est montré, et il est inerte — voir l'en-tête de
+  // `navigation.ts`. `<span>` plutôt qu'un `<a>` désactivé : un lien mort reste
+  // annoncé comme lien par un lecteur d'écran, et se traverse au clavier pour
+  // n'aboutir nulle part.
+  if (!entree.construit) {
+    return (
+      <span
+        className="lien-nav lien-nav--a-venir"
+        aria-disabled="true"
+        title={`${entree.libelle} — écran à venir`}
+      >
+        <span className="lien-nav__icone">
+          <Icone nom={entree.icone} />
+        </span>
+        {!repliee && (
+          <>
+            <span className="lien-nav__libelle">{entree.libelle}</span>
+            <span className="lien-nav__a-venir">à venir</span>
+          </>
+        )}
+      </span>
+    );
+  }
 
   return (
     <>

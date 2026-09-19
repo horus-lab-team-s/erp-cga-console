@@ -1,6 +1,7 @@
 "use client";
 
-import type { Canal } from "@/app/lib/collecte-demo";
+/** Le libellé du canal, tel que la collecte le rend (pas 75 : plus une simulation). */
+type Canal = string;
 import { APPARENCE, type Severite } from "../Gravite";
 import type { Statut } from "../Montant";
 

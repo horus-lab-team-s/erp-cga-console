@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ENTREPRISES, ENTREPRISES_RECENTES, type Entreprise } from "@/app/lib/donnees-demo";
+import type { Dossier } from "@/app/lib/portefeuille";
 import { Icone } from "./Icone";
 
 /**
@@ -22,13 +22,15 @@ import { Icone } from "./Icone";
  *    alterne entre trois ou quatre dossiers dans une même demi-journée.
  */
 export function SelecteurEntreprise({
+  dossiers,
   repliee,
   entrepriseCourante,
   onChangement,
 }: {
   repliee: boolean;
-  entrepriseCourante: Entreprise | null;
-  onChangement: (entreprise: Entreprise | null) => void;
+  dossiers: Dossier[];
+  entrepriseCourante: Dossier | null;
+  onChangement: (entreprise: Dossier | null) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const [requete, setRequete] = useState("");
@@ -56,20 +58,22 @@ export function SelecteurEntreprise({
   const resultats = useMemo(() => {
     const terme = requete.trim().toLocaleLowerCase("fr");
     if (!terme) return null;
-    return ENTREPRISES.filter(
+    return dossiers.filter(
       (e) =>
         e.denomination.toLocaleLowerCase("fr").includes(terme) ||
         e.niu.toLocaleLowerCase("fr").includes(terme),
     );
-  }, [requete]);
+  }, [requete, dossiers]);
 
-  const recentes = ENTREPRISES_RECENTES.map((nom) =>
-    ENTREPRISES.find((e) => e.denomination === nom),
-  ).filter((e): e is Entreprise => Boolean(e));
+  // ⚠️ La notion de « dossiers récents » a disparu avec le jeu de démonstration :
+  // elle était une constante en dur. La rétablir suppose de savoir ce que **ce**
+  // collaborateur a ouvert récemment, c'est-à-dire une préférence par compte —
+  // affaire du contexte K, pas de cet écran. Inventer ici un ordre plausible
+  // ferait croire à une mémoire qui n'existe pas.
+  const recentes: Dossier[] = [];
+  const autres = dossiers;
 
-  const autres = ENTREPRISES.filter((e) => !ENTREPRISES_RECENTES.includes(e.denomination));
-
-  function choisir(entreprise: Entreprise | null) {
+  function choisir(entreprise: Dossier | null) {
     onChangement(entreprise);
     setOuvert(false);
     setRequete("");
@@ -172,7 +176,7 @@ function OptionTousDossiers({
   onChoix,
 }: {
   actuel: boolean;
-  onChoix: (e: Entreprise | null) => void;
+  onChoix: (e: Dossier | null) => void;
 }) {
   return (
     <button
@@ -203,9 +207,9 @@ function Option({
   actuel,
   onChoix,
 }: {
-  entreprise: Entreprise;
+  entreprise: Dossier;
   actuel: boolean;
-  onChoix: (e: Entreprise) => void;
+  onChoix: (e: Dossier) => void;
 }) {
   return (
     <button
@@ -232,7 +236,8 @@ function Option({
           className="tabulaire"
           style={{ font: "400 11.5px/1.5 var(--police-texte)", color: "var(--ink-500)" }}
         >
-          {entreprise.niu} · {entreprise.ville}
+          {entreprise.niu}
+          {entreprise.siege ? ` · ${entreprise.siege}` : ""}
         </span>
       </span>
       <span

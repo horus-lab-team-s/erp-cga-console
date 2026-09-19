@@ -47,19 +47,25 @@ export function Panneau({
       <div
         style={{
           flex: "none",
-          height: 40,
+          // ⚠️ `minHeight` et non `height`, et le retour à la ligne permis (pas 100) : à
+          // largeur de téléphone, un titre long (« Ce qui compose le risque ») suivi de son
+          // aide ne tient pas sur une ligne. Avec une hauteur fixe et un interligne de 1, le
+          // texte débordait sur la bordure, sur tous les écrans. Sur ordinateur, l'en-tête
+          // garde ses 40 px.
+          minHeight: 40,
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "center",
-          gap: 10,
-          padding: "0 14px",
+          gap: "4px 10px",
+          padding: "8px 14px",
           borderBottom: "1px solid var(--line-200)",
         }}
       >
-        <h2 style={{ margin: 0, font: "600 16px/1 var(--police-texte)", color: "var(--ink-900)" }}>
+        <h2 style={{ margin: 0, font: "600 16px/1.25 var(--police-texte)", color: "var(--ink-900)" }}>
           {titre}
         </h2>
         {aide && (
-          <span style={{ font: "400 12px/1 var(--police-texte)", color: "var(--ink-500)" }}>
+          <span style={{ font: "400 12px/1.35 var(--police-texte)", color: "var(--ink-500)" }}>
             {aide}
           </span>
         )}

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { ReponseControle } from "@/app/lib/api";
-import { CANAUX, STATUTS_PIECE, metaCollecte, type Canal } from "@/app/lib/collecte-demo";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { BadgeGravite, type Severite } from "../Gravite";
 import { PastilleStatut, type Statut } from "../Montant";
@@ -26,57 +25,50 @@ import { BarreFiltres, FILTRES_VIDES, type Compteurs, type Filtres } from "./Bar
  * Contrainte de densité : **au moins 25 lignes visibles sans défilement** en
  * 1440 × 900. La hauteur de ligne est donc à 32 px ici, plus serrée que les 36 px
  * habituels, et la barre de filtres tient sur une seule ligne.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ PAS 75 : LA LIGNE EST UNE PIÈCE DE LA COLLECTE, PLUS UNE FACTURE SIMULÉE
+ *
+ * Le canal et le statut de chaque ligne venaient de `lib/collecte-demo.ts`, une
+ * table écrite à la main « en attendant le contexte Collecte ». La collecte existait
+ * depuis longtemps au backend. Mesure faite : sur 29 factures affichées, **17 canaux
+ * et 16 statuts étaient faux**. F-2026-0412 s'affichait « Reçue », donc à traiter,
+ * alors qu'elle était comptabilisée. Et les pièces sans facture extraite, celles
+ * qu'il faut justement ouvrir, n'apparaissaient pas.
+ *
+ * Désormais la page construit les lignes côté serveur : une ligne par pièce reçue,
+ * son canal et son état tels que la collecte les connaît, « Rectif. demandée » quand
+ * une demande de rectificative est ouverte sur elle, et la conformité quand la
+ * facture qu'elle porte a été contrôlée. Une pièce sans facture extraite n'a ni
+ * référence ni verdict : elle se lit « à identifier », et ne s'ouvre pas en E02.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
 export type LignePiece = {
-  reference: string;
+  /** L'identifiant de la pièce : la clé de la ligne. Deux pièces peuvent porter la même facture. */
+  identifiant: string;
+  /** La référence de la facture extraite, ou `null` pour une pièce à identifier. */
+  reference: string | null;
   adherent: string;
   fournisseur: string;
   date: string;
-  ttc: string;
-  canal: Canal;
+  ttc: string | null;
+  canal: string;
   statut: Statut;
-  severite: Severite;
-  reponse: ReponseControle;
+  /** `null` : aucune facture contrôlée sur cette pièce. */
+  severite: Severite | null;
+  reponse: ReponseControle | null;
 };
 
-const ORDRE_SEVERITE: Record<string, number> = {
-  BLOQUANT: 4,
-  MAJEUR: 3,
-  AVERTISSEMENT: 2,
-  INFORMATION: 1,
-  CONFORME: 0,
-};
+/** L'ordre de progression d'une pièce, pour les filtres. */
+const STATUTS_PIECE: Statut[] = ["Reçue", "Lue", "Rapprochée", "Comptabilisée", "Archivée", "Rectif. demandée"];
+
 
 /** Grille partagée par l'en-tête, les lignes et le pied : une seule déclaration. */
 const GRILLE = "32px 104px minmax(0,1.35fr) minmax(0,1.5fr) 82px 122px 92px 118px 116px";
 
-export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
+export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
   const routeur = useRouter();
-
-  const lignes = useMemo<LignePiece[]>(
-    () =>
-      rapports.map(({ facture, rapport }) => {
-        const meta = metaCollecte(facture.document.reference);
-        const severite = (rapport.constats.length
-          ? rapport.constats.reduce((pire, c) =>
-              ORDRE_SEVERITE[c.severite] > ORDRE_SEVERITE[pire.severite] ? c : pire,
-            ).severite
-          : "CONFORME") as Severite;
-        return {
-          reference: facture.document.reference,
-          adherent: facture.destinataire.denomination ?? "—",
-          fournisseur: facture.emetteur.denomination ?? "—",
-          date: facture.document.date_emission,
-          ttc: facture.montants.total_ttc,
-          canal: meta.canal,
-          statut: meta.statut,
-          severite,
-          reponse: { facture, rapport, verdict: rapportVerdictFactice(severite) },
-        };
-      }),
-    [rapports],
-  );
 
   const [filtres, setFiltres] = useState<Filtres>(FILTRES_VIDES);
   const [cochees, setCochees] = useState<Set<string>>(new Set());
@@ -91,11 +83,11 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
   const indexActif = Math.min(indexSouhaite, Math.max(0, visibles.length - 1));
   const active = visibles[indexActif] ?? null;
 
-  const basculerCoche = useCallback((reference: string) => {
+  const basculerCoche = useCallback((identifiant: string) => {
     setCochees((actuelles) => {
       const suivantes = new Set(actuelles);
-      if (suivantes.has(reference)) suivantes.delete(reference);
-      else suivantes.add(reference);
+      if (suivantes.has(identifiant)) suivantes.delete(identifiant);
+      else suivantes.add(identifiant);
       return suivantes;
     });
   }, []);
@@ -127,7 +119,8 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
           setIndexActif(Math.max(0, visibles.length - 1));
           break;
         case "Enter":
-          if (active) {
+          // Une pièce à identifier n'a pas de rapport à ouvrir.
+          if (active?.reference) {
             evenement.preventDefault();
             routeur.push(`/pieces/${active.reference}`);
           }
@@ -135,7 +128,7 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
         case " ":
           if (active) {
             evenement.preventDefault();
-            basculerCoche(active.reference);
+            basculerCoche(active.identifiant);
           }
           break;
         case "Escape":
@@ -158,7 +151,7 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
   }, [indexActif]);
 
   const compteurs = useMemo(() => compter(lignes), [lignes]);
-  const toutesCochees = visibles.length > 0 && visibles.every((l) => cochees.has(l.reference));
+  const toutesCochees = visibles.length > 0 && visibles.every((l) => cochees.has(l.identifiant));
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: "flex", gap: 16 }}>
@@ -209,7 +202,7 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
               aria-label="Tout sélectionner"
               onChange={() =>
                 setCochees(
-                  toutesCochees ? new Set() : new Set(visibles.map((l) => l.reference)),
+                  toutesCochees ? new Set() : new Set(visibles.map((l) => l.identifiant)),
                 )
               }
             />
@@ -242,14 +235,14 @@ export function BoiteReception({ rapports }: { rapports: ReponseControle[] }) {
             ) : (
               visibles.map((ligne, index) => (
                 <Ligne
-                  key={ligne.reference}
+                  key={ligne.identifiant}
                   ligne={ligne}
                   actif={index === indexActif}
-                  coche={cochees.has(ligne.reference)}
+                  coche={cochees.has(ligne.identifiant)}
                   alterne={index % 2 === 1}
                   onSurvol={() => setIndexActif(index)}
-                  onCocher={() => basculerCoche(ligne.reference)}
-                  onOuvrir={() => routeur.push(`/pieces/${ligne.reference}`)}
+                  onCocher={() => basculerCoche(ligne.identifiant)}
+                  onOuvrir={() => ligne.reference && routeur.push(`/pieces/${ligne.reference}`)}
                 />
               ))
             )}
@@ -313,26 +306,33 @@ function Ligne({
       <input
         type="checkbox"
         checked={coche}
-        aria-label={`Sélectionner ${ligne.reference}`}
+        aria-label={`Sélectionner ${ligne.reference ?? ligne.identifiant}`}
         onChange={onCocher}
         onClick={(e) => e.stopPropagation()}
       />
-      <button
-        type="button"
-        onClick={onOuvrir}
-        className="tabulaire"
-        style={{
-          border: 0,
-          background: "none",
-          padding: 0,
-          textAlign: "left",
-          cursor: "pointer",
-          color: "var(--brand-indigo-700)",
-          font: "500 12.5px/1 var(--police-texte)",
-        }}
-      >
-        {ligne.reference}
-      </button>
+      {ligne.reference ? (
+        <button
+          type="button"
+          onClick={onOuvrir}
+          className="tabulaire"
+          title={ligne.identifiant}
+          style={{
+            border: 0,
+            background: "none",
+            padding: 0,
+            textAlign: "left",
+            cursor: "pointer",
+            color: "var(--brand-indigo-700)",
+            font: "500 12.5px/1 var(--police-texte)",
+          }}
+        >
+          {ligne.reference}
+        </button>
+      ) : (
+        <span className="tabulaire" title="Aucune facture extraite : pièce à identifier" style={{ color: "var(--ink-500)" }}>
+          {ligne.identifiant}
+        </span>
+      )}
       <Tronque titre={ligne.adherent} couleur="var(--brand-indigo-700)">
         {ligne.adherent}
       </Tronque>
@@ -344,14 +344,18 @@ function Ligne({
         className="tabulaire"
         style={{ textAlign: "right", fontWeight: 500, whiteSpace: "nowrap" }}
       >
-        {montantFcfa(ligne.ttc)}
+        {ligne.ttc ? montantFcfa(ligne.ttc) : "—"}
       </span>
       <span style={{ color: "var(--ink-500)" }}>{ligne.canal}</span>
       <span>
         <PastilleStatut statut={ligne.statut} />
       </span>
       <span>
-        <BadgeGravite severite={ligne.severite} court />
+        {ligne.severite ? (
+          <BadgeGravite severite={ligne.severite} court />
+        ) : (
+          <span style={{ color: "var(--ink-500)" }}>à identifier</span>
+        )}
       </span>
     </div>
   );
@@ -404,18 +408,13 @@ function ActionsGroupees({ nombre, onAnnuler }: { nombre: number; onAnnuler: () 
       >
         {nombre} pièce{nombre > 1 ? "s" : ""} sélectionnée{nombre > 1 ? "s" : ""}
       </strong>
-      {/* Une action groupée qui comptabiliserait en masse contournerait le contrôle
-          pièce à pièce. Seules les actions sans conséquence fiscale directe sont
-          proposées ici — le reste passe par E02. */}
-      <button type="button" className="action-secondaire">
-        Marquer comme lues
-      </button>
-      <button type="button" className="action-secondaire">
-        Demander une rectification
-      </button>
-      <button type="button" className="action-secondaire">
-        Réaffecter
-      </button>
+      {/* ⚠️ Pas 75 : trois boutons figuraient ici (« Marquer comme lues », « Demander
+          une rectification », « Réaffecter ») sans aucune action ni route derrière. Ils
+          sont retirés : un bouton qui ne fait rien apprend à cliquer au hasard. La
+          rectification se demande pièce par pièce, sur E02, avec son motif. */}
+      <span style={{ font: "400 12px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
+        Aucune action groupée n&rsquo;est encore disponible : chaque pièce se traite sur son rapport.
+      </span>
       <button
         type="button"
         onClick={onAnnuler}
@@ -486,7 +485,7 @@ function appliquer(lignes: LignePiece[], filtres: Filtres): LignePiece[] {
     if (filtres.statut && l.statut !== filtres.statut) return false;
     if (filtres.severite && l.severite !== filtres.severite) return false;
     if (terme) {
-      const foin = `${l.reference} ${l.adherent} ${l.fournisseur}`.toLocaleLowerCase("fr");
+      const foin = `${l.identifiant} ${l.reference ?? ""} ${l.adherent} ${l.fournisseur}`.toLocaleLowerCase("fr");
       if (!foin.includes(terme)) return false;
     }
     return true;
@@ -497,7 +496,7 @@ function compter(lignes: LignePiece[]): Compteurs {
   const parSeverite: Record<string, number> = {};
   const parStatut: Record<string, number> = {};
   for (const l of lignes) {
-    parSeverite[l.severite] = (parSeverite[l.severite] ?? 0) + 1;
+    if (l.severite) parSeverite[l.severite] = (parSeverite[l.severite] ?? 0) + 1;
     parStatut[l.statut] = (parStatut[l.statut] ?? 0) + 1;
   }
   return {
@@ -506,22 +505,7 @@ function compter(lignes: LignePiece[]): Compteurs {
     entreprises: [...new Set(lignes.map((l) => l.adherent))].sort((a, b) =>
       a.localeCompare(b, "fr"),
     ),
-    canaux: CANAUX.filter((c) => lignes.some((l) => l.canal === c)),
+    canaux: [...new Set(lignes.map((l) => l.canal))].sort((a, b) => a.localeCompare(b, "fr")),
     statuts: STATUTS_PIECE.filter((s) => lignes.some((l) => l.statut === s)),
-  };
-}
-
-/**
- * Le verdict complet est calculé côté serveur pour E02. L'aperçu latéral n'en a
- * besoin que du strict minimum, reconstitué ici plutôt que retransporté.
- */
-function rapportVerdictFactice(severite: Severite) {
-  return {
-    glyphe: "",
-    titre: "",
-    detail: "",
-    jeton_fond: "",
-    comptabilisation_interdite: severite === "BLOQUANT",
-    avertissement_validation: null,
   };
 }

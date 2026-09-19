@@ -442,21 +442,27 @@
         "detail": "For detailed requests and attachments.",
         "action": "Write"
       }
-    ]
+    ],
+    "enregistrement": {
+      "enCours": "Recording your request…",
+      "reussi": "Your request is recorded: a member of the firm will call you back on the number given.",
+      "echec": "Your request could not be recorded ({motif}). Your WhatsApp message remains the way to reach us.",
+      "indisponible": "the recording service is not responding"
+    }
   },
   "connexion": {
     "kicker": "Client area",
     "titre": "Log in",
     "detail": "One single entry point for members, client companies and subscribers. Your workspace is selected after you log in.",
-    "identifiant": "Email or phone",
+    "identifiant": "Email address",
     "motDePasse": "Password",
     "oubli": "Forgotten password?",
     "garder": "Keep me signed in on this device",
     "bouton": "Log in",
-    "aide": "No account yet? Your login link is sent by email and text message once your subscription is paid.",
+    "aide": "No account yet? Your sign-in link is emailed to you as soon as your subscription is paid. Didn't receive it? Call your account manager: they will resend it to the address the firm has on file.",
     "creer": "Subscribe to a service",
     "retour": "Back to the site",
-    "note": "Demonstration access: the check runs in the browser and protects nothing. Real authentication will be handled by the backend before any client data goes online.",
+    "note": "The firm will never ask for your password, by phone, WhatsApp or email. An access link is only ever sent to the address the firm has on file.",
     "profilsTitre": "Four populations, one door",
     "profils": [
       {

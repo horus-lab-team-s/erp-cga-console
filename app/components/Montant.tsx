@@ -41,17 +41,27 @@ export type Statut =
   | "Lue"
   | "Rapprochée"
   | "Comptabilisée"
+  | "Archivée"
   | "Rectif. demandée"
   | "En retard"
   | "À faire"
   | "En préparation"
   | "Prête"
   | "Déclarée"
-  | "Payée";
+  | "Payée"
+  // La veille des seuils : quatre conclusions rendues par le backend, jamais
+  // recalculées à l'écran.
+  | "Reclassement dû"
+  | "Reclassement inscrit"
+  | "Hors champ"
+  | "À surveiller";
 
-const ACHEVE: Statut[] = ["Comptabilisée", "Prête", "Déclarée", "Payée"];
-const ALERTE: Statut[] = ["Rectif. demandée"];
-const RETARD: Statut[] = ["En retard"];
+const ACHEVE: Statut[] = ["Comptabilisée", "Archivée", "Prête", "Déclarée", "Payée", "Reclassement inscrit"];
+const ALERTE: Statut[] = ["Rectif. demandée", "À surveiller"];
+// ⚠️ « Reclassement dû » et « Hors champ » prennent le ton du retard : ce sont des
+// faits acquis sur un exercice clos, pas des prévisions, et ils font déjà courir un
+// risque au dossier.
+const RETARD: Statut[] = ["En retard", "Reclassement dû", "Hors champ"];
 
 export function PastilleStatut({ statut }: { statut: Statut }) {
   let fond = "var(--brand-indigo-100)";

@@ -68,10 +68,18 @@ function Ouverture() {
       detail={t("detail")}
       images={["/images/pages/adherent-b.jpg", "/images/heros/slide-2.jpg"]}
       enfants={
-        <a href="#demande" className="bouton bouton--principal heros__action">
-          {t("bulletin")}
-          <IconeVitrine nom="fleche" taille={17} />
-        </a>
+        <>
+          <a href="#demande" className="bouton bouton--principal heros__action">
+            {t("bulletin")}
+            <IconeVitrine nom="fleche" taille={17} />
+          </a>
+          {/* Pas 83 : le devis et le paiement en ligne, au barème du backend. Le
+              bulletin reste pour qui préfère être rappelé. Texte en français : la
+              traduction de la page de souscription reste à faire. */}
+          <Link href="/souscrire?service=ADHESION" className="bouton bouton--secondaire heros__action">
+            Souscrire en ligne
+          </Link>
+        </>
       }
     />
   );

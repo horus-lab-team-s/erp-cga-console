@@ -52,15 +52,24 @@ export function taux(valeur: number | string, decimales = 2): string {
   return `${rendu.replace(".", ",")}${ESPACE_FINE}%`;
 }
 
+/**
+ * ⚠️ Pas 87 : les trois formats ci-dessous acceptent aussi une date-heure
+ * (`2026-02-12T09:00:00`), dont ils ne gardent que le jour. Ils ajoutaient
+ * `T00:00:00` à la chaîne reçue : une date-heure devenait `…T09:00:00T00:00:00`,
+ * invalide, et l'écran affichait « le NaN/NaN/NaN » sous l'accusé d'un dépôt de TVA.
+ * Corriger la fonction répare tous les appels, y compris ceux qui n'ont pas encore
+ * rencontré de date-heure.
+ */
+
 /** Forme lisible. `2026-08-15` → « 15 août 2026 ». */
 export function dateLongue(valeur: Date | string): string {
-  const d = typeof valeur === "string" ? new Date(`${valeur}T00:00:00`) : valeur;
+  const d = typeof valeur === "string" ? new Date(`${valeur.slice(0, 10)}T00:00:00`) : valeur;
   return `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** Forme compacte réservée aux tableaux denses. `2026-08-15` → « 15/08/2026 ». */
 export function dateCourte(valeur: Date | string): string {
-  const d = typeof valeur === "string" ? new Date(`${valeur}T00:00:00`) : valeur;
+  const d = typeof valeur === "string" ? new Date(`${valeur.slice(0, 10)}T00:00:00`) : valeur;
   const jour = String(d.getDate()).padStart(2, "0");
   const mois = String(d.getMonth() + 1).padStart(2, "0");
   return `${jour}/${mois}/${d.getFullYear()}`;
@@ -68,6 +77,6 @@ export function dateCourte(valeur: Date | string): string {
 
 /** Mois et année en toutes lettres. `2026-07-01` → « juillet 2026 ». */
 export function periode(valeur: Date | string): string {
-  const d = typeof valeur === "string" ? new Date(`${valeur}T00:00:00`) : valeur;
+  const d = typeof valeur === "string" ? new Date(`${valeur.slice(0, 10)}T00:00:00`) : valeur;
   return `${MOIS[d.getMonth()]} ${d.getFullYear()}`;
 }

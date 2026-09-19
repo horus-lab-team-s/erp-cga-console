@@ -442,21 +442,27 @@
         "detail": "Pour les demandes détaillées et les pièces jointes.",
         "action": "Écrire"
       }
-    ]
+    ],
+    "enregistrement": {
+      "enCours": "Enregistrement de votre demande…",
+      "reussi": "Votre demande est enregistrée : un responsable du cabinet vous rappelle au numéro indiqué.",
+      "echec": "Votre demande n'a pas pu être enregistrée ({motif}). Votre message WhatsApp reste le moyen de nous joindre.",
+      "indisponible": "le service d'enregistrement ne répond pas"
+    }
   },
   "connexion": {
     "kicker": "Espace client",
     "titre": "Se connecter",
     "detail": "Un point d'entrée unique pour les adhérents, les entreprises clientes et les souscripteurs. Votre espace est choisi après authentification.",
-    "identifiant": "Adresse électronique ou téléphone",
+    "identifiant": "Adresse électronique",
     "motDePasse": "Mot de passe",
     "oubli": "Mot de passe oublié ?",
     "garder": "Rester connecté sur cet appareil",
     "bouton": "Se connecter",
-    "aide": "Pas encore de compte ? Votre lien de connexion vous est envoyé par courriel et par message dès votre souscription réglée.",
+    "aide": "Pas encore de compte ? Votre lien de connexion vous est envoyé par courriel dès votre souscription réglée. Vous ne l'avez pas reçu ? Appelez votre chargé de clientèle : il vous le renvoie à l'adresse connue du cabinet.",
     "creer": "Souscrire une prestation",
     "retour": "Retour au site",
-    "note": "Accès de démonstration : la vérification a lieu dans le navigateur, elle ne protège rien. L'authentification réelle sera assurée par le backend avant toute mise en ligne de données clients.",
+    "note": "Le cabinet ne vous demandera jamais votre mot de passe, ni par téléphone, ni par WhatsApp, ni par courriel. Un lien d'accès ne vous parvient qu'à l'adresse que le cabinet connaît.",
     "profilsTitre": "Quatre populations, une seule porte",
     "profils": [
       {

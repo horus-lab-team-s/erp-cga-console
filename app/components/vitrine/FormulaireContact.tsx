@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { DEMARCHES, type ResultatDemande } from "@/app/lib/acquisition";
+import { deposerUneDemande } from "@/app/lib/actions-acquisition";
+
 import { IconeVitrine } from "./IconeVitrine";
 
 /**
@@ -18,12 +21,26 @@ import { IconeVitrine } from "./IconeVitrine";
  * demande du cabinet : lue par un prospect, elle donnait de la clientèle une
  * image peu flatteuse, alors qu'elle n'était qu'une note de conception.
  *
- * Comme celui du héros, il compose un message WhatsApp plutôt que d'appeler une
- * API qui n'existe pas encore. Le consentement est requis avant envoi : ces
- * données sont personnelles et le cabinet doit pouvoir prouver qu'il l'a obtenu.
+ * ⚠️ **Il enregistre la demande ET ouvre WhatsApp.** Son en-tête disait qu'il
+ * composait un message WhatsApp « plutôt que d'appeler une API qui n'existe pas
+ * encore ». Cette API existait depuis longtemps, `POST /acquisition/demandes`, et
+ * aucune demande venue du site n'entrait donc dans le parcours d'acquisition :
+ * ni affectation, ni veille, ni relance ne voyaient jamais un vrai prospect. Voir
+ * `app/lib/actions-acquisition.ts`.
+ *
+ * WhatsApp s'ouvre toujours, au clic, parce que l'ouverture d'une fenêtre doit
+ * suivre immédiatement le geste du visiteur : attendre la réponse du serveur
+ * avant de l'ouvrir la ferait bloquer par le navigateur comme une fenêtre
+ * surgissante. L'enregistrement part en même temps, et son issue s'affiche sous
+ * le bouton.
+ *
+ * Le consentement est requis avant envoi : ces données sont personnelles et le
+ * cabinet doit pouvoir prouver qu'il l'a obtenu.
  */
 
-const DEMANDES = ["creation", "adhesion", "ponctuel", "domiciliation", "formation", "autre"] as const;
+// ⚠️ La liste vit dans `app/lib/acquisition.ts` : l'action serveur la revérifie, et
+// deux copies de la même liste finiraient par diverger.
+const DEMANDES = DEMARCHES;
 
 export function FormulaireContact() {
   const t = useTranslations("pages.contact");
@@ -37,6 +54,8 @@ export function FormulaireContact() {
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(false);
   const [tente, setTente] = useState(false);
+  // `null` : rien d'envoyé ; `"en-cours"` : l'enregistrement est parti.
+  const [resultat, setResultat] = useState<ResultatDemande | "en-cours" | null>(null);
 
   const chiffres = telephone.replace(/\D/g, "");
   const complet = nom.trim().length >= 3 && chiffres.length >= 8 && consent;
@@ -198,14 +217,50 @@ export function FormulaireContact() {
         rel="noreferrer noopener"
         aria-disabled={!complet}
         onClick={(e) => {
-          if (complet) return;
-          e.preventDefault();
-          setTente(true);
+          if (!complet) {
+            e.preventDefault();
+            setTente(true);
+            return;
+          }
+          // ⚠️ Pas de `preventDefault` ici : WhatsApp s'ouvre sur le geste même.
+          // L'enregistrement part en parallèle, et un double clic n'en envoie
+          // qu'un tant que le premier n'a pas répondu.
+          if (resultat === "en-cours") return;
+          setResultat("en-cours");
+          deposerUneDemande({
+            demarche: demande as (typeof DEMARCHES)[number],
+            nom,
+            telephone,
+            courriel,
+            message,
+            consentementContact: consent,
+            origine: "vitrine-contact",
+          }).then(setResultat, () =>
+            setResultat({ enregistree: false, motif: t("enregistrement.indisponible") }),
+          );
         }}
       >
         {t("envoyer")}
         <IconeVitrine nom="fleche" taille={16} />
       </a>
+
+      {resultat !== null && (
+        <p
+          role="status"
+          style={{
+            margin: 0,
+            font: "500 13px/1.6 var(--police-texte)",
+            color:
+              resultat !== "en-cours" && !resultat.enregistree ? "var(--danger)" : "var(--ink-500)",
+          }}
+        >
+          {resultat === "en-cours"
+            ? t("enregistrement.enCours")
+            : resultat.enregistree
+              ? t("enregistrement.reussi")
+              : t("enregistrement.echec", { motif: resultat.motif })}
+        </p>
+      )}
 
       {/* La note qui figurait ici a été retirée le 13 août 2026, à la demande du
           cabinet, et le retrait est juste : « beaucoup de nos clients n'utilisent

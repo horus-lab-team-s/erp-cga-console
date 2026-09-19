@@ -25,12 +25,20 @@
 
   /* ── Encre et surfaces ──────────────────────────────────────────────── */
   --ink-900: #1a1523; /* texte courant, montants */
+  /* Pas 104 : `--ink-700` et `--ink-400` étaient employés par 35 déclarations et définis nulle
+     part. Ces textes héritaient donc la couleur courante au lieu d'être atténués, sans erreur
+     visible. Deux paliers intermédiaires de la même échelle. */
+  --ink-700: #433c52; /* texte appuyé, un cran sous le courant */
   --ink-500: #6b6480; /* texte secondaire, en-têtes de colonne, légendes */
+  --ink-400: #756e89; /* texte discret : numéros, dates d'appoint (4,8:1 sur blanc) */
   --ink-300: #9a94a8; /* texte désactivé */
   --line-300: #c9c4d6; /* bordure appuyée, cadre de maquette */
   --line-200: #e5e1ec; /* filets, bordures, séparateurs */
   --line-100: #f1eef7; /* séparateur de ligne de tableau */
   --surface: #ffffff; /* tableaux, cartes, panneaux */
+  /* Pas 104 : employé par la clôture et la paie pour surligner une ligne, et défini nulle part :
+     la ligne ne se distinguait pas. Une marche sous la surface. */
+  --surface-2: #f7f5fb;
   --surface-alt: #faf9fc; /* fond d'application, alternance de lignes */
 
   /* ── Gravité — § 9. La couleur ne porte JAMAIS seule l'information. ─── */
@@ -179,12 +187,15 @@
 
   /* ── Encre et surfaces ──────────────────────────────────────────────── */
   --ink-900: #f4f1f8;
+  --ink-700: #d3cde0;
   --ink-500: #a79fb8;
+  --ink-400: #8b839e;
   --ink-300: #6f6684;
   --line-300: #453b5c;
   --line-200: #332b46;
   --line-100: #272033;
   --surface: #221c30; /* carte : une marche au-dessus du fond */
+  --surface-2: #2b2439;
   --surface-alt: #14101c; /* fond d'application */
 
   /* ── Gravité — mêmes rapports, valeurs adaptées ─────────────────────── */

@@ -3,11 +3,32 @@ import type { Metadata } from "next";
 import { BandeauVerdict, type Severite } from "@/app/components/Gravite";
 import { EtatErreur } from "@/app/components/Tableau";
 import { DonneesExtraites } from "@/app/components/conformite/DonneesExtraites";
+import { ComptabiliserLaPiece } from "@/app/components/conformite/ComptabiliserLaPiece";
 import { ListeConstats } from "@/app/components/conformite/ListeConstats";
+import { DemandeRectificative } from "@/app/components/collecte/GestesDemandes";
+import { lireDemandes, lirePieces, type LignePiece } from "@/app/lib/collecte";
+import { DocumentDeLaPiece } from "@/app/components/collecte/GestesDuCabinet";
+import {
+  EcarterUnConstat,
+  JoindreLaPieceDAppui,
+  LeverLEcart,
+  SecondRegard,
+} from "@/app/components/conformite/GestesEcarts";
+import {
+  LIBELLES_STATUT_ECART,
+  lirePolitiqueDEcart,
+  peutDonnerLeSecondRegard,
+  regleDEcartPour,
+  type PolitiqueDEcart,
+} from "@/app/lib/ecarts";
 import { Visionneuse } from "@/app/components/conformite/Visionneuse";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi, controlerPieceDemonstration, type ReponseControle } from "@/app/lib/api";
+import { EcranReserve } from "@/app/components/coquille/EcranReserve";
+import { detient } from "@/app/lib/acces";
 import { montantFcfa } from "@/app/lib/formats";
+import { exigerAcces } from "@/app/lib/session";
+import { Link } from "@/i18n/navigation";
 
 /**
  * E02 · Détail d'une pièce et rapport de conformité — fiche au § 8.2.
@@ -47,6 +68,13 @@ export default async function DetailPiece({
   params: Promise<{ reference: string }>;
 }) {
   const { reference } = await params;
+  const acces = await exigerAcces();
+  // ⚠️ Garde avant tout appel. L'API refuse désormais aussi — et rend 404, non
+  // 403, sur un dossier hors périmètre — mais un refus API remonterait ici en
+  // erreur de rendu. Le refus doit se lire, pas se subir.
+  if (!detient(acces, "LIRE_PIECE")) {
+    return <EcranReserve titre={`Pièce ${reference}`} permission="LIRE_PIECE" acces={acces} />;
+  }
 
   let reponse: ReponseControle | null = null;
   let erreur: { titre: string; detail: string } | null = null;
@@ -83,7 +111,54 @@ export default async function DetailPiece({
     );
   }
 
-  const { facture, verdict, rapport } = reponse;
+  const { facture, verdict, rapport, ecarts } = reponse;
+
+  // Pas 92 : la politique d'écart, lue pour ne proposer que ce qu'elle permet. Réservée
+  // au cabinet côté backend ; sans elle (adhérent, ou lecture en échec), aucun geste
+  // d'écart n'est proposé, et l'écran reste entier.
+  let politique: PolitiqueDEcart | null = null;
+  if (acces.interne) {
+    try {
+      politique = await lirePolitiqueDEcart();
+    } catch {
+      politique = null;
+    }
+  }
+
+  // ⚠️ Pas 74 : une rectificative déjà demandée pour la pièce de cette facture se lit
+  // ici, à la place du bouton. Émettre une seconde demande ferait relancer deux fois
+  // l'adhérent ; le backend la refuserait, mais l'écran ne doit pas la proposer.
+  const dossier = facture.destinataire.niu;
+  let rectificativeEnCours: { identifiant: string; demandee_le: string } | null = null;
+  // Pas 88 : les pièces reçues qui portent cette facture, pour en télécharger le document.
+  let piecesDeLaFacture: LignePiece[] = [];
+  if (dossier) {
+    try {
+      piecesDeLaFacture = (await lirePieces({ entreprise: dossier })).filter((p) => p.reference_document === reference);
+      const pieces = piecesDeLaFacture.map((p) => p.identifiant);
+      const ouverte = (await lireDemandes({ entreprise: dossier })).find(
+        (d) => d.piece_a_rectifier !== null && pieces.includes(d.piece_a_rectifier),
+      );
+      if (ouverte) rectificativeEnCours = ouverte;
+    } catch {
+      // Lecture de commodité : sans elle, le bouton reste, et le backend refusera un doublon.
+    }
+  }
+  const peutDemander = Boolean(dossier) && detient(acces, "CONTROLER_CONFORMITE");
+  const rectificative = (principale: boolean) =>
+    rectificativeEnCours ? (
+      <span style={{ font: "400 12.5px/1.4 var(--police-texte)", color: "var(--ink-900)" }}>
+        Rectificative demandée le {rectificativeEnCours.demandee_le.split("-").reverse().join("/")} (
+        {rectificativeEnCours.identifiant}), <Link href="/pieces/attendues">suivie dans les pièces attendues</Link>
+      </span>
+    ) : peutDemander ? (
+      <DemandeRectificative
+        reference={reference}
+        dossier={dossier!}
+        motifPropose={`${verdict.titre}. ${verdict.detail}`}
+        principale={principale}
+      />
+    ) : null;
   const severite = (rapport.constats.length
     ? rapport.constats.reduce((pire, c) =>
         rang(c.severite) > rang(pire.severite) ? c : pire,
@@ -92,7 +167,8 @@ export default async function DetailPiece({
 
   return (
     <>
-      <EnteteTravail miettes={miettes} notifications={4} />
+      {/* Pas 76 : plus de compteur de notifications écrit en dur (« 4 »). */}
+      <EnteteTravail miettes={miettes} />
 
       <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
         <div style={{ width: "45%", flex: "none", minWidth: 0 }}>
@@ -145,6 +221,17 @@ export default async function DetailPiece({
               </p>
             )}
 
+            {/* Pas 88 : le document tel qu'il a été reçu. La visionneuse dessine la facture à
+                partir des données extraites ; comparer les deux est le contrôle de la lecture. */}
+            {piecesDeLaFacture.length > 0 && (
+              <p style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", font: "400 12.5px/1.5 var(--police-texte)" }}>
+                <span style={{ color: "var(--ink-500)" }}>Document reçu :</span>
+                {piecesDeLaFacture.map((p) => (
+                  <DocumentDeLaPiece key={p.identifiant} identifiant={p.identifiant} nom={p.nom_fichier} />
+                ))}
+              </p>
+            )}
+
             {/* 2 · Données extraites, avec indice de confiance. */}
             <DonneesExtraites facture={facture} />
 
@@ -189,6 +276,28 @@ export default async function DetailPiece({
                 <ListeConstats constats={rapport.constats} />
               )}
 
+              {/* Pas 92 : les constats écartés restent lisibles, hors de tout calcul. */}
+              {rapport.constats_ecartes.length > 0 && (
+                <details>
+                  <summary style={{ cursor: "pointer", font: "500 12.5px/1.6 var(--police-texte)", color: "var(--ink-700)" }}>
+                    {rapport.constats_ecartes.length} constat(s) écarté(s) par le cabinet, sans effet sur ce verdict
+                  </summary>
+                  <div style={{ opacity: 0.75, marginTop: 8 }}>
+                    <ListeConstats constats={rapport.constats_ecartes.map((c) => c.constat)} />
+                  </div>
+                </details>
+              )}
+
+              {ecarts.length > 0 && politique && (
+                <PanneauDesEcarts
+                  reference={reference}
+                  etats={ecarts}
+                  compte={acces.compte}
+                  peutLever={detient(acces, "ECARTER_CONSTAT")}
+                  peutTrancher={peutDonnerLeSecondRegard(acces, politique)}
+                />
+              )}
+
               {rapport.regles_en_echec.length > 0 && (
                 <EtatErreur
                   titre={`${rapport.regles_en_echec.length} règle(s) n'ont pas pu être évaluées`}
@@ -219,9 +328,7 @@ export default async function DetailPiece({
           >
             {verdict.comptabilisation_interdite ? (
               <>
-                <button type="button" className="action-principale">
-                  Demander une facture rectificative
-                </button>
+                {rectificative(true)}
                 <span
                   style={{
                     font: "600 12.5px/1.4 var(--police-texte)",
@@ -233,20 +340,46 @@ export default async function DetailPiece({
               </>
             ) : (
               <>
-                <button type="button" className="action-principale">
-                  {rapport.constats.some((c) => c.severite === "MAJEUR")
-                    ? "Comptabiliser avec conséquence fiscale"
-                    : "Valider et comptabiliser"}
-                </button>
-                <button type="button" className="action-secondaire">
-                  Demander une facture rectificative
-                </button>
+                {/* ⚠️ Pas 73 : ce bouton était décoratif. Il propose désormais l'écriture,
+                    puis l'enregistre en brouillon, pour qui saisit. */}
+                {detient(acces, "SAISIR_ECRITURE") ? (
+                  <ComptabiliserLaPiece
+                    reference={reference}
+                    avecConsequence={rapport.constats.some((c) => c.severite === "MAJEUR")}
+                  />
+                ) : (
+                  <span style={{ font: "400 12px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
+                    La comptabilisation est réservée à qui saisit les écritures.
+                  </span>
+                )}
+                {rectificative(false)}
               </>
             )}
 
-            <button type="button" className="action-secondaire">
-              Écarter un constat
-            </button>
+            {/* ⚠️ Pas 92 : ce bouton était décoratif depuis le premier jour. Il propose
+                désormais les seuls constats que la politique du cabinet permet d'écarter,
+                et un constat déjà écarté ou en attente n'y figure plus. */}
+            {politique && detient(acces, "ECARTER_CONSTAT") && (
+              <EcarterUnConstat
+                reference={reference}
+                motifMinimum={politique.motif_minimum}
+                candidats={rapport.constats
+                  .filter((c) => regleDEcartPour(politique, c).ecartable)
+                  .filter(
+                    (c) =>
+                      !ecarts.some((e) => e.ecart.code_regle === c.code_regle && e.ecart.statut === "EN_ATTENTE"),
+                  )
+                  .map((c) => ({
+                    code_regle: c.code_regle,
+                    libelle: c.libelle,
+                    severite: c.severite,
+                    second_regard: regleDEcartPour(politique, c).second_regard,
+                  }))}
+                fermes={rapport.constats
+                  .filter((c) => !regleDEcartPour(politique, c).ecartable)
+                  .map((c) => ({ code_regle: c.code_regle, severite: c.severite }))}
+              />
+            )}
 
             <span
               style={{
@@ -266,6 +399,94 @@ export default async function DetailPiece({
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * Les décisions d'écart de la pièce, et ce qu'elles produisent aujourd'hui (pas 92).
+ *
+ * ⚠️ `raison` vient du backend : « en attente », « caduc » (le constat a changé depuis
+ * la décision), « suspendu » (la politique a été durcie). L'écran ne la recalcule pas.
+ *
+ * Le second regard n'est jamais proposé à l'auteur de l'écart : le backend le refuserait,
+ * et un bouton qui échoue est pire qu'un bouton absent.
+ */
+function PanneauDesEcarts({
+  reference,
+  etats,
+  compte,
+  peutLever,
+  peutTrancher,
+}: {
+  reference: string;
+  etats: ReponseControle["ecarts"];
+  compte: string;
+  peutLever: boolean;
+  peutTrancher: boolean;
+}) {
+  const petit: React.CSSProperties = { margin: 0, font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" };
+  return (
+    <section aria-label="Écarts de constats" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <h3 style={{ margin: 0, font: "600 13px/1.4 var(--police-texte)", color: "var(--ink-900)" }}>
+        Écarts décidés sur cette pièce
+      </h3>
+      {etats.map(({ ecart, applique, raison }) => (
+        <div
+          key={ecart.identifiant}
+          style={{
+            padding: "10px 12px",
+            border: "1px solid var(--line-200)",
+            borderRadius: "var(--rayon)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}
+        >
+          <p style={{ margin: 0, font: "500 12.5px/1.5 var(--police-texte)", color: "var(--ink-900)" }}>
+            {ecart.code_regle} · {LIBELLES_STATUT_ECART[ecart.statut]}
+            {applique ? " · s'applique" : ""}
+            <span style={{ color: "var(--ink-500)", fontWeight: 400 }}> · {ecart.identifiant}</span>
+          </p>
+          <p style={petit}>
+            Proposé par {ecart.propose_par} le {ecart.propose_le.slice(0, 10).split("-").reverse().join("/")} : « {ecart.motif} »
+          </p>
+          {ecart.tranche_par && (
+            <p style={petit}>
+              Second regard de {ecart.tranche_par} : « {ecart.motif_du_second_regard} »
+            </p>
+          )}
+          {ecart.leve_par && (
+            <p style={petit}>
+              Levé par {ecart.leve_par} : « {ecart.motif_de_levee} »
+            </p>
+          )}
+          {/* Pas 118 : la preuve de ce que le motif affirme, et ce qu'il reste à joindre. */}
+          <p style={petit}>
+            {ecart.piece_appui
+              ? `Pièce d'appui : ${ecart.piece_appui}${ecart.piece_appui_par ? `, jointe par ${ecart.piece_appui_par}` : ""}`
+              : "Aucune pièce d'appui jointe."}
+          </p>
+          {raison && <p style={{ ...petit, color: "var(--ink-700)" }}>△ {raison}</p>}
+          {ecart.statut === "EN_ATTENTE" && peutTrancher && ecart.propose_par !== compte && (
+            <SecondRegard reference={reference} identifiant={ecart.identifiant} />
+          )}
+          {ecart.statut === "EN_ATTENTE" && ecart.propose_par === compte && (
+            <p style={petit}>Le second regard viendra d&rsquo;une autre personne que vous.</p>
+          )}
+          {/* Même permission que la levée (`ECARTER_CONSTAT`) : qui décide l'écart en fournit la preuve. */}
+          {(ecart.statut === "EN_ATTENTE" || ecart.statut === "EFFECTIF") && peutLever && (
+            <JoindreLaPieceDAppui
+              reference={reference}
+              identifiant={ecart.identifiant}
+              piece={ecart.piece_appui}
+            />
+          )}
+          {(ecart.statut === "EN_ATTENTE" || ecart.statut === "EFFECTIF") && peutLever && (
+            <LeverLEcart reference={reference} identifiant={ecart.identifiant} />
+          )}
+        </div>
+      ))}
+    </section>
   );
 }
 

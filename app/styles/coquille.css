@@ -99,6 +99,30 @@
   color: #fff;
 }
 
+/* Écran non construit : présent, lisible, inerte.
+   Le contraste reste au-dessus du seuil AA — un libellé qu'on ne peut pas lire
+   ne dit pas « à venir », il dit « quelque chose ne va pas ». */
+.lien-nav--a-venir {
+  color: rgb(255 255 255 / 42%);
+  cursor: default;
+}
+
+.lien-nav--a-venir:hover {
+  background: transparent;
+}
+
+.lien-nav__a-venir {
+  flex: none;
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px dashed rgb(255 255 255 / 28%);
+  border-radius: var(--rayon-pilule);
+  font: 600 9.5px/1.5 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 55%);
+}
+
 .lien-nav--enfant {
   padding-left: 34px;
   font-size: 12.5px;
@@ -219,6 +243,31 @@
   display: grid;
   place-items: center;
   font: 600 11px/1 var(--police-texte);
+}
+
+/* La déconnexion : discrète, mais toujours atteignable. Cible de 28 px, au
+   contact du nom — c'est le geste qu'on cherche quand on quitte son poste, et
+   le chercher dans un menu déroulant coûte trois secondes de trop. */
+.barre__deconnexion {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--rayon);
+  background: transparent;
+  color: rgb(255 255 255 / 62%);
+  cursor: pointer;
+}
+
+.barre__deconnexion:hover {
+  background: var(--survol-sombre);
+  color: #fff;
+}
+
+.barre[data-repliee="true"] .barre__deconnexion {
+  display: none;
 }
 
 /* ── Sélecteur d'entreprise ─────────────────────────────────────────────
@@ -466,6 +515,15 @@
   cursor: pointer;
 }
 
+/* Pas 110 : un lien habillé en bouton (« Contre-passer cette écriture », « Transmettre au
+   réviseur ») n'était pas centré : un <a> est en ligne, son texte collait en haut du cadre. */
+a.action-principale,
+a.action-secondaire {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .action-principale {
   border: 1px solid var(--brand-magenta-600);
   background: var(--brand-magenta-600);
@@ -686,5 +744,935 @@
 
   .contenu {
     padding: 12px;
+  }
+}
+
+/* ── Espace adhérent ────────────────────────────────────────────────────
+   Un autre métier, donc d'autres règles de mise en page. L'adhérent ouvre son
+   téléphone entre deux clients : cibles de 44 px, une colonne, rien à survoler.
+   Le collaborateur travaille à deux écrans ; ce sont deux produits qui partagent
+   un backend, pas un produit avec deux thèmes. */
+
+.espace-adherent {
+  min-height: 100dvh;
+  background: var(--surface-alt);
+}
+
+.adherent {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--espace-4) var(--espace-3) var(--espace-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-4);
+}
+
+.adherent__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+}
+
+.adherent__identite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.adherent__jeton {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+  display: grid;
+  place-items: center;
+  font: 600 15px/1 var(--police-texte);
+}
+
+.adherent__nom {
+  display: block;
+  font: 600 16px/1.3 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.adherent__role {
+  display: block;
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* 44 px de haut : c'est un bouton qu'on touche du pouce, pas qu'on vise à la
+   souris. */
+.adherent__quitter {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--ink-700);
+  font: 500 13.5px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.adherent__section {
+  padding: var(--espace-3);
+  background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-lg, 12px);
+}
+
+.adherent__titre {
+  margin: 0 0 var(--espace-3);
+  font: 600 15px/1.3 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.adherent__faits {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px var(--espace-3);
+  margin: 0;
+}
+
+.adherent__fait-libelle {
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.adherent__fait-valeur {
+  margin: 0;
+  font: 500 13px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.adherent__mention,
+.adherent__note,
+.adherent__vide {
+  margin: var(--espace-3) 0 0;
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.adherent__vide {
+  margin: 0;
+}
+
+.adherent__pieces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adherent__piece {
+  display: grid;
+  gap: 4px;
+  padding: var(--espace-2) 0;
+  border-top: 1px solid var(--line-200);
+}
+
+.adherent__piece:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.adherent__piece-tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espace-2);
+  font: 500 13.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+/* L'état ne se distingue pas par la couleur seule : le libellé porte déjà
+   l'information, la couleur ne fait que la souligner. */
+.adherent__piece-etat {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--rayon-pilule);
+  background: var(--surface-alt);
+  color: var(--ink-500);
+  font: 600 10.5px/1.5 var(--police-texte);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.adherent__piece-etat[data-attente="true"] {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.adherent__piece-detail {
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.adherent__piece-montant {
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* ── Écrans de travail ──────────────────────────────────────────────────
+   Le cadre commun aux écrans construits après la coquille : un titre, un
+   sous-titre qui dit **à quelle date** et **sur quel périmètre** on lit, puis
+   des panneaux. Le sous-titre n'est pas décoratif : sans lui, un comptable qui
+   compte trois dossiers là où le cabinet en suit six croit à une panne. */
+
+.page-travail {
+  padding: var(--espace-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-3);
+  min-height: 0;
+  /* ⚠️ Pas 97 : la page défile quand son contenu dépasse l'écran, et ses panneaux ne se
+     compriment plus. Sans ces trois règles, une page plus haute que 900 px (le référentiel,
+     depuis que le cabinet y décide) écrasait chaque panneau à son en-tête : « Décisions du
+     cabinet » et le constructeur de règles étaient invisibles, sans aucune erreur. Un
+     panneau qui doit remplir la hauteur restante le déclare lui-même (`flex: 1` en ligne,
+     qui l'emporte sur la règle des enfants). */
+  flex: 1;
+  overflow-y: auto;
+}
+
+.page-travail > * {
+  flex-shrink: 0;
+}
+
+.page-travail__titre h1 {
+  margin: 0;
+  font: 600 var(--taille-titre-page)/1.2 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.page-travail__titre p {
+  margin: 4px 0 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* Deux panneaux côte à côte au-delà de 1200 px, empilés en dessous. Les
+   tableaux denses de l'espace collaborateur ne se lisent pas sur deux colonnes
+   étroites. */
+.page-travail__duo {
+  display: grid;
+  gap: var(--espace-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1200px) {
+  .page-travail__duo {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Bandeau d'avertissement d'écran — le référentiel non validé, un dépôt déjà
+   effectué. Distinct d'un constat de conformité : celui-ci porte sur l'écran,
+   pas sur une pièce. */
+.avertissement-ecran {
+  padding: var(--espace-2) var(--espace-3);
+  border-radius: var(--rayon);
+  border: 1px solid var(--danger);
+  background: var(--danger-100);
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.avertissement-ecran--reserve {
+  border-color: var(--attention, #b8860b);
+  background: var(--attention-100, #fdf6e3);
+}
+
+.avertissement-ecran strong {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+/* Fiche de faits : libellé à gauche, valeur à droite, alignés en colonnes. */
+.faits {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px var(--espace-3);
+  margin: 0;
+  padding: var(--espace-2) var(--espace-3);
+}
+
+.faits dt {
+  font: 400 12.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.faits dd {
+  margin: 0;
+  font: 500 12.5px/1.6 var(--police-texte);
+  color: var(--ink-900);
+}
+
+/* ══ Saisie d'écriture comptable ═════════════════════════════════════════════
+   Le seul formulaire dense de l'espace de travail. Densité de tableau — § 10.4 —
+   parce qu'un comptable saisit au clavier, en série, et qu'un formulaire aéré
+   l'oblige à faire défiler entre deux lignes de la même écriture.
+
+   ⚠️ Les champs ne portent AUCUNE couleur d'état. Un liseré rouge sur un champ
+   « faux » supposerait que le navigateur sache ce qui est faux : il ne le sait
+   pas, seul le backend le sait. Colorier ici produirait des champs rouges sur
+   des saisies justes, et l'on cesserait de regarder la couleur. */
+.saisie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2);
+}
+
+.saisie__entete {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espace-2);
+}
+
+.champ {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.champ--large {
+  grid-column: span 2;
+}
+
+.champ > span {
+  font: 500 11.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.saisie input,
+.saisie select {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  background: var(--surface);
+  color: var(--ink-900);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.saisie input[inputmode="numeric"],
+.saisie input[inputmode="decimal"],
+.saisie input[type="date"] {
+  font-variant-numeric: tabular-nums;
+}
+
+.saisie input.aDroite {
+  text-align: right;
+}
+
+.saisie__lignes {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.saisie__lignes th {
+  padding: 0 8px 4px;
+  text-align: left;
+  font: 500 11.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.saisie__lignes th.aDroite {
+  text-align: right;
+}
+
+.saisie__lignes td {
+  padding: 3px 4px;
+}
+
+.saisie__lignes input,
+.saisie__lignes select {
+  width: 100%;
+}
+
+.saisie__pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-3);
+  flex-wrap: wrap;
+  padding-top: var(--espace-2);
+  border-top: 1px solid var(--line-200);
+}
+
+.saisie__totaux {
+  display: flex;
+  gap: var(--espace-3);
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.saisie__totaux strong {
+  color: var(--ink-900);
+  font-weight: 600;
+}
+
+/* L'écart n'est pas une alerte : c'est un compteur. Une écriture en cours de
+   frappe est déséquilibrée pendant tout le temps de la saisie, et la teindre en
+   rouge dès la première ligne apprendrait à ignorer le rouge. */
+.saisie__ecart {
+  color: var(--ink-500);
+}
+
+.saisie__ecart--nul {
+  color: var(--success, #1e7a4c);
+  font-weight: 600;
+}
+
+.bouton-primaire {
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--brand-indigo-700);
+  border-radius: var(--rayon-petit);
+  background: var(--brand-indigo-700);
+  color: #ffffff;
+  font: 600 13px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.bouton-primaire:hover {
+  background: var(--brand-indigo-800, var(--brand-indigo-700));
+}
+
+.bouton-primaire:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.bouton-discret {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  background: var(--surface);
+  color: var(--ink-900);
+  font: 500 12px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.bouton-discret:hover {
+  border-color: var(--brand-indigo-700);
+  color: var(--brand-indigo-700);
+}
+
+.saisie__echec,
+.saisie__succes {
+  margin: 0;
+  padding: var(--espace-2) var(--espace-3);
+  border-radius: var(--rayon);
+  font: 400 12.5px/1.6 var(--police-texte);
+}
+
+.saisie__echec {
+  border: 1px solid var(--danger);
+  background: var(--danger-100);
+  color: var(--ink-900);
+}
+
+.saisie__succes {
+  border: 1px solid var(--success, #1e7a4c);
+  background: var(--success-100, #edf6f1);
+  color: var(--ink-900);
+}
+
+/* ── Dépôt d'une pièce par l'adhérent (pas 81) ──────────────────────────────
+   Mobile d'abord : une colonne, des cibles tactiles d'au moins 44 px. */
+.adherent__depot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2, 10px);
+}
+.adherent__depot label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.adherent__depot input,
+.adherent__depot select,
+.adherent__depot textarea {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+}
+.adherent__depot small {
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+/* Pas 96 : la prise de photo, sous le document, et la file gardée sur le téléphone. */
+.adherent__depot-photo {
+  flex-direction: row !important;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.adherent__file {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2, 10px);
+  margin-top: var(--espace-3, 16px);
+  padding: 12px;
+  border: 1px dashed var(--line-200);
+  border-radius: var(--rayon, 8px);
+}
+.adherent__depot-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2, 10px);
+}
+.adherent__depot-details summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--brand-indigo-700);
+}
+.adherent__depot-details[open] label + label {
+  margin-top: var(--espace-2, 10px);
+}
+.adherent__depot-envoyer {
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--rayon, 8px);
+  background: var(--brand-indigo-700);
+  color: #fff;
+  font: 600 15px/1 var(--police-texte);
+  cursor: pointer;
+}
+.adherent__depot-envoyer:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.adherent__depot-retour {
+  margin: 0;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.adherent__depot-retour[data-ton="echec"] {
+  color: var(--danger);
+}
+.adherent__depot-retour[data-ton="fait"] {
+  color: var(--success);
+}
+.adherent__liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adherent__liste li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-100);
+  font: 400 13px/1.5 var(--police-texte);
+}
+.adherent__liste li:first-child {
+  border-top: 0;
+}
+.adherent__liste strong {
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.adherent__liste [data-alerte="true"] {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* ── Impression (pas 106) ────────────────────────────────────────────────────
+   Le rapport mensuel s'exporte en PDF par l'impression du navigateur : aucune bibliothèque de
+   rendu PDF côté serveur. À l'impression, la coquille disparaît (menu, en-tête, boutons), la
+   page n'a plus de hauteur fixe, et le document s'imprime entier sur fond blanc.
+   `.sans-impression` marque ce qui n'a pas sa place sur papier. */
+@media print {
+  .coquille__barre,
+  .coquille__menu,
+  .coquille__voile,
+  .entete,
+  .sans-impression {
+    display: none !important;
+  }
+  .coquille,
+  .zone-travail,
+  .page-travail {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .page-travail section {
+    break-inside: avoid-page;
+  }
+}
+
+/* Pas 108 : la balance à gauche, le compte choisi à droite (maquette « Parcours comptable »,
+   vue C). Empilés tant que la largeur ne suffit pas aux deux tableaux ; côte à côte ensuite,
+   le détail plus large, parce que c'est là qu'on lettre. */
+.balance-et-compte {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 1400px) {
+  .balance-et-compte--ouvert {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+/* ── Espace adhérent : le bandeau du mois, ce qu'on attend, les justificatifs (pas 112) ────────
+   Le bandeau change de couleur ET de glyphe selon l'état : la couleur ne porte jamais seule
+   l'information (§ 9). Texte sombre sur fond clair : --warning n'est jamais une couleur de texte. */
+.adherent__bandeau {
+  display: flex;
+  gap: 12px;
+  padding: var(--espace-3);
+  border-radius: var(--rayon-lg, 12px);
+  border: 1px solid var(--line-200);
+  background: var(--surface);
+}
+.adherent__bandeau[data-etat="A_ENVOYER"] {
+  background: var(--warning-100);
+  border-color: var(--warning);
+}
+.adherent__bandeau[data-etat="COMPLET"] {
+  background: var(--success-100);
+  border-color: var(--success);
+}
+.adherent__bandeau[data-etat="EN_VERIFICATION"],
+.adherent__bandeau[data-etat="AUCUNE_PIECE"] {
+  background: var(--brand-indigo-100);
+}
+.adherent__bandeau-glyphe {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--ink-900);
+  font: 700 18px/1 var(--police-texte);
+}
+.adherent__bandeau-titre {
+  margin: 0;
+  font: 600 16px/1.35 var(--police-titre);
+  color: var(--ink-900);
+}
+.adherent__bandeau-detail {
+  margin: 4px 0 10px;
+  font: 400 13.5px/1.55 var(--police-texte);
+  color: var(--ink-700);
+}
+.adherent__bandeau-action,
+.adherent__repondre button,
+.adherent__filtres button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--rayon);
+  border: 1px solid var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+  font: 600 13.5px/1.2 var(--police-texte);
+  text-decoration: none;
+  cursor: pointer;
+}
+.adherent__attendues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.adherent__attendue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-200);
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+.adherent__attendue:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.adherent__attendue strong {
+  color: var(--ink-900);
+  font-weight: 600;
+}
+.adherent__attendue [data-alerte="true"] {
+  color: var(--danger);
+  font-weight: 600;
+}
+.adherent__consigne {
+  padding: 8px 10px;
+  border-radius: var(--rayon);
+  background: var(--warning-100);
+  color: var(--ink-900);
+  font: 400 13px/1.5 var(--police-texte);
+}
+.adherent__reponse-envoyee {
+  color: var(--success);
+  font-weight: 500;
+}
+.adherent__repondre {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+.adherent__repondre-choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.adherent__repondre button {
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  border-color: var(--line-200);
+  font-weight: 500;
+}
+.adherent__repondre-message summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--brand-indigo-700);
+  cursor: pointer;
+}
+.adherent__repondre-message textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  font: 400 14px/1.5 var(--police-texte);
+}
+.adherent__repondre small {
+  color: var(--ink-500);
+  font-size: 12px;
+}
+.adherent__suite {
+  margin: var(--espace-3) 0 0;
+  font: 500 13.5px/1.6 var(--police-texte);
+}
+.adherent__filtres {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: end;
+}
+@media (min-width: 560px) {
+  .adherent__filtres {
+    grid-template-columns: 2fr 1fr 1fr auto;
+  }
+}
+.adherent__filtres label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.adherent__filtres input,
+.adherent__filtres select {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  font: 400 14px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.adherent__piece-etat[data-statut="A_CORRIGER"] {
+  background: var(--danger-100);
+  color: var(--danger);
+}
+.adherent__piece-etat[data-statut="ENREGISTRE"],
+.adherent__piece-etat[data-statut="RECU"] {
+  background: var(--success-100);
+  color: var(--success);
+}
+.adherent__vide-prescriptif strong {
+  display: block;
+  margin-bottom: 4px;
+  font: 600 14px/1.4 var(--police-titre);
+  color: var(--ink-900);
+}
+/* Les onglets restent en bas du téléphone, au pouce ; sur un grand écran, en fin de page. */
+.adherent__onglets {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-lg, 12px);
+}
+.adherent__onglets a {
+  flex: 1;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--rayon);
+  color: var(--ink-700);
+  font: 500 13px/1 var(--police-texte);
+  text-decoration: none;
+}
+.adherent__onglets a[aria-current="page"] {
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+  font-weight: 600;
+}
+
+/* ── Espace adhérent : mes échéances (pas 113) ─────────────────────────────────────────────────
+   Une carte par obligation. L'état se lit dans le texte ; la couleur le souligne seulement. */
+.adherent__echeances {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.adherent__echeances li {
+  border-top: 1px solid var(--line-200);
+}
+.adherent__echeances li:first-child {
+  border-top: 0;
+}
+.adherent__echeances a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px;
+  padding: 12px 0;
+  color: var(--ink-700);
+  text-decoration: none;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.adherent__echeances strong {
+  color: var(--ink-900);
+  font-weight: 600;
+  font-size: 14px;
+}
+.adherent__echeance-etat {
+  font-weight: 600;
+}
+.adherent__echeance-etat[data-etat="EN_RETARD"] {
+  color: var(--danger);
+}
+.adherent__echeance-etat[data-etat="DEPOSEE"],
+.adherent__echeance-etat[data-etat="PREUVE_ENVOYEE"] {
+  color: var(--success);
+}
+.adherent__texte {
+  margin: 0 0 8px;
+  font: 400 13.5px/1.6 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* ── Espace adhérent : mon entreprise, mes documents (pas 114) ──────────────────────────────── */
+.adherent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+a.adherent__quitter {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+/* Cinq onglets tiennent sur 360 px : le libellé rétrécit plutôt que de déborder. */
+.adherent__onglets a {
+  min-width: 0;
+  font-size: 12px;
+  padding: 0 2px;
+}
+@media print {
+  .espace-adherent {
+    background: #ffffff !important;
+  }
+  .adherent__recu {
+    border: 0 !important;
+  }
+}
+
+/* ── Espace adhérent : réglages et hors ligne (pas 115) ─────────────────────────────────────── */
+.adherent__bascule {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font: 400 13.5px/1.4 var(--police-texte) !important;
+  color: var(--ink-900) !important;
+}
+.adherent__bascule input {
+  width: 20px !important;
+  height: 20px;
+  min-height: 0 !important;
+  padding: 0 !important;
+  flex: none;
+}
+.adherent__bascule[aria-disabled="true"] {
+  color: var(--ink-500) !important;
+}
+.adherent__jalons {
+  margin: 0;
+  padding: 4px 0 0 30px;
+  border: 0;
+}
+.adherent__jalons legend {
+  padding: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.adherent__jalons:disabled {
+  opacity: 0.55;
+}
+.adherent__hors-ligne {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--rayon-lg, 12px);
+  background: var(--warning-100);
+  border: 1px solid var(--warning);
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+
+/* ── Espace adhérent : choix de l'entreprise (pas 116) ──────────────────────────────────────── */
+@media (min-width: 560px) {
+  .adherent__choix-entreprise {
+    grid-template-columns: 1fr auto;
   }
 }

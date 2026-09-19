@@ -57,6 +57,23 @@ export function ApercuPiece({ ligne }: { ligne: LignePiece | null }) {
 }
 
 function Contenu({ ligne }: { ligne: LignePiece }) {
+  // ⚠️ Pas 75 : une pièce sans facture extraite n'a ni rapport ni verdict. L'aperçu le
+  // dit, plutôt que d'inventer une conformité.
+  if (!ligne.reponse || !ligne.severite) {
+    return (
+      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 8, font: "400 12.5px/1.6 var(--police-texte)" }}>
+        <strong className="tabulaire">{ligne.identifiant}</strong>
+        <span style={{ color: "var(--ink-500)" }}>
+          Reçue par {ligne.canal.toLocaleLowerCase("fr")} le {dateCourte(ligne.date)} · {ligne.adherent}
+        </span>
+        <PastilleStatut statut={ligne.statut} />
+        <p style={{ margin: 0 }}>
+          Aucune facture n&rsquo;a encore été extraite de cette pièce : elle n&rsquo;a pas de rapport de conformité.
+          Elle est à identifier.
+        </p>
+      </div>
+    );
+  }
   const { facture, rapport } = ligne.reponse;
   const apparence = APPARENCE[ligne.severite];
   const enjeu = rapport.constats.reduce(
@@ -92,7 +109,7 @@ function Contenu({ ligne }: { ligne: LignePiece }) {
             color: "var(--ink-500)",
           }}
         >
-          Déposée par {ligne.canal.toLocaleLowerCase("fr")} ·{" "}
+          Reçue par {ligne.canal.toLocaleLowerCase("fr")} ·{" "}
           <span className="tabulaire">{dateCourte(ligne.date)}</span>
         </div>
       </header>

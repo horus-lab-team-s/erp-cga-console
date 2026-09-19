@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-import type { Entreprise } from "@/app/lib/donnees-demo";
+import type { Compteurs, Dossier } from "@/app/lib/portefeuille";
+import type { Acces } from "@/app/lib/acces";
 import { BarreLaterale } from "./BarreLaterale";
 import { Icone } from "./Icone";
 
@@ -25,19 +26,47 @@ import { Icone } from "./Icone";
  * Le bouton d'ouverture est rendu **ici** et non dans `EnteteTravail` : l'en-tête
  * appartient à chaque écran, alors que la barre appartient à la coquille. Le
  * placer là évite d'avoir à modifier chaque page — et d'oublier celles à venir.
+ *
+ * L'ACCÈS ET LES DOSSIERS VIENNENT DU SERVEUR
+ *
+ * Ils sont lus dans le gabarit et descendus en propriétés. Ce composant reste
+ * client — il porte l'état du tiroir et du dossier sélectionné — mais il ne
+ * décide de rien : la liste qu'il reçoit est **déjà restreinte** au périmètre de
+ * la session, et les permissions qu'il consulte ont été résolues par le backend.
  */
 const ContexteDossier = createContext<{
-  entreprise: Entreprise | null;
-  choisir: (entreprise: Entreprise | null) => void;
-}>({ entreprise: null, choisir: () => {} });
+  entreprise: Dossier | null;
+  choisir: (entreprise: Dossier | null) => void;
+  acces: Acces | null;
+  dossiers: Dossier[];
+  /** Pas 94 : lu une fois par le gabarit, affiché par la cloche de chaque en-tête. */
+  notificationsNonLues: number;
+}>({ entreprise: null, choisir: () => {}, acces: null, dossiers: [], notificationsNonLues: 0 });
 
-/** Dossier actuellement sélectionné. `null` = vue consolidée du portefeuille. */
+/**
+ * Dossier actuellement sélectionné, et ce que la session permet.
+ *
+ * `entreprise` à `null` = vue consolidée du portefeuille — de **son**
+ * portefeuille, qui n'est pas nécessairement celui du cabinet.
+ */
 export function useDossier() {
   return useContext(ContexteDossier);
 }
 
-export function Coquille({ children }: { children: ReactNode }) {
-  const [entreprise, setEntreprise] = useState<Entreprise | null>(null);
+export function Coquille({
+  acces,
+  dossiers,
+  compteurs,
+  notificationsNonLues = 0,
+  children,
+}: {
+  acces: Acces;
+  dossiers: Dossier[];
+  compteurs: Compteurs;
+  notificationsNonLues?: number;
+  children: ReactNode;
+}) {
+  const [entreprise, setEntreprise] = useState<Dossier | null>(null);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
 
   useEffect(() => {
@@ -50,7 +79,7 @@ export function Coquille({ children }: { children: ReactNode }) {
   }, [tiroirOuvert]);
 
   return (
-    <ContexteDossier.Provider value={{ entreprise, choisir: setEntreprise }}>
+    <ContexteDossier.Provider value={{ entreprise, choisir: setEntreprise, acces, dossiers, notificationsNonLues }}>
       <div className="coquille" data-tiroir={tiroirOuvert}>
         <button
           type="button"
@@ -84,6 +113,9 @@ export function Coquille({ children }: { children: ReactNode }) {
           }}
         >
           <BarreLaterale
+            acces={acces}
+            dossiers={dossiers}
+            compteurs={compteurs}
             entrepriseCourante={entreprise}
             onChangementEntreprise={setEntreprise}
           />
