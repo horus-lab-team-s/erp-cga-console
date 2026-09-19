@@ -85,6 +85,22 @@ WORKDIR /construction
 COPY --from=dependances /construction/node_modules ./node_modules
 COPY . .
 
+# ⚠️ L'ADRESSE DE LE SITE PUBLIC S'INSCRIT ICI, À LA CONSTRUCTION.
+#
+# Tout ce qui porte le préfixe `NEXT_PUBLIC_` est **recopié dans le paquet
+# JavaScript envoyé au navigateur** au moment de la compilation. Le poser au
+# démarrage du conteneur ne change donc rien : l'image garde la valeur qu'elle
+# avait à sa fabrication.
+#
+# Le défaut était silencieux et complet : la variable passée à
+# `docker compose up` était ignorée, la page gardait l'adresse par défaut, et le
+# bouton « espace client » menait sur un port où rien n'écoute. Aucune erreur,
+# aucun journal : juste un lien qui ne marche pas.
+#
+#     docker build --build-arg NEXT_PUBLIC_ADRESSE_VITRINE=https://… .
+ARG NEXT_PUBLIC_ADRESSE_VITRINE
+ENV NEXT_PUBLIC_ADRESSE_VITRINE=${NEXT_PUBLIC_ADRESSE_VITRINE}
+
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
