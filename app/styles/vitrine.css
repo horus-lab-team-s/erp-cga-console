@@ -4243,3 +4243,42 @@
   font-size: 12px;
   color: var(--ink-400);
 }
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LA PAGE DE CONNEXION, EN DEUX COLONNES.
+
+   ⚠️ CETTE RÈGLE VIVAIT DANS `coquille.css`, QUE CETTE PAGE N'IMPORTE PAS.
+
+   La page charge `vitrine.css` et rien d'autre : la grille ne s'appliquait
+   donc jamais. `display` restait à `block`, les quatre cartes s'étalaient sur
+   toute la largeur, et le formulaire tombait dessous — à 245 px sous la ligne
+   de flottaison.
+
+   Le plus trompeur : la règle EXISTAIT, lisible, avec ses colonnes et son
+   écart. On la relisait en cherchant l'erreur dedans, alors que l'erreur était
+   qu'elle n'était pas chargée. Une règle morte ne se distingue pas d'une règle
+   vivante quand on lit le code.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.connexion__grille {
+  display: grid;
+  gap: 48px;
+  grid-template-columns: minmax(0, 1.1fr) 400px;
+  align-items: center;
+  padding-block: 0;
+}
+
+/* Sous cette largeur, deux colonnes rendraient le formulaire trop étroit pour
+   une adresse électronique : on empile, et le formulaire passe en premier —
+   c'est ce qu'on vient faire. */
+@media (max-width: 960px) {
+  .connexion__grille {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .connexion__grille > form {
+    order: -1;
+  }
+}

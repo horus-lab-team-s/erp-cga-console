@@ -63,7 +63,21 @@ export function FormulaireConnexion() {
     width: "100%",
     minHeight: 46,
     padding: "0 12px",
-    border: "1px solid rgb(255 255 255 / 26%)",
+    /* ⚠️ 46 % ET NON 26 %, ET LE CHIFFRE EST MESURÉ.
+     *
+     * Le contour d'un champ est ce qui dit où l'on peut écrire. À 26 %, composé
+     * sur le panneau puis sur l'indigo de la page, il ressortait à **2,29:1** —
+     * sous le seuil de 3:1 exigé pour la bordure d'un contrôle. Et à 1,77:1
+     * contre l'intérieur du champ : le cadre ne se distinguait presque pas de
+     * ce qu'il entoure. Deux rectangles à peine plus clairs que le fond, sur la
+     * page que tout le monde voit en premier.
+     *
+     * 46 % donne 4,64:1 sur le panneau et 3,58:1 sur le champ. Les valeurs
+     * essayées, dans l'ordre : 30 % → 2,66 ; 34 % → 3,07 mais 2,37 seulement
+     * contre l'intérieur ; 42 % → 4,06 et 3,13, juste au-dessus. On prend la
+     * marche suivante plutôt que de s'arrêter sur le seuil.
+     */
+    border: "1px solid rgb(255 255 255 / 46%)",
     borderRadius: 9,
     background: "rgb(255 255 255 / 10%)",
     color: "#fff",

@@ -88,20 +88,34 @@ function Ecran() {
     <main
       style={{
         position: "relative",
-        /* L'en-tête est fixe et se superpose : la réserve en tête évite que le
-           bloc de connexion passe dessous. Même valeur que `.entete-page`. */
+        /* ⚠️ PLUS DE RÉSERVE DE 126 px EN TÊTE. Elle existait pour l'en-tête
+           fixe de la vitrine, qui ne coiffe plus cette page depuis qu'elle a
+           retrouvé son dessin de cul-de-sac. Cent vingt-six pixels de vide
+           poussaient le formulaire vers le bas sans qu'aucun en-tête n'occupe
+           la place. */
         minHeight: "100vh",
-        paddingTop: 126,
-        paddingBottom: 40,
+        paddingTop: 48,
+        paddingBottom: 48,
+        /* L'indigo de l'institution, à plat. Voir plus bas pourquoi il n'y a
+           plus de photographie. */
         background: "var(--brand-indigo-900)",
-        overflow: "hidden",
         display: "flex",
         alignItems: "center",
       }}
     >
-      <Image src="/images/pages/cabinet-b.jpg" alt="" fill sizes="100vw" className="heros__image" />
-      <div className="heros__voile" />
+      {/* ⚠️ LA PHOTOGRAPHIE EST PARTIE, ET C'EST LA RÈGLE QUI LE DEMANDE.
+          Le § 10.7 du dossier de design, dérogation du 10 août 2026 : « la
+          photographie est admise sur la vitrine, PROSCRITE DANS L'ESPACE DE
+          TRAVAIL ». Cette page en est la porte.
 
+          Et la mesure disait la même chose : l'image couvrait 130 % de la
+          hauteur de l'écran, poussait le formulaire 245 px sous la ligne de
+          flottaison, et obligeait à faire défiler pour atteindre le bouton. Le
+          texte posé dessus changeait de lisibilité selon qu'une chemise claire
+          ou un mur sombre passait derrière.
+
+          Un aplat d'indigo ne décore rien. Il n'en a pas besoin : ce qu'on
+          vient faire ici tient en deux champs. */}
       <div
         className="bloc connexion__grille"
         style={{ position: "relative", zIndex: 2, alignItems: "center" }}

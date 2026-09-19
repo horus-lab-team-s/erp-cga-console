@@ -592,13 +592,6 @@ a.action-secondaire {
   gap: 16px;
 }
 
-.connexion__grille {
-  display: grid;
-  gap: 44px;
-  grid-template-columns: minmax(0, 1.2fr) 420px;
-  padding-block: 64px;
-}
-
 /* L'enveloppe qui capte les clics sur les liens du tiroir ne doit rien changer
    à la mise en page : `contents` la retire de la disposition, `.barre` reste
    l'enfant direct de la coquille en flex. Les événements, eux, remontent le DOM
@@ -740,11 +733,6 @@ a.action-secondaire {
     flex: none;
   }
 
-  .connexion__grille {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    padding-block: 36px;
-  }
 
   /* Le panneau de sélection de dossier ne peut pas déborder du tiroir. */
   .selecteur__panneau {
