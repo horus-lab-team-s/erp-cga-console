@@ -83,20 +83,42 @@ type Indicateur = {
   ton: "neutre" | "attention" | "alerte";
 };
 
+/**
+ * ⚠️ LES LARGEURS SONT MESURÉES, PAS ESTIMÉES.
+ *
+ * Le tableau de bord comptait **105 coupures** pour 8 textes distincts, la pire
+ * perdant 187 px sur 329. Les colonnes fixes mangeaient 434 px des 864
+ * disponibles, et les deux colonnes qui portent le sens — la dénomination et
+ * l'obligation — se partageaient le reste.
+ *
+ * Contenu le plus large réellement mesuré, police comprise :
+ *
+ *   date 78 · entreprise 221 · obligation 285 · montant 72 · jours 95 · statut 60
+ *
+ * « Montant estimé » réservait 128 px pour afficher « non estimé » sur chaque
+ * ligne, et « Statut » 118 px pour « En retard ». Soixante px rendus aux deux
+ * colonnes qui en manquaient.
+ *
+ * ⚠️ Le montant garde de la marge malgré ses 72 px mesurés : le jeu de
+ * démonstration n'estime rien, mais un montant réel — « 2 981 250 FCFA » — en
+ * demande une centaine. Dimensionner sur ce qu'on voit aujourd'hui ferait
+ * réapparaître la coupure le jour où l'estimation fonctionne.
+ */
 const COLONNES_ECHEANCES: Colonne[] = [
-  { cle: "date", libelle: "Date", largeur: "84px" },
-  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.5fr)" },
-  { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.6fr)" },
-  { cle: "montant", libelle: "Montant estimé", largeur: "128px", aDroite: true },
-  { cle: "restant", libelle: "Jours restants", largeur: "104px", aDroite: true },
-  { cle: "statut", libelle: "Statut", largeur: "118px" },
+  { cle: "date", libelle: "Date", largeur: "80px" },
+  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.4fr)" },
+  { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.7fr)" },
+  { cle: "montant", libelle: "Montant estimé", largeur: "104px", aDroite: true },
+  { cle: "restant", libelle: "Jours restants", largeur: "98px", aDroite: true },
+  { cle: "statut", libelle: "Statut", largeur: "92px" },
 ];
 
+/** Mêmes mesures, même raison : voir `COLONNES_ECHEANCES`. */
 const COLONNES_ANOMALIES: Colonne[] = [
-  { cle: "gravite", libelle: "Gravité", largeur: "112px" },
-  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.4fr)" },
-  { cle: "regle", libelle: "Règle", largeur: "minmax(0, 1.8fr)" },
-  { cle: "enjeu", libelle: "Conséquence", largeur: "116px", aDroite: true },
+  { cle: "gravite", libelle: "Gravité", largeur: "96px" },
+  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.3fr)" },
+  { cle: "regle", libelle: "Règle", largeur: "minmax(0, 1.9fr)" },
+  { cle: "enjeu", libelle: "Conséquence", largeur: "108px", aDroite: true },
   { cle: "piece", libelle: "Facture", largeur: "96px" },
 ];
 
@@ -196,10 +218,10 @@ export default async function TableauDeBord() {
                       <Cellule tabulaire couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-500)"}>
                         {dateCourte(ligne.obligation.echeance)}
                       </Cellule>
-                      <Cellule couleur="var(--brand-indigo-700)" titre={denomination}>
+                      <Cellule lignes={2} couleur="var(--brand-indigo-700)" titre={denomination}>
                         {denomination}
                       </Cellule>
-                      <Cellule couleur="var(--ink-500)" titre={ligne.obligation.libelle}>
+                      <Cellule lignes={2} couleur="var(--ink-500)" titre={ligne.obligation.libelle}>
                         {ligne.obligation.libelle}
                       </Cellule>
                       {/* Un montant que le backend n'estime pas ne s'affiche pas : un zéro
@@ -250,10 +272,10 @@ export default async function TableauDeBord() {
                       <span>
                         <BadgeGravite severite={constat.severite as Severite} court />
                       </span>
-                      <Cellule couleur="var(--brand-indigo-700)" titre={denomination}>
+                      <Cellule lignes={2} couleur="var(--brand-indigo-700)" titre={denomination}>
                         {denomination}
                       </Cellule>
-                      <Cellule couleur="var(--ink-500)" titre={`${constat.libelle} — ${constat.code_regle}`}>
+                      <Cellule lignes={3} couleur="var(--ink-500)" titre={`${constat.libelle} — ${constat.code_regle}`}>
                         {constat.libelle}
                       </Cellule>
                       {/* Un constat sans conséquence chiffrée n'affiche pas de montant :

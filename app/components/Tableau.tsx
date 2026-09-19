@@ -133,7 +133,10 @@ export function LigneTableau({
         gridTemplateColumns: colonnes.map((c) => c.largeur).join(" "),
         alignItems: "center",
         minHeight: hauteur,
-        padding: "0 14px",
+        // ⚠️ Une marge verticale, depuis que les colonnes de texte peuvent tenir
+        // sur deux lignes : sans elle, la seconde ligne touche le filet du bas.
+        // `minHeight` garde les lignes d'une seule ligne à la hauteur voulue.
+        padding: "8px 14px",
         gap: 8,
         borderBottom: "1px solid var(--line-100)",
         background: fonds[ton],
@@ -146,7 +149,7 @@ export function LigneTableau({
   );
 }
 
-/** Cellule tronquée sur une ligne : indispensable pour tenir la hauteur fixe. */
+/** Une cellule : sur une ligne par défaut, sur deux quand le texte le demande. */
 export function Cellule({
   children,
   aDroite = false,
@@ -154,6 +157,7 @@ export function Cellule({
   couleur,
   gras = false,
   titre,
+  lignes,
 }: {
   children: ReactNode;
   aDroite?: boolean;
@@ -161,6 +165,25 @@ export function Cellule({
   couleur?: string;
   gras?: boolean;
   titre?: string;
+  /**
+   * Combien de lignes le texte peut occuper, plutôt qu'une coupure.
+   *
+   * ⚠️ MESURÉ SUR LE TABLEAU DE BORD : 105 coupures, 8 textes distincts. La
+   * pire perdait 187 px sur 329 — « Règlement autre qu'en espèces au-delà du
+   * seuil… ». Une dénomination sociale et un libellé d'obligation sont ce qui
+   * identifie la ligne ; les tronquer rend le tableau illisible, et le comptable
+   * doit survoler chaque ligne pour savoir de quoi elle parle.
+   *
+   * ⚠️ Deux lignes suffisent aux dénominations et aux obligations. Les libellés
+   * de RÈGLE en demandent trois : « Règlement autre qu'en espèces au-delà du
+   * seuil de déductibilité » réclame 329 px, et la colonne qui l'accueille n'en
+   * offre que 150.
+   *
+   * Réservé aux colonnes de texte. Un montant, une date ou un délai tiennent sur
+   * une ligne par construction, et les faire passer à deux désalignerait la
+   * colonne.
+   */
+  lignes?: 2 | 3;
 }) {
   return (
     <span
@@ -168,12 +191,23 @@ export function Cellule({
       style={{
         minWidth: 0,
         overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
         textAlign: aDroite ? "right" : "left",
         fontVariantNumeric: tabulaire ? "tabular-nums" : undefined,
         fontWeight: gras ? 600 : undefined,
         color: couleur,
+        ...(lignes
+          ? {
+              // `line-clamp` coupe à la LIGNE, pas au caractère : le texte
+              // s'arrête sur un mot entier, et les points de suspension ne
+              // paraissent qu'au-delà de deux lignes.
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical" as const,
+              WebkitLineClamp: lignes,
+              whiteSpace: "normal",
+              lineHeight: 1.25,
+              wordBreak: "break-word" as const,
+            }
+          : { textOverflow: "ellipsis", whiteSpace: "nowrap" }),
       }}
     >
       {children}
