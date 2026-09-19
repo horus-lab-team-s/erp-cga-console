@@ -64,8 +64,22 @@ export type LignePiece = {
 const STATUTS_PIECE: Statut[] = ["Reçue", "Lue", "Rapprochée", "Comptabilisée", "Archivée", "Rectif. demandée"];
 
 
-/** Grille partagée par l'en-tête, les lignes et le pied : une seule déclaration. */
-const GRILLE = "32px 104px minmax(0,1.35fr) minmax(0,1.5fr) 82px 122px 92px 118px 116px";
+/** Grille partagée par l'en-tête, les lignes et le pied : une seule déclaration.
+ *
+ * ⚠️ LA COLONNE DE RÉFÉRENCE A ÉTÉ DÉBORDÉE PAR LE MOBILE.
+ *
+ * Elle réservait 104 px, ce qui suffisait aux références du cabinet —
+ * « PJ-2026-0028 », douze caractères. Les pièces déposées depuis l'application
+ * de terrain portent une clé dérivée de l'empreinte du fichier :
+ * « PJ-M08123-43815e8bebe4ad4a », vingt-six caractères, 124 px mesurés. Elles
+ * arrivaient tronquées, c'est-à-dire indistinguables les unes des autres — deux
+ * photos du même dossier se lisaient pareil.
+ *
+ * ⚠️ C'est la trace d'une fonctionnalité qui en déborde une autre. Le mobile a
+ * été écrit et vérifié sans que personne ne regarde ce que ses références
+ * deviennent à l'écran du comptable.
+ */
+const GRILLE = "32px 132px minmax(0,1.3fr) minmax(0,1.5fr) 82px 122px 92px 110px 108px";
 
 export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
   const routeur = useRouter();
@@ -292,8 +306,13 @@ function Ligne({
         display: "grid",
         gridTemplateColumns: GRILLE,
         alignItems: "center",
-        height: 32,
-        padding: "0 12px",
+        // ⚠️ `minHeight` et non `height` : une hauteur FIXE rognait la seconde
+        // ligne des dénominations repliées, ce qui remplaçait une coupure par
+        // une autre, moins visible. La marge verticale garde les deux lignes à
+        // distance des filets, et les lignes d'une seule ligne gardent leur
+        // hauteur d'avant.
+        minHeight: 32,
+        padding: "5px 12px",
         gap: 8,
         borderBottom: "1px solid var(--line-100)",
         borderLeft: actif ? "3px solid var(--brand-magenta-600)" : "3px solid transparent",
@@ -361,6 +380,21 @@ function Ligne({
   );
 }
 
+/**
+ * Une cellule qui se replie plutôt que de se couper.
+ *
+ * ⚠️ ELLE TRONQUAIT, ET LE NOM DIT CE QU'ELLE FAISAIT.
+ *
+ * « BOULANGERIE LA COLOMBE SARL » demande 216 px et la colonne en offre 190 :
+ * la dénomination se lisait « BOULANGERIE LA COLOMBE … », impossible à
+ * distinguer d'une autre boulangerie du portefeuille. C'est pourtant ce qui
+ * identifie la ligne.
+ *
+ * `line-clamp` coupe à la LIGNE et non au caractère : le texte s'arrête sur un
+ * mot entier, et les points de suspension ne paraissent qu'au-delà de deux
+ * lignes. Le `title` reste : il donne le texte entier au survol et aux lecteurs
+ * d'écran.
+ */
 function Tronque({
   children,
   titre,
@@ -376,8 +410,11 @@ function Tronque({
       style={{
         minWidth: 0,
         overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
+        display: "-webkit-box",
+        WebkitBoxOrient: "vertical",
+        WebkitLineClamp: 2,
+        lineHeight: 1.25,
+        overflowWrap: "anywhere",
         color: couleur,
       }}
     >

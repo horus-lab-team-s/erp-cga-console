@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
+import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
 import { deconnexion } from "@/app/lib/actions-session";
 import {
   NAVIGATION,
@@ -162,15 +163,23 @@ export function BarreLaterale({
           — un tarif affiché, un article du blog — devait retaper l'adresse. Placé
           au-dessus du compte, avec la même discrétion : c'est une sortie, pas une
           entrée de navigation, et il n'a rien à faire dans la liste des écrans. */}
-      <Link
-        href="/"
+      {/* ⚠️ UNE ADRESSE ABSOLUE, ET C'EST LA TROISIÈME FOIS QUE CE LIEN BOUCLE.
+          « / » menait à l'accueil du site public du temps où une seule
+          application servait les deux. Depuis la scission, « / » de la console
+          renvoie à la connexion : le collaborateur qui voulait voir ce qu'un
+          adhérent voit atterrissait sur un formulaire de connexion, alors qu'il
+          était déjà connecté.
+          Les deux autres occurrences étaient sur la page de connexion et sur
+          l'écran de définition du mot de passe. */}
+      <a
+        href={ADRESSE_VITRINE}
         className="barre__retour-vitrine"
         title="Retour au site public"
         aria-label="Retour au site public"
       >
         <Icone nom="retour" taille={16} />
         {!repliee && "Retour au site"}
-      </Link>
+      </a>
 
       <div className="barre__compte" title={`${acces.nom_complet} — ${role}`}>
         <span className="barre__compte-jeton">{initiales(acces.nom_complet)}</span>

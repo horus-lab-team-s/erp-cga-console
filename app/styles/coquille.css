@@ -79,12 +79,15 @@
   align-items: center;
   gap: 10px;
   min-height: 34px;
-  padding: 0 10px;
+  /* ⚠️ Une marge verticale, depuis que le libellé peut tenir sur deux lignes :
+     sans elle, la seconde ligne touche le bord de la pastille active. */
+  padding: 5px 10px;
   border-radius: var(--rayon);
   color: rgb(255 255 255 / 78%);
   font: 500 13px/1.2 var(--police-texte);
   text-decoration: none;
-  white-space: nowrap;
+  /* ⚠️ `nowrap` interdisait au libellé de se replier, quelle que soit la règle
+     posée sur lui : c'est lui qui produisait la coupure. */
   overflow: hidden;
 }
 
@@ -140,7 +143,19 @@
 .lien-nav__libelle {
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+
+  /* ⚠️ DEUX LIGNES PLUTÔT QU'UNE COUPURE.
+     « Échange avec le logiciel du client » demande 198 px et la colonne en
+     offre 165 : l'entrée se lisait « Échange avec le logiciel du cl… ». Un
+     menu tronqué oblige à survoler pour savoir où l'on va, ce qui annule
+     l'intérêt d'un menu.
+     `line-clamp` coupe à la ligne et non au caractère : le texte s'arrête sur
+     un mot entier, et les points ne paraissent qu'au-delà de deux lignes. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 /* Pastille de compte : nombre de pièces en attente, d'anomalies bloquantes. */

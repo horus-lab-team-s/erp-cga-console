@@ -373,10 +373,22 @@ function Ligne({ parametre, rang }: { parametre: ParametreResolu; rang: number }
       <Cellule tabulaire gras titre={parametre.code}>
         {parametre.code}
       </Cellule>
-      <Cellule couleur="var(--ink-500)" titre={parametre.libelle}>
+      {/* ⚠️ Deux lignes : la description d'un paramètre légal est une PHRASE,
+          pas une étiquette. « Délai annoncé par le Centre de formalités de
+          création des entreprises » demande 821 px pour 705 disponibles, et le
+          comptable qui doit décider si un paramètre s'applique ne peut pas se
+          contenter de sa moitié. */}
+      <Cellule lignes={2} couleur="var(--ink-500)" titre={parametre.libelle}>
         {parametre.libelle}
       </Cellule>
-      <Cellule aDroite tabulaire gras>
+      {/* ⚠️ Deux lignes, parce que cette colonne ne contient pas que des
+          nombres. Trois paramètres du référentiel portent une EXPRESSION
+          RÉGULIÈRE — le format d'un NIU, celui d'un numéro de registre du
+          commerce — et 120 px n'en montrent que les deux tiers. Un fiscaliste
+          qui contresigne un format doit voir le format entier ; en montrer la
+          moitié, c'est lui demander de signer ce qu'il ne lit pas.
+          Les nombres, eux, tiennent sur une ligne et ne bougent pas. */}
+      <Cellule aDroite tabulaire gras lignes={2} titre={formater(parametre)}>
         {formater(parametre)}
       </Cellule>
       <Cellule tabulaire couleur="var(--ink-500)">
