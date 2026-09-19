@@ -1,0 +1,18 @@
+# ⚠️ Ce fichier existe parce que le dépôt est désormais autonome. Dans le monorepo, il
+# héritait des règles de la racine ; extrait seul, il n'héritait plus de rien, et le
+# premier `git add` aurait emporté node_modules et le dossier de construction.
+node_modules/
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+*.tsbuildinfo
+
+# Les secrets ne se versionnent pas, et l'exemple suffit à dire ce qu'ils nomment.
+.env
+.env.local
+.env*.local
+
+.DS_Store
+*.log

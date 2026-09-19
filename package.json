@@ -1,5 +1,5 @@
 {
-  "name": "frontend-erp-cga",
+  "name": "console-cga",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -23,5 +23,6 @@
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "La console du cabinet et l'espace adhérent de la plateforme CGA Broad Range."
 }
