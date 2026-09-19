@@ -1,9 +1,11 @@
 import Image from "next/image";
 
-import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
+import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
+
+import { EnteteConsole } from "@/app/components/vitrine/EnteteConsole";
 import { FormulaireMotDePasse } from "@/app/components/vitrine/FormulaireMotDePasse";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
-import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
+import { PiedConsole } from "@/app/components/vitrine/PiedConsole";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -36,7 +38,7 @@ export function EcranMotDePasse({
 }) {
   return (
     <div className="vitrine">
-      <EnteteVitrine />
+      <EnteteConsole />
       <main
         style={{
           position: "relative",
@@ -69,10 +71,12 @@ export function EcranMotDePasse({
             gap: 18,
           }}
         >
-          <Link href="/" className="retour-vitrine">
+          {/* ⚠️ Adresse absolue : « / » de la console mène à la connexion
+              depuis la scission, donc le retour bouclait. */}
+          <a href={ADRESSE_VITRINE} className="retour-vitrine">
             <IconeVitrine nom="retour" taille={15} />
             Retour au site
-          </Link>
+          </a>
 
           <h1 style={{ font: "600 27px/1.25 var(--police-titre)", color: "#fff", margin: 0 }}>
             {titre}
@@ -121,7 +125,7 @@ export function EcranMotDePasse({
           )}
         </div>
       </main>
-      <PiedVitrine />
+      <PiedConsole />
     </div>
   );
 }

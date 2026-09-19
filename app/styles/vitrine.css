@@ -1251,8 +1251,17 @@
   position: relative;
   padding: 20px;
   border-radius: 12px;
-  background: rgb(255 255 255 / 6%);
-  border: 1px solid rgb(255 255 255 / 14%);
+  /* ⚠️ UN FOND À SOI, ET NON UN VOILE BLANC À 6 %.
+     Mesuré sur l'écran de connexion : le voile du héros est un dégradé
+     HORIZONTAL qui s'éteint à 78 % de la largeur, alors que ces cartes
+     occupent toute la largeur. Celles de droite se retrouvaient donc sur la
+     photographie nue, et leur texte — blanc à 72 %, 13 px — devenait
+     illisible dès qu'une chemise claire passait derrière.
+     Une teinte sombre propre à la carte la rend lisible où qu'elle se trouve,
+     et le flou détache le texte sans masquer l'image. */
+  background: rgb(20 12 32 / 62%);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgb(255 255 255 / 18%);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1301,7 +1310,9 @@
 .avantage__detail {
   margin: 0;
   font: 400 13px/1.6 var(--police-texte);
-  color: rgb(255 255 255 / 72%);
+  /* 72 % passait juste sur un aplat sombre, et pas du tout sur une photo.
+     88 % tient dans les deux cas. */
+  color: rgb(255 255 255 / 88%);
   text-wrap: pretty;
 }
 
@@ -4161,4 +4172,74 @@
   .pied-vitrine__grille {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   L'en-tête et le pied des pages publiques de la console.
+
+   ⚠️ Sobres, et c'est le propos. Ces pages portaient la navigation complète du
+   site public, dont les sept liens rendaient 404 depuis la scission. Quelqu'un
+   qui vient taper son mot de passe n'a besoin de rien d'autre que de savoir où
+   il est et comment ressortir.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.entete-console {
+  border-bottom: 1px solid var(--line-200);
+  background: var(--surface);
+}
+
+.entete-console__dedans {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.entete-console__marque {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.entete-console__marque img {
+  height: 44px;
+  width: auto;
+  /* Le logo est fourni sur fond blanc. En mode sombre, un carré blanc au coin
+     de l'écran est plus visible que le logo lui-même : on l'y fond. */
+  border-radius: 4px;
+}
+
+.entete-console__retour {
+  font-size: 14px;
+  color: var(--brand-indigo-700);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.entete-console__retour:hover {
+  text-decoration: underline;
+}
+
+.pied-console {
+  border-top: 1px solid var(--line-200);
+  padding: 22px 24px 30px;
+  text-align: center;
+}
+
+.pied-console__ligne {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  color: var(--ink-500);
+}
+
+.pied-console__ligne a {
+  color: var(--brand-indigo-700);
+}
+
+.pied-console__mention {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-400);
 }

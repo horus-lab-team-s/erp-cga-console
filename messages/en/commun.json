@@ -48,7 +48,8 @@
     "ouvrirMenu": "Open menu",
     "fermerMenu": "Close menu",
     "precedent": "Previous",
-    "suivant": "Next"
+    "suivant": "Next",
+    "retourAuSite": "Back to the website"
   },
   "theme": {
     "basculer": "Switch theme",

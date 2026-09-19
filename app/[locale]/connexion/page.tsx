@@ -1,13 +1,12 @@
 import Image from "next/image";
+
+import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
-import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
 import { FormulaireConnexion } from "@/app/components/vitrine/FormulaireConnexion";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
-import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
-import { Link } from "@/i18n/navigation";
 import "@/app/styles/vitrine.css";
 
 export async function generateMetadata({
@@ -59,10 +58,14 @@ export default async function Connexion({
   const { locale } = await params;
   setRequestLocale(locale);
   return (
+    // ⚠️ NI EN-TÊTE NI PIED, et c'est le dessin d'origine : voir le commentaire
+    // de `Ecran`. Cette page est volontairement un cul-de-sac, avec sa propre
+    // marque et sa propre porte de sortie. La coquille de la vitrine y avait été
+    // posée du temps où une seule application servait les deux ; après la
+    // scission elle affichait sept liens qui rendaient tous 404, sous des
+    // libellés qui ne se chargeaient plus.
     <div className="vitrine">
-      <EnteteVitrine />
       <Ecran />
-      <PiedVitrine />
     </div>
   );
 }
@@ -111,12 +114,18 @@ function Ecran() {
               arrivé par un lien direct. Le logo ramenait déjà à l'accueil, mais
               rien ne le disait : un logo cliquable est une convention, pas une
               indication. */}
-          <Link href="/" className="retour-vitrine">
+          {/* ⚠️ Une ancre vers une ADRESSE ABSOLUE, et non un lien interne.
+              « / » menait à l'accueil du site public du temps où c'était la
+              même application. Depuis la scission, « / » de la console renvoie
+              à la connexion : le bouton de sortie ramenait sur la page qu'on
+              voulait quitter. Une boucle, sur le seul geste offert à qui
+              renonce. */}
+          <a href={ADRESSE_VITRINE} className="retour-vitrine">
             <IconeVitrine nom="retour" taille={15} />
             {commun("actions.retourVitrine")}
-          </Link>
+          </a>
 
-          <Link href="/" style={{ alignSelf: "flex-start" }}>
+          <a href={ADRESSE_VITRINE} style={{ alignSelf: "flex-start" }}>
             <Image
               src="/marque/cga-logo-blanc.png"
               alt={commun("cabinet.nom")}
@@ -125,7 +134,7 @@ function Ecran() {
               priority
               style={{ width: 132, height: "auto" }}
             />
-          </Link>
+          </a>
           <span className="heros__kicker">{t("kicker")}</span>
           <h1 className="heros__titre">{t("titre")}</h1>
           <p className="heros__detail">{t("detail")}</p>

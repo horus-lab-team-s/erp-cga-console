@@ -3,9 +3,9 @@
 import Image from "next/image";
 import { useActionState } from "react";
 
-import { EnteteVitrine } from "@/app/components/vitrine/EnteteVitrine";
+import { EnteteConsole } from "@/app/components/vitrine/EnteteConsole";
 import { IconeVitrine } from "@/app/components/vitrine/IconeVitrine";
-import { PiedVitrine } from "@/app/components/vitrine/PiedVitrine";
+import { PiedConsole } from "@/app/components/vitrine/PiedConsole";
 import {
   demanderReinitialisation,
   type EtatOubli,
@@ -64,7 +64,7 @@ export function EcranOubli() {
 
   return (
     <div className="vitrine">
-      <EnteteVitrine />
+      <EnteteConsole />
       <main
         style={{
           position: "relative",
@@ -173,7 +173,7 @@ export function EcranOubli() {
           )}
         </div>
       </main>
-      <PiedVitrine />
+      <PiedConsole />
     </div>
   );
 }
