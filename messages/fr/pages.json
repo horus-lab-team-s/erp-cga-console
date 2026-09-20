@@ -850,5 +850,11 @@
         }
       ]
     }
+  },
+  "introuvable": {
+    "kicker": "Erreur 404",
+    "titre": "Page introuvable",
+    "detail": "L'adresse demandée ne correspond à aucun écran de l'espace de travail. Le lien que vous avez suivi est peut-être ancien, ou l'adresse a été saisie de travers.",
+    "retourEspace": "Revenir à l'espace de travail"
   }
 }

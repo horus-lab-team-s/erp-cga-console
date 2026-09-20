@@ -850,5 +850,11 @@
         }
       ]
     }
+  },
+  "introuvable": {
+    "kicker": "Error 404",
+    "titre": "Page not found",
+    "detail": "The address you asked for matches no screen in the workspace. The link you followed may be out of date, or the address was mistyped.",
+    "retourEspace": "Back to the workspace"
   }
 }
