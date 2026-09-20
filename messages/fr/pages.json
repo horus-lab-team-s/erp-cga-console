@@ -453,7 +453,7 @@
   "connexion": {
     "kicker": "Espace client",
     "titre": "Se connecter",
-    "detail": "Un point d'entrée unique pour les adhérents, les entreprises clientes et les souscripteurs. Votre espace est choisi après authentification.",
+    "detail": "Vos échéances fiscales et sociales, votre DSF, vos règlements : tout ce que le cabinet suit pour vous, selon votre formule d'adhésion.",
     "identifiant": "Adresse électronique",
     "motDePasse": "Mot de passe",
     "oubli": "Mot de passe oublié ?",
@@ -463,29 +463,31 @@
     "creer": "Souscrire une prestation",
     "retour": "Retour au site",
     "note": "Le cabinet ne vous demandera jamais votre mot de passe, ni par téléphone, ni par WhatsApp, ni par courriel. Un lien d'accès ne vous parvient qu'à l'adresse que le cabinet connaît.",
-    "profilsTitre": "Quatre populations, une seule porte",
+    "profilsTitre": "Ce que vous y faites",
     "profils": [
       {
-        "titre": "Cabinet",
-        "detail": "Comptable, réviseur, chargé de clientèle, fiscaliste, direction"
+        "titre": "Vos échéances",
+        "detail": "CNPS, TVA, acomptes, patente : ce que vous devez, pour quand, et ce qu'un retard coûte."
       },
       {
-        "titre": "Entreprise cliente",
-        "detail": "Le dirigeant et les collaborateurs qu'il invite"
+        "titre": "Votre DSF",
+        "detail": "La déclaration statistique et fiscale annuelle, préparée par le cabinet à partir de vos pièces."
       },
       {
-        "titre": "Souscripteur",
-        "detail": "Une prestation réglée, pas encore d'entreprise constituée"
+        "titre": "Vos règlements",
+        "detail": "Réglez, puis envoyez la quittance : le cabinet la rattache à l'obligation qu'elle acquitte."
       },
       {
-        "titre": "Plateforme",
-        "detail": "L'éditeur de la solution, accès exceptionnel et tracé"
+        "titre": "Selon votre formule",
+        "detail": "Impôt libératoire, réel simplifié ou régime du réel : votre suivi s'ajuste à votre régime."
       }
     ],
     "demonstration": "Démonstration",
     "demonstrationDetail": "Ces comptes n'existent que pour la démonstration et ne partiront pas en production. Choisissez un profil pour voir l'espace correspondant.",
     "refus": "Identifiant ou mot de passe incorrect. Les identifiants de démonstration sont rappelés ci-dessous.",
-    "demoTitre": "Identifiants de démonstration"
+    "demoTitre": "Identifiants de démonstration",
+    "portesTitre": "Une seule porte",
+    "portes": "Cabinet, entreprise cliente, souscripteur ou plateforme : votre espace est choisi après authentification."
   },
   "fiches": {
     "ponctuel": {

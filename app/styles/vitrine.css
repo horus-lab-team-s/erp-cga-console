@@ -3931,6 +3931,26 @@
    qui sont sur fond clair, elle donnait du blanc sur blanc — le texte y était
    simplement invisible. */
 
+/* ── La carte posée sur l'aplat indigo ────────────────────────────────────
+   ⚠️ MESURÉ SUR LA PAGE DE CONNEXION : la carte n'y était pas visible.
+
+   Son fond, une teinte sombre à 62 %, ne vaut que **1,16** contre l'indigo de
+   la page : deux sombres l'un sur l'autre. La carte ne se distinguait donc que
+   par sa bordure, elle-même à **1,49**. Résultat, quatre blocs de texte alignés
+   sans qu'on voie qu'il s'agit de quatre cartes.
+
+   La bordure passe à 42 %, soit 3,25 contre la page : au-dessus du seuil de 3
+   exigé d'un objet graphique qui délimite un contenu. Le seuil de 4,5 ne
+   s'applique pas ici, c'est un trait, pas du texte.
+
+   ⚠️ VARIANTE, ET NON CORRECTION DE `.avantage`. La classe de base sert aussi
+   aux gestes d'adhésion, sur un écran de travail à fond CLAIR, où la carte
+   sombre se voit déjà très bien et où une bordure plus pâle la délavernait.
+   ──────────────────────────────────────────────────────────────────────── */
+.avantage--sur-sombre {
+  border-color: rgb(255 255 255 / 42%);
+}
+
 .avantage--clair {
   background: var(--surface);
   border-color: var(--line-200);

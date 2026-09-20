@@ -453,7 +453,7 @@
   "connexion": {
     "kicker": "Client area",
     "titre": "Log in",
-    "detail": "One single entry point for members, client companies and subscribers. Your workspace is selected after you log in.",
+    "detail": "Your tax and social deadlines, your annual return, your payments: everything the firm tracks for you, according to your membership plan.",
     "identifiant": "Email address",
     "motDePasse": "Password",
     "oubli": "Forgotten password?",
@@ -463,29 +463,31 @@
     "creer": "Subscribe to a service",
     "retour": "Back to the site",
     "note": "The firm will never ask for your password, by phone, WhatsApp or email. An access link is only ever sent to the address the firm has on file.",
-    "profilsTitre": "Four populations, one door",
+    "profilsTitre": "What you do here",
     "profils": [
       {
-        "titre": "Firm",
-        "detail": "Accountant, reviewer, client manager, tax specialist, management"
+        "titre": "Your deadlines",
+        "detail": "Social contributions, VAT, instalments, licence: what you owe, by when, and what a delay costs."
       },
       {
-        "titre": "Client company",
-        "detail": "The director and the colleagues they invite"
+        "titre": "Your annual return",
+        "detail": "The statistical and tax return, prepared by the firm from the documents you send."
       },
       {
-        "titre": "Subscriber",
-        "detail": "A service paid for, no company incorporated yet"
+        "titre": "Your payments",
+        "detail": "Pay, then send the receipt: the firm attaches it to the obligation it settles."
       },
       {
-        "titre": "Platform",
-        "detail": "The software publisher, exceptional and traced access"
+        "titre": "According to your plan",
+        "detail": "Flat tax, simplified or standard regime: your follow-up matches your tax status."
       }
     ],
     "demonstration": "Demonstration",
     "demonstrationDetail": "These accounts exist for demonstration only and will not ship to production. Pick a profile to see the matching workspace.",
     "refus": "Wrong username or password. The demonstration credentials are shown below.",
-    "demoTitre": "Demonstration credentials"
+    "demoTitre": "Demonstration credentials",
+    "portesTitre": "One door",
+    "portes": "Firm, client company, subscriber or platform: your workspace is chosen after authentication."
   },
   "fiches": {
     "ponctuel": {

@@ -153,11 +153,42 @@ function Ecran() {
           <h1 className="heros__titre">{t("titre")}</h1>
           <p className="heros__detail">{t("detail")}</p>
 
+          {/* ─────────────────────────────────────────────────────────────
+              ⚠️ CE QU'ON VIENT Y FAIRE, ET NON QUI PEUT Y ENTRER.
+
+              Ces quatre cartes décrivaient les quatre POPULATIONS admises :
+              cabinet, entreprise cliente, souscripteur, plateforme. C'est
+              l'organigramme du système, pas sa raison d'être, et l'adhérent qui
+              arrive sur cette page n'a que faire de savoir que le fiscaliste
+              entre par la même porte.
+
+              Le produit existe pour qu'un membre suive sa fiscalité, sa DSF et
+              ses règlements SELON SA FORMULE d'adhésion. C'est cela que la porte
+              doit annoncer.
+
+              ⚠️ CHAQUE CARTE NE PROMET QUE CE QUI EXISTE, et cela a été vérifié
+              ligne à ligne sur le serveur avant d'être écrit :
+              · les échéances : six obligations réelles, CNPS, TVA, acomptes,
+                patente et DSF, avec leur date et le coût du retard ;
+              · la DSF : un code d'obligation à part entière, échéance au
+                16 mars ;
+              · les règlements : la route « j'ai déjà payé, voici la preuve »
+                existe. **Le paiement en ligne, lui, n'existe pas** : la carte
+                dit donc « réglez, puis envoyez la quittance », et jamais
+                « payez ici ». Écrire l'inverse serait promettre sur la porte ce
+                qu'on ne tient pas à l'intérieur ;
+              · la formule : impôt libératoire, réel simplifié ou réel, ce sont
+                les trois régimes du catalogue de l'offre.
+              ───────────────────────────────────────────────────────────── */}
           <div style={{ marginTop: 18 }}>
             <span style={etiquette}>{t("profilsTitre")}</span>
             <div className="grille grille--2" style={{ marginTop: 12, gap: 12 }}>
               {profils.map((profil) => (
-                <div key={profil.titre} className="avantage" style={{ padding: 16, gap: 6 }}>
+                <div
+                  key={profil.titre}
+                  className="avantage avantage--sur-sombre"
+                  style={{ padding: 16, gap: 6 }}
+                >
                   <h2 className="avantage__titre" style={{ fontSize: 14.5 }}>
                     {profil.titre}
                   </h2>
@@ -168,6 +199,23 @@ function Ecran() {
               ))}
             </div>
           </div>
+
+          {/* Les quatre populations ne disparaissent pas : elles descendent au
+              rang de précision. C'est une information utile — on ne sait pas
+              toujours par où l'on entre — mais elle ne mérite pas la moitié de
+              la page. */}
+          <p
+            style={{
+              marginTop: 18,
+              font: "400 12.5px/1.6 var(--police-texte)",
+              color: "rgb(255 255 255 / 72%)",
+            }}
+          >
+            <strong style={{ color: "#fff", fontWeight: 600 }}>
+              {t("portesTitre")}
+            </strong>{" "}
+            · {t("portes")}
+          </p>
         </div>
 
         <FormulaireConnexion />
