@@ -81,6 +81,19 @@ const STATUTS_PIECE: Statut[] = ["Reçue", "Lue", "Rapprochée", "Comptabilisée
  */
 const GRILLE = "32px 132px minmax(0,1.3fr) minmax(0,1.5fr) 82px 122px 92px 110px 108px";
 
+/**
+ * ⚠️ La largeur en dessous de laquelle ce tableau cesse d'être lisible.
+ *
+ * Mesuré dans un cadre de 390 px : 42 coupures, dont les EN-TÊTES eux-mêmes —
+ * « Entreprise », « Fournisseur ». Neuf colonnes ne tiennent pas dans la
+ * largeur d'un téléphone, et aucun repli n'y changera rien. Le tableau garde sa
+ * largeur utile et défile ; les ombres du conteneur disent qu'il continue.
+ *
+ * Les colonnes fixes gardent leur valeur, les deux colonnes en fractions
+ * reçoivent un plancher de 150 px, et l'on ajoute les huit écarts.
+ */
+const LARGEUR_MINIMALE = 32 + 132 + 150 + 150 + 82 + 122 + 92 + 110 + 108 + 8 * 8 + 24;
+
 export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
   const routeur = useRouter();
 
@@ -198,6 +211,7 @@ export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
               flex: "none",
               display: "grid",
               gridTemplateColumns: GRILLE,
+              minWidth: LARGEUR_MINIMALE,
               alignItems: "center",
               height: 30,
               padding: "0 12px",
@@ -230,7 +244,20 @@ export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
             <span>Conformité</span>
           </div>
 
-          <div ref={conteneur} style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+          <div
+            ref={conteneur}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overflowX: "auto",
+              background:
+                "linear-gradient(to right, var(--surface) 30%, rgb(0 0 0 / 0%)) left center / 24px 100% no-repeat local," +
+                "linear-gradient(to left, var(--surface) 30%, rgb(0 0 0 / 0%)) right center / 24px 100% no-repeat local," +
+                "radial-gradient(farthest-side at 0 50%, rgb(26 21 35 / 16%), rgb(0 0 0 / 0%)) left center / 12px 100% no-repeat scroll," +
+                "radial-gradient(farthest-side at 100% 50%, rgb(26 21 35 / 16%), rgb(0 0 0 / 0%)) right center / 12px 100% no-repeat scroll",
+            }}
+          >
             {visibles.length === 0 ? (
               <p
                 style={{
@@ -305,6 +332,7 @@ function Ligne({
       style={{
         display: "grid",
         gridTemplateColumns: GRILLE,
+        minWidth: LARGEUR_MINIMALE,
         alignItems: "center",
         // ⚠️ `minHeight` et non `height` : une hauteur FIXE rognait la seconde
         // ligne des dénominations repliées, ce qui remplaçait une coupure par

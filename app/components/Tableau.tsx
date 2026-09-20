@@ -71,9 +71,63 @@ export function Panneau({
         )}
         {action && <span style={{ marginLeft: "auto", flex: "none" }}>{action}</span>}
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>{children}</div>
+      {/* ⚠️ `overflowX: auto` EN PLUS DU DÉFILEMENT VERTICAL.
+          Mesuré dans un cadre de 390 px : le tableau de bord comptait 210
+          coupures, dont les EN-TÊTES eux-mêmes — « Entreprise », « Obligation ».
+          Six colonnes de données comptables ne tiennent pas dans la largeur d'un
+          téléphone, et aucun repli n'y changera rien : il faut laisser le
+          tableau garder sa largeur utile et le faire défiler.
+          Les deux ombres apparaissent du côté où le contenu continue. Sans
+          elles, la colonne de droite se coupe sans aucun signe et le lecteur
+          croit le tableau tronqué. */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          overflowX: "auto",
+          background:
+            "linear-gradient(to right, var(--surface) 30%, rgb(0 0 0 / 0%)) left center / 24px 100% no-repeat local," +
+            "linear-gradient(to left, var(--surface) 30%, rgb(0 0 0 / 0%)) right center / 24px 100% no-repeat local," +
+            "radial-gradient(farthest-side at 0 50%, rgb(26 21 35 / 16%), rgb(0 0 0 / 0%)) left center / 12px 100% no-repeat scroll," +
+            "radial-gradient(farthest-side at 100% 50%, rgb(26 21 35 / 16%), rgb(0 0 0 / 0%)) right center / 12px 100% no-repeat scroll",
+        }}
+      >
+        {children}
+      </div>
     </section>
   );
+}
+
+/**
+ * La largeur en dessous de laquelle un tableau cesse d'être lisible.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ POURQUOI UN TABLEAU DENSE NE SE REPLIE PAS SUR UN TÉLÉPHONE
+ *
+ * Mesuré dans un cadre de 390 px : le tableau de bord comptait **210 coupures**,
+ * le référentiel 120, la boîte de réception 42. Les EN-TÊTES eux-mêmes étaient
+ * tronqués — « Entreprise », « Obligation » — ce qui rend le tableau
+ * indéchiffrable : on ne sait plus ce que chaque colonne contient.
+ *
+ * Six colonnes de données comptables ne tiennent pas dans 390 px, et aucun
+ * repli n'y changera rien. Ce qu'il faut, c'est laisser le tableau garder sa
+ * largeur utile et le faire DÉFILER, avec une ombre qui prévient qu'il continue
+ * — le dossier de design décrit ce motif à sa section sur les tableaux.
+ *
+ * Le calcul : les colonnes fixes gardent leur valeur, les colonnes en
+ * fractions reçoivent un plancher de 150 px, et l'on ajoute les écarts.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export function largeurMinimale(colonnes: Colonne[]): number {
+  const PLANCHER_FRACTION = 150;
+  const ECART = 8;
+  const MARGE = 28;
+  const total = colonnes.reduce((somme, c) => {
+    const px = /^(\d+(?:\.\d+)?)px$/.exec(c.largeur.trim());
+    return somme + (px ? Number(px[1]) : PLANCHER_FRACTION);
+  }, 0);
+  return Math.round(total + ECART * (colonnes.length - 1) + MARGE);
 }
 
 export function EnteteTableau({ colonnes }: { colonnes: Colonne[] }) {
@@ -86,6 +140,10 @@ export function EnteteTableau({ colonnes }: { colonnes: Colonne[] }) {
         zIndex: 1,
         display: "grid",
         gridTemplateColumns: colonnes.map((c) => c.largeur).join(" "),
+        // ⚠️ En dessous, les colonnes s'écrasent au point que les EN-TÊTES se
+        // tronquent : on ne sait plus ce que chaque colonne contient. Le cadre
+        // parent fait défiler.
+        minWidth: largeurMinimale(colonnes),
         alignItems: "center",
         height: "var(--entete-tableau)",
         padding: "0 14px",
@@ -131,6 +189,9 @@ export function LigneTableau({
       style={{
         display: "grid",
         gridTemplateColumns: colonnes.map((c) => c.largeur).join(" "),
+        // Même largeur utile que l'en-tête, sans quoi les colonnes se
+        // décaleraient l'une par rapport à l'autre pendant le défilement.
+        minWidth: largeurMinimale(colonnes),
         alignItems: "center",
         minHeight: hauteur,
         // ⚠️ Une marge verticale, depuis que les colonnes de texte peuvent tenir
