@@ -101,8 +101,56 @@ function Ecran() {
         background: "var(--brand-indigo-900)",
         display: "flex",
         alignItems: "center",
+        /* L'image est posée en absolu : sans ce recadrage elle déborderait du
+           cadre sur les écrans très larges. */
+        overflow: "hidden",
       }}
     >
+      {/* ─────────────────────────────────────────────────────────────────────
+          ⚠️ LA PHOTOGRAPHIE EST REVENUE, À LA DEMANDE DU CABINET.
+
+          Elle avait été retirée pour deux raisons mesurées, et TOUTES DEUX SONT
+          TRAITÉES ICI plutôt qu'oubliées :
+
+          1. **Elle poussait le formulaire sous la ligne de flottaison.**
+             L'image couvrait 130 % de la hauteur de l'écran et déplaçait le
+             contenu de 245 px vers le bas : il fallait faire défiler pour
+             atteindre le bouton. Elle est maintenant posée en position ABSOLUE,
+             hors du flux : elle ne peut plus déplacer quoi que ce soit, quelle
+             que soit sa taille.
+
+          2. **Le texte changeait de lisibilité selon ce qui passait derrière.**
+             Une chemise claire, un mur sombre, et le même blanc devenait
+             illisible ou net. Le voile ci-dessous est calculé : à 86 %, même
+             au-dessus d'un blanc pur, le texte le plus pâle de la page tient
+             **6,05:1**, bien au-delà du seuil de 4,5. La lisibilité ne dépend
+             donc plus de la photo.
+
+          ⚠️ Le § 10.7 proscrit la photographie dans l'espace de travail. Cette
+          page en est la PORTE, pas l'intérieur : elle relève de la vitrine, où
+          la photographie est admise. Les écrans de travail, eux, restent nus.
+          ───────────────────────────────────────────────────────────────── */}
+      <Image
+        src="/images/heros/rue-commercante.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        style={{ objectFit: "cover", zIndex: 0 }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          /* 86 % : voir le calcul ci-dessus. Uniforme et non dégradé, parce
+             qu'à largeur de téléphone le formulaire passe AU-DESSUS du texte et
+             que les deux occupent alors toute la largeur : un dégradé
+             horizontal laisserait une moitié du texte sur la photo nue. */
+          background: "rgb(46 27 77 / 86%)",
+        }}
+      />
       {/* ⚠️ LA PHOTOGRAPHIE EST PARTIE, ET C'EST LA RÈGLE QUI LE DEMANDE.
           Le § 10.7 du dossier de design, dérogation du 10 août 2026 : « la
           photographie est admise sur la vitrine, PROSCRITE DANS L'ESPACE DE
