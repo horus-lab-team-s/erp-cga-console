@@ -856,5 +856,13 @@
     "titre": "Page not found",
     "detail": "The address you asked for matches no screen in the workspace. The link you followed may be out of date, or the address was mistyped.",
     "retourEspace": "Back to the workspace"
+  },
+  "panne": {
+    "kicker": "Error 500",
+    "titre": "This screen could not be displayed",
+    "detail": "Something failed on our side, not yours. The incident is recorded; you can try again right away, as most resolve on their own.",
+    "prudence": "If you were saving something, check before starting over: this screen cannot tell whether the save went through.",
+    "reference": "Reference to quote to the firm",
+    "reessayer": "Try again"
   }
 }

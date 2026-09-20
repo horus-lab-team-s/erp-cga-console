@@ -856,5 +856,13 @@
     "titre": "Page introuvable",
     "detail": "L'adresse demandée ne correspond à aucun écran de l'espace de travail. Le lien que vous avez suivi est peut-être ancien, ou l'adresse a été saisie de travers.",
     "retourEspace": "Revenir à l'espace de travail"
+  },
+  "panne": {
+    "kicker": "Erreur 500",
+    "titre": "Cet écran n'a pas pu s'afficher",
+    "detail": "Une panne est survenue de notre côté, et non du vôtre. L'incident est enregistré ; vous pouvez réessayer tout de suite, la plupart se résolvent seuls.",
+    "prudence": "Si vous étiez en train d'enregistrer quelque chose, vérifiez avant de recommencer : cet écran ne sait pas dire si l'enregistrement a abouti.",
+    "reference": "Référence à citer au cabinet",
+    "reessayer": "Réessayer"
   }
 }
