@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { TIRET } from "@/app/lib/formats";
 
 import {
   chiffrerLeDossier,
   confirmerLEncaissement,
+  declarerLePremierContact,
   demanderLeReglement,
   emettreLaProforma,
   enregistrerLaQualification,
@@ -12,7 +14,7 @@ import {
   type EtatChiffrage,
   type EtatEmission,
 } from "@/app/lib/actions-acquisition";
-import type { Question } from "@/app/lib/console-acquisition";
+import type { CompositionOfferte, LienDeLaProforma, Question } from "@/app/lib/console-acquisition";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 
 const note: React.CSSProperties = { margin: 0, font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" };
@@ -43,7 +45,7 @@ function Champ({ question, valeur }: { question: Question; valeur: string }) {
   if (question.type === "ENUM" && question.valeurs) {
     return (
       <select name={nom} defaultValue={valeur} style={champ}>
-        <option value="">—</option>
+        <option value="">{TIRET}</option>
         {question.valeurs.map((v) => (
           <option key={v} value={v}>
             {v.replaceAll("_", " ").toLowerCase()}
@@ -203,29 +205,148 @@ export function Chiffrage({ reference }: { reference: string }) {
 const EMISSION_INITIALE: EtatEmission = { echec: null, proforma: null, lien: null };
 
 /**
- * Arrêter le montant et émettre la proforma (pas 67).
+ * « J'ai joint le client » : le geste qui engage l'échange.
+ *
+ * ⚠️ Il ne s'affiche qu'à `AFFECTÉE`. Ailleurs, l'échange a déjà commencé, et
+ * offrir un bouton sans effet ferait douter de tous les autres.
+ */
+export function PremierContact({ reference }: { reference: string }) {
+  const [etat, declarer, enCours] = useActionState(
+    declarerLePremierContact,
+    ETAT_ACTE_INITIAL,
+  );
+  if (etat.fait) {
+    return (
+      <p role="status" style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)", color: "var(--success)" }}>
+        {etat.fait}
+      </p>
+    );
+  }
+  return (
+    <form action={declarer} style={{ padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+      <input type="hidden" name="reference" value={reference} />
+      <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)", flex: "1 1 280px" }}>
+        Ce qui a été dit
+        <input
+          name="commentaire"
+          maxLength={300}
+          placeholder="Client joint, session de novembre retenue."
+          style={champ}
+        />
+      </label>
+      <button type="submit" className="bouton-primaire" disabled={enCours}>
+        {enCours ? "…" : "J’ai joint le client"}
+      </button>
+      {etat.echec && (
+        <span role="alert" style={{ ...note, color: "var(--danger)" }}>{etat.echec}</span>
+      )}
+    </form>
+  );
+}
+
+/** Le client à qui la proforma part : ce que la fiche sait de lui, et ce qu'il a permis. */
+export type DestinataireDeLaProforma = {
+  nom: string;
+  telephone: string;
+  courriel: string | null;
+  /** Accord WhatsApp en vigueur : accordé ET non révoqué. */
+  whatsapp: boolean;
+};
+
+/**
+ * Le numéro au format qu'attend `wa.me` : chiffres seuls, indicatif compris.
+ *
+ * ⚠️ `wa.me` refuse le `+`, les espaces et le zéro initial. Un numéro camerounais à
+ * neuf chiffres reçoit l'indicatif 237 ; un numéro déjà international passe tel quel.
+ */
+export function numeroWhatsapp(telephone: string): string {
+  const chiffres = telephone.replace(/\D/g, "");
+  return chiffres.length === 9 ? `237${chiffres}` : chiffres;
+}
+
+/**
+ * Le message WhatsApp, repris mot pour mot du modèle `cga_envoi_proforma`
+ * (Docs/referentiel/messagerie/modeles). ⚠️ Le même texte que le modèle soumis à
+ * la plateforme : le jour où l'envoi passera par elle, le client lira la même chose.
+ */
+export function messageWhatsapp(nom: string, numero: string, montant: string, lien: string): string {
+  return (
+    `Bonjour ${nom}, votre proforma n° ${numero} est prête, pour un montant de ` +
+    `${Number(montant).toLocaleString("fr-FR")} FCFA.\n` +
+    `Vous pouvez la consulter ici : ${lien}\n` +
+    "Répondez à ce message si vous souhaitez en discuter avant de valider."
+  );
+}
+
+/**
+ * Arrêter le montant après l'échange, émettre la proforma, et l'envoyer au client.
  *
  * ─────────────────────────────────────────────────────────────────────────────
+ * LE PRIX N'EST PAS AU CATALOGUE : IL EST ARRÊTÉ ICI
+ *
+ * Pour un service sur étude, le prix vient de l'échange avec le client. Le
+ * responsable l'arrête, et la proforma part aussitôt chez le client, qui la
+ * retrouve dans sa boîte de courriel ou dans WhatsApp, avec le lien pour la lire et
+ * l'accepter sans compte.
+ *
+ * DEUX CHEMINS D'ENVOI
+ *
+ *   courriel   c'est le SERVEUR qui écrit, au moment où il forge le lien : le lien
+ *              ne passe par personne, et la transmission est notée d'elle-même
+ *   WhatsApp   le responsable l'envoie depuis le compte du cabinet, message déjà
+ *              rédigé ; il note ensuite la transmission, que rien d'autre ne voit
+ *
+ * ⚠️ WHATSAPP SEULEMENT SI LE CLIENT L'A PERMIS. Le consentement recueilli au dépôt
+ * de la demande fait foi ; un refus interdit WhatsApp, il n'interdit pas le courriel
+ * ni l'appel. L'écran le dit au lieu de cacher le bouton sans raison.
+ *
  * ⚠️ LE LIEN NE S'AFFICHE QU'UNE FOIS
  *
- * Le backend ne rend le lien d'acceptation qu'à l'émission : le remettre à chaque
- * lecture multiplierait les chemins par lesquels un engagement peut fuiter. L'écran
- * le montre donc une fois, avec la consigne de l'envoyer maintenant, puis propose de
- * noter la transmission, qui arme la relance.
+ * Le backend ne rend le lien d'acceptation qu'à l'émission. C'est pourquoi ce
+ * composant reste le même avant et après l'émission (voir la page) : s'il était
+ * démonté au rafraîchissement, le lien disparaîtrait avant d'avoir été envoyé.
  *
  * ⚠️ LA SÉPARATION DES TÂCHES EST DITE, PAS LAISSÉE CROIRE
  *
  * Le compte qui chiffre engage aussi le cabinet (pas 63) : l'écran l'affiche.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export function EmissionProforma({ reference, referenceProposee }: { reference: string; referenceProposee: string | null }) {
+export function EmissionProforma({
+  reference,
+  referenceProposee,
+  client,
+  dejaEmise,
+  lienRelu,
+  compositions,
+}: {
+  reference: string;
+  referenceProposee: string | null;
+  client: DestinataireDeLaProforma;
+  /** Le dossier est déjà à l'état « proforma émise » quand la page s'ouvre. */
+  dejaEmise: boolean;
+  /**
+   * Le lien relu par le serveur, quand la proforma existe déjà et que le lecteur
+   * a le droit de le voir. `null` sinon : habilitation insuffisante, ou rien à
+   * relire. Voir `lireLeLienDeLaProforma`.
+   */
+  lienRelu: LienDeLaProforma | null;
+  /**
+   * Les documents proposables pour ce service (pas 148). Vide : le référentiel
+   * est absent ou l'habilitation trop courte, et l'émission reste possible sans
+   * document.
+   */
+  compositions: CompositionOfferte[];
+}) {
   const [etat, emettre, enCours] = useActionState(emettreLaProforma, EMISSION_INITIALE);
   const [transmis, transmettre, transmissionEnCours] = useActionState(transmettreLaProforma, ETAT_ACTE_INITIAL);
+  const [copie, setCopie] = useState(false);
   const p = etat.proforma;
 
   if (p) {
+    const parti = p.courriel === "ENVOYE";
+    const lien = etat.lien;
     return (
-      <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
         <p style={{ margin: 0, font: "600 14px/1.5 var(--police-texte)" }}>
           {p.numero} · {francs(p.montant)}
         </p>
@@ -239,15 +360,57 @@ export function EmissionProforma({ reference, referenceProposee }: { reference: 
             Chiffrée et engagée par le même compte : aucune validation par un second collaborateur.
           </p>
         )}
-        {etat.lien && (
-          <div style={{ padding: "8px 10px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)" }}>
+
+        {p.courriel && (
+          <p role="status" style={{ ...note, color: parti ? "var(--success)" : "var(--warning)" }}>
+            {parti
+              ? `Envoyée par courriel à ${p.courriel_masque}. Transmission notée : la relance est armée.`
+              : p.courriel === "SANS_ADRESSE"
+                ? "Aucun courriel au dossier : envoyez-la par WhatsApp, ou lisez le lien au client par téléphone."
+                : "Le courriel n'est pas parti. Envoyez-la par WhatsApp, ou réessayez plus tard par courriel."}
+          </p>
+        )}
+
+        {lien && (
+          <div style={{ padding: "10px 12px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)", display: "flex", flexDirection: "column", gap: 8 }}>
             <p style={{ ...note, color: "var(--ink-900)", fontWeight: 600 }}>
-              Lien à envoyer au client maintenant : il ne sera plus affiché.
+              {parti ? "Le client a son lien. Vous pouvez aussi le lui envoyer sur WhatsApp :" : "Envoyez le lien au client maintenant : il ne sera plus affiché."}
             </p>
-            <p style={{ margin: "4px 0 0", font: "400 12px/1.4 var(--police-mono)", wordBreak: "break-all" }}>{etat.lien}</p>
+            <p style={{ margin: 0, font: "400 12px/1.4 var(--police-mono)", wordBreak: "break-all" }}>{lien}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              {client.whatsapp ? (
+                <a
+                  className="bouton-primaire"
+                  href={`https://wa.me/${numeroWhatsapp(client.telephone)}?text=${encodeURIComponent(
+                    messageWhatsapp(client.nom, p.numero, p.montant, lien),
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Envoyer sur WhatsApp
+                </a>
+              ) : (
+                <span style={note}>WhatsApp : le client ne l&rsquo;a pas autorisé à sa demande.</span>
+              )}
+              <button
+                type="button"
+                className="bouton-discret"
+                onClick={() => {
+                  // ⚠️ Le presse-papiers peut être refusé (page non sécurisée, réglage du
+                  // navigateur) : le lien reste alors lisible et sélectionnable au-dessus.
+                  navigator.clipboard?.writeText(lien).then(
+                    () => setCopie(true),
+                    () => setCopie(false),
+                  );
+                }}
+              >
+                {copie ? "Lien copié" : "Copier le lien"}
+              </button>
+            </div>
           </div>
         )}
-        {transmis.fait ? (
+
+        {parti ? null : transmis.fait ? (
           <span role="status" style={{ ...note, color: "var(--success)" }}>{transmis.fait}</span>
         ) : (
           <form action={transmettre}>
@@ -258,6 +421,86 @@ export function EmissionProforma({ reference, referenceProposee }: { reference: 
             {transmis.echec && <span role="alert" style={{ ...note, color: "var(--danger)", marginLeft: 8 }}>{transmis.echec}</span>}
           </form>
         )}
+      </div>
+    );
+  }
+
+  if (dejaEmise) {
+    /*
+      ─────────────────────────────────────────────────────────────────────────
+      ⚠️ CE PANNEAU DISAIT « le lien a été remis à l'émission ET NE SE RÉAFFICHE
+      PAS », ce qui était vrai et coûtait cher.
+
+      Le responsable qui rechargeait la page, fermait l'onglet, ou revenait le
+      lendemain sur le dossier n'avait plus aucun moyen d'envoyer la proposition
+      sur WhatsApp. Vérifié le 29 septembre sur la pile, sur sept dossiers réels
+      en PROFORMA_EMISE : aucun n'affichait le bouton.
+
+      Le serveur sait pourtant recomposer ce lien, et le faisait déjà pour le
+      courriel. Il le relit maintenant sans rien noter.
+      ─────────────────────────────────────────────────────────────────────────
+    */
+    if (!lienRelu) {
+      return (
+        <p style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
+          Émise, en attente de l&rsquo;accord du client. Le lien d&rsquo;acceptation ne vous est pas
+          accessible : il demande l&rsquo;habilitation qui permet de chiffrer un dossier.
+        </p>
+      );
+    }
+    const relance = transmis.fait;
+    return (
+      <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <p style={{ margin: 0, font: "600 14px/1.5 var(--police-texte)" }}>
+          {lienRelu.numero} · {francs(lienRelu.montant)}
+        </p>
+        <p style={{ ...note, color: "var(--ink-900)", fontWeight: 600 }}>
+          Émise, en attente de l&rsquo;accord du client. Vous pouvez lui renvoyer le lien :
+        </p>
+        <p style={{ margin: 0, font: "400 12px/1.4 var(--police-mono)", wordBreak: "break-all" }}>
+          {lienRelu.lien_client}
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {lienRelu.whatsapp_autorise ? (
+            <a
+              className="bouton-primaire"
+              href={`https://wa.me/${numeroWhatsapp(lienRelu.telephone)}?text=${encodeURIComponent(
+                messageWhatsapp(lienRelu.nom, lienRelu.numero, lienRelu.montant, lienRelu.lien_client),
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Envoyer sur WhatsApp
+            </a>
+          ) : (
+            <span style={note}>WhatsApp : le client ne l&rsquo;a pas autorisé à sa demande.</span>
+          )}
+          <button
+            type="button"
+            className="bouton-discret"
+            onClick={() => {
+              navigator.clipboard?.writeText(lienRelu.lien_client).then(
+                () => setCopie(true),
+                () => setCopie(false),
+              );
+            }}
+          >
+            {copie ? "Lien copié" : "Copier le lien"}
+          </button>
+          {relance ? (
+            <span role="status" style={{ ...note, color: "var(--success)" }}>{relance}</span>
+          ) : (
+            <form action={transmettre}>
+              <input type="hidden" name="numero" value={lienRelu.numero} />
+              <button type="submit" className="bouton-discret" disabled={transmissionEnCours}>
+                {transmissionEnCours ? "…" : "J’ai envoyé le lien au client"}
+              </button>
+              {transmis.echec && (
+                <span role="alert" style={{ ...note, color: "var(--danger)", marginLeft: 8 }}>{transmis.echec}</span>
+              )}
+            </form>
+          )}
+        </div>
       </div>
     );
   }
@@ -277,7 +520,40 @@ export function EmissionProforma({ reference, referenceProposee }: { reference: 
         Score de charge
         <input name="score_charge" inputMode="numeric" defaultValue="0" style={{ ...champ, width: 100 }} />
       </label>
-      <button type="submit" className="bouton-discret" disabled={enCours}>
+      {/*
+        ⚠️ LE DOCUMENT, CHOISI EN MÊME TEMPS QUE LE PRIX (pas 148).
+
+        C'est le geste réel du cabinet : le responsable arrête le montant après
+        l'échange ET sélectionne ce que la proforma couvre. Sans choix, aucun PDF
+        n'est produit et l'empreinte reste celle du résumé, comme avant.
+
+        ⚠️ Le statut est affiché. Une composition `TRANSCRIT` n'a pas été
+        confirmée par la direction ; l'envoyer à une cliente est une décision, et
+        elle doit être prise en connaissance de cause.
+      */}
+      {compositions.length > 0 && (
+        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)", flexBasis: "100%" }}>
+          Document de la proforma
+          <select name="composition" defaultValue="" style={{ ...champ, width: "100%" }}>
+            <option value="">Aucun document (empreinte du résumé, comme avant)</option>
+            {compositions.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.titre} · {c.libelle} · {francs(c.total)}
+                {c.statut !== "VALIDE" ? ` · ${c.statut.toLowerCase()}, non confirmé par la direction` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <label
+        style={{ flexBasis: "100%", display: "flex", gap: 8, alignItems: "center", font: "400 13px/1.4 var(--police-texte)", color: client.courriel ? "var(--ink-900)" : "var(--ink-500)" }}
+      >
+        <input type="checkbox" name="envoyer_par_courriel" value="oui" defaultChecked={Boolean(client.courriel)} disabled={!client.courriel} />
+        {client.courriel
+          ? `Envoyer la proforma par courriel à ${client.courriel}, dès l’émission`
+          : "Aucun courriel au dossier : l’envoi se fera par WhatsApp ou par téléphone"}
+      </label>
+      <button type="submit" className="bouton-primaire" disabled={enCours}>
         {enCours ? "…" : "Émettre la proforma"}
       </button>
       {etat.echec && <p role="alert" style={{ ...note, color: "var(--danger)", flexBasis: "100%" }}>{etat.echec}</p>}

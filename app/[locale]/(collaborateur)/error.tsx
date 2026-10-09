@@ -59,7 +59,7 @@ export default function ErreurEcranTravail({
             <strong style={{ display: "inline", fontWeight: 600 }}>
               Vous n’avez pas l’habilitation nécessaire
             </strong>{" "}
-            pour ce que cet écran demande — soit pour l’action, soit pour le
+            pour ce que cet écran demande : soit pour l’action, soit pour le
             dossier visé. Rien n’est cassé, et rien n’a été modifié.
           </span>
         ) : (

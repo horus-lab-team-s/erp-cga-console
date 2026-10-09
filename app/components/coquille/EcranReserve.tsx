@@ -93,7 +93,7 @@ export async function EcranReserve({
                 {profils.length > 1 ? `${profils.slice(0, -1).join(", ")} et ${profils.at(-1)}` : profils[0]}
               </strong>
               . Si vous devez y accéder, c&rsquo;est une habilitation à demander à
-              l&rsquo;administrateur du cabinet — elle est datée, et le journal
+              l&rsquo;administrateur du cabinet, elle est datée, et le journal
               d&rsquo;audit en gardera la trace.
             </span>
           )}

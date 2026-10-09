@@ -12,8 +12,9 @@ import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { moisPrecedentADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Clôture mensuelle — Plateforme CGA" };
+export const metadata: Metadata = { title: "Clôture mensuelle · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -37,10 +38,6 @@ export const dynamic = "force-dynamic";
 
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
-function moisPrecedent(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
-}
 
 function nomDuMois(mois: string): string {
   return `${MOIS[Number(mois.slice(5, 7)) - 1]} ${mois.slice(0, 4)}`;
@@ -101,7 +98,7 @@ export default async function ClotureMensuelle({ searchParams }: { searchParams:
     );
   }
   const dossier = dossiers.some((d) => d.niu === brut.dossier) ? (brut.dossier as string) : dossiers[0].niu;
-  const mois = /^\d{4}-(0[1-9]|1[0-2])$/.test(brut.mois ?? "") ? (brut.mois as string) : moisPrecedent();
+  const mois = /^\d{4}-(0[1-9]|1[0-2])$/.test(brut.mois ?? "") ? (brut.mois as string) : moisPrecedentADouala();
 
   let vue: VueDeCloture | null = null;
   let erreur: string | null = null;

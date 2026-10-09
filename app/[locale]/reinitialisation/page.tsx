@@ -5,7 +5,7 @@ import { EcranMotDePasse } from "@/app/components/vitrine/EcranMotDePasse";
 import "@/app/styles/vitrine.css";
 
 export const metadata: Metadata = {
-  title: "Nouveau mot de passe — CGA Broad Range Consulting Group",
+  title: "Nouveau mot de passe · CGA Broad Range Consulting Group",
   description: "Choisissez un nouveau mot de passe pour votre compte.",
   // ⚠️ Même raison qu'à l'activation : l'URL porte un secret d'usage unique.
   robots: { index: false, follow: false },

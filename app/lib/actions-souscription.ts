@@ -154,3 +154,51 @@ export async function lancerLesPrelevements(): Promise<EtatActe> {
     throw erreur;
   }
 }
+
+/**
+ * Fixer le prix d'une prestation, à partir d'une date : direction seule.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ LE PRIX EST UNE DÉCISION HUMAINE, ET CE GESTE EST CETTE DÉCISION.
+ *
+ * Tant qu'un prix n'est pas fixé ici, il vient du catalogue de démonstration : il
+ * s'affiche « indicatif » sur la vitrine et l'application, et le backend refuse de
+ * l'encaisser.
+ *
+ * L'auteur n'est pas un champ : le backend le prend de la session et l'inscrit au
+ * journal, comme pour l'ouverture d'un accès. Le motif est obligatoire : un prix sans
+ * motif ne se défend pas trois ans plus tard devant un client qui demande pourquoi.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export async function fixerUnTarif(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const service = texte(donnees, "service");
+  const formule = texte(donnees, "formule") || null;
+  // « 12 500 » se tape avec des espaces : on ne garde que les chiffres.
+  const montant = texte(donnees, "montant").replace(/\s/g, "");
+  const aPartirDu = texte(donnees, "a_partir_du");
+  const motif = texte(donnees, "motif");
+  if (donnees.get("confirmation") !== "oui") {
+    return { echec: "Cochez la case : ce prix engage le cabinet envers chaque client qui le paiera.", fait: null };
+  }
+  if (!/^\d+$/.test(montant) || Number(montant) <= 0) {
+    return { echec: "Le montant est un nombre entier de francs, supérieur à zéro.", fait: null };
+  }
+  // ⚠️ Le backend refuse aussi, mais avec le message anglais de sa validation. Les
+  // seuils restent les siens ; ici, on ne fait que les dire en français.
+  if (motif.length < 3) {
+    return { echec: "Donnez le motif de ce prix : révision annuelle, nouvelle grille, décision du conseil…", fait: null };
+  }
+  try {
+    await appeler<unknown>("/souscription/tarifs", {
+      methode: "POST",
+      authentifie: true,
+      corps: { service, formule, montant, a_partir_du: aPartirDu, motif },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath("/[locale]/tarifs", "page");
+  return { echec: null, fait: "Prix fixé. Il s'applique à tout devis établi à partir de cette date." };
+}
+

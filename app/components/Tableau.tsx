@@ -169,12 +169,28 @@ export function LigneTableau({
   colonnes,
   children,
   ton = "normal",
+  bord,
   hauteur = "var(--ligne-tableau)",
 }: {
   colonnes: Colonne[];
   children: ReactNode;
-  /** `alerte` teinte la ligne entière : réservé à ce qui bloque réellement. */
+  /**
+   * `alerte` teinte la ligne entière : réservé à ce qui bloque réellement.
+   *
+   * ⚠️ ET SEULEMENT SI QUELQUES LIGNES LE PORTENT. Sur le tableau de bord,
+   * toutes les échéances étaient en retard : le panneau entier virait au rose
+   * et la teinte ne distinguait plus rien. Une couleur qui couvre tout ne dit
+   * rien. Dans ce cas, c'est `bord` qu'il faut, qui gradue.
+   */
   ton?: "normal" | "alterne" | "alerte" | "selection";
+  /**
+   * Un liseré de 3 px à gauche, qui gradue l'urgence sans noyer la ligne.
+   *
+   * Il vit en CSS et non en style en ligne, parce que le survol ajoute sa
+   * propre ombre interne : deux `box-shadow` doivent cohabiter, et un style en
+   * ligne l'emporterait sur la règle de survol.
+   */
+  bord?: "critique" | "attention";
   hauteur?: string;
 }) {
   const fonds = {
@@ -186,6 +202,13 @@ export function LigneTableau({
   return (
     <div
       role="row"
+      // ⚠️ UNE CLASSE, PARCE QU'UN STYLE INLINE NE PEUT PAS PORTER `:hover`.
+      //
+      // La ligne n'avait aucun retour au survol : sur un tableau de quarante
+      // dossiers, l'œil perd la ligne qu'il suit dès qu'il traverse l'écran
+      // pour lire la dernière colonne. Le fond reste porté en inline, parce
+      // qu'il dépend du ton ; seul le survol vit en CSS.
+      className={"ligne-tableau" + (bord ? ` ligne-tableau--${bord}` : "")}
       style={{
         display: "grid",
         gridTemplateColumns: colonnes.map((c) => c.largeur).join(" "),

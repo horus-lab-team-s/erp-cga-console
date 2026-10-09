@@ -16,7 +16,7 @@ import {
   type TableauDeBord,
 } from "@/app/lib/pilotage";
 
-export const metadata: Metadata = { title: "Pilotage — Plateforme CGA" };
+export const metadata: Metadata = { title: "Pilotage · Plateforme CGA" };
 
 // Le score se calcule à la date du jour : un rendu figé afficherait des risques
 // déjà levés, et la direction agirait sur un dossier déjà traité.
@@ -101,7 +101,7 @@ export default async function Pilotage({
                   <span style={{ display: "block" }}>
                     Un score calculé sur des poids que personne n&rsquo;a choisis n&rsquo;est
                     pas un indicateur. Le classement ci-dessous se lit comme une proposition,
-                    et les poids se règlent au référentiel — sans redéploiement.
+                    et les poids se règlent au référentiel, sans redéploiement.
                   </span>
                 </div>
               )}
@@ -110,7 +110,7 @@ export default async function Pilotage({
 
               <Panneau
                 titre="Dossiers par risque"
-                aide="Du plus risqué au moins risqué — la direction traite ce qui est en haut"
+                aide="Du plus risqué au moins risqué : la direction traite ce qui est en haut"
               >
                 {tableau.risques.length === 0 ? (
                   <EtatVide titre="Aucun dossier" />
@@ -121,7 +121,7 @@ export default async function Pilotage({
 
               <Panneau
                 titre="Charge par collaborateur"
-                aide="Comment le travail se répartit — ceci n’évalue personne"
+                aide="Comment le travail se répartit ; ceci n’évalue personne"
               >
                 {tableau.charges.length === 0 ? (
                   <EtatVide

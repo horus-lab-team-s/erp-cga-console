@@ -21,6 +21,49 @@ const avecInternationalisation = createNextIntlPlugin("./i18n/request.ts");
 const racineDuDepot = path.resolve(import.meta.dirname);
 
 const nextConfig: NextConfig = {
+  /**
+   * Les en-têtes de sécurité, sur TOUTE page servie.
+   *
+   * ⚠️ MESURÉ SUR LA PILE EN SERVICE : aucune réponse n'en portait, et l'entrée
+   * Kubernetes n'en ajoutait pas non plus. C'est ici qu'ils comptent le plus :
+   * l'API ne rend que du JSON, ces deux applications rendent du HTML, qu'un
+   * navigateur exécute.
+   *
+   *   · `nosniff` empêche le navigateur de deviner qu'un fichier est du script ;
+   *   · `X-Frame-Options` interdit qu'un site étranger place ces pages dans un
+   *     cadre invisible pour voler les gestes de qui les lit ;
+   *   · la politique de référent empêche l'adresse complète — qui porte parfois
+   *     le sceau d'une proforma — de partir vers un site tiers ;
+   *   · `Permissions-Policy` ferme les capteurs que ces pages n'emploient pas.
+   *
+   * ⚠️ PAS DE `Content-Security-Policy` ICI, ET CE N'EST PLUS FAUTE D'EN AVOIR.
+   *
+   * Elle existe depuis le pas 96, et elle vit dans `proxy.ts` — pas ici. La
+   * raison est mécanique : elle porte un **nonce par requête**, et les en-têtes
+   * de ce fichier sont statiques, calculés une fois à la compilation. Un nonce
+   * constant est un nonce inutile.
+   *
+   * Ce fichier garde donc ce qui ne varie pas d'une requête à l'autre :
+   * `nosniff`, le refus d'encadrement, la politique de référent, les
+   * permissions. Les deux se complètent, et `frame-ancestors` de la politique
+   * dit la même chose que `X-Frame-Options` pour les navigateurs récents.
+   */
+  async headers() {
+    return [
+      {
+        source: "/:chemin*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "geolocation=(), microphone=(), payment=(), usb=()",
+          },
+        ],
+      },
+    ];
+  },
   turbopack: {
     // Sans cette borne, Turbopack remonte l'arborescence à la recherche d'un
     // workspace et sort du dépôt : sur les postes qui portent un

@@ -169,17 +169,17 @@ export default function BibliothequeDeComposants() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <BandeauVerdict
             severite="BLOQUANT"
-            titre="Anomalie bloquante — comptabilisation interdite"
+            titre="Anomalie bloquante : comptabilisation interdite"
             detail={`TVA et charge non déductibles : ${montantFcfa(536625)}`}
           />
           <BandeauVerdict
             severite="MAJEUR"
-            titre={`Anomalie majeure — TVA non déductible : ${montantFcfa(379350)}`}
+            titre={`Anomalie majeure · TVA non déductible : ${montantFcfa(379350)}`}
             detail="2 constats sur 14 règles · comptabilisation possible avec conséquence fiscale"
           />
           <BandeauVerdict
             severite="CONFORME"
-            titre="Conforme — aucun constat"
+            titre="Conforme : aucun constat"
             detail="TVA déductible en totalité · charge intégralement déductible · 14 règles appliquées"
           />
         </div>
@@ -187,7 +187,7 @@ export default function BibliothequeDeComposants() {
 
       <Section
         titre="3 · Actions"
-        aide="Une seule action principale par vue. Interdit : le magenta comme couleur de lien dans un tableau — trop bruyant à cette densité."
+        aide="Une seule action principale par vue. Interdit : le magenta comme couleur de lien dans un tableau, trop bruyant à cette densité."
       >
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div style={{ ...CARTE, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -199,7 +199,7 @@ export default function BibliothequeDeComposants() {
                 color: "var(--ink-500)",
               }}
             >
-              Espace collaborateur — hauteur 32 px
+              Espace collaborateur · hauteur 32 px
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
@@ -273,7 +273,7 @@ export default function BibliothequeDeComposants() {
                 color: "var(--ink-500)",
               }}
             >
-              Espace adhérent — 44 px minimum
+              Espace adhérent · 44 px minimum
             </div>
             <button
               style={{

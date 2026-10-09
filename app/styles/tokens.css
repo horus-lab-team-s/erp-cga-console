@@ -88,6 +88,11 @@
 
   /* ── Rayons — § 10.3 ────────────────────────────────────────────────── */
   --rayon: 8px; /* cartes, panneaux, modales, boutons */
+  /* ⚠️ Un rayon plus large, réservé aux surfaces qui portent un chiffre et se
+     lisent de loin : les cartes d'indicateur du tableau de bord. Employé
+     partout, il ferait paraître l'application molle ; employé là, il adoucit
+     l'endroit qu'on regarde en premier. */
+  --rayon-grand: 12px;
   --rayon-petit: 4px; /* éléments de moins de 28 px de haut */
   --rayon-pilule: 999px; /* badges et pastilles */
 

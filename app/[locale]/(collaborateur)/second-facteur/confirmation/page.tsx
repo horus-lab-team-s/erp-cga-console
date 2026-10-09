@@ -5,7 +5,7 @@ import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ConfirmationEnrolement } from "@/app/components/securite/ConfirmationEnrolement";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Associer une application d’authentification — Plateforme CGA" };
+export const metadata: Metadata = { title: "Associer une application d’authentification · Plateforme CGA" };
 
 /**
  * Là où mène le lien d'enrôlement reçu par courriel (pas 62).

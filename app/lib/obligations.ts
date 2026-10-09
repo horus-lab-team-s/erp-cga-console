@@ -16,6 +16,7 @@
 
 import { appeler } from "./api";
 import { aujourdhui } from "./portefeuille";
+import { moisPrecedentADouala } from "./heure-douala";
 
 export type ObligationInstance = {
   entreprise: string;
@@ -241,16 +242,26 @@ export function lireCatalogueDesObligations(a_la_date: string) {
   return appeler<TypeObligation[]>(`/obligations/catalogue?a_la_date=${encodeURIComponent(a_la_date)}`, authentifie);
 }
 
-/** Le mois écoulé, période de déclaration la plus courante. */
+/**
+ * Le mois écoulé **à Douala**, période de déclaration la plus courante.
+ *
+ * ⚠️ Calculait sur l'heure de la machine — donc UTC en composant serveur. Le
+ * premier du mois entre minuit et une heure, « le mois écoulé » désignait
+ * l'avant-dernier mois, le jour même où la période déclarative s'ouvre.
+ */
 export function moisPrecedent(): { debut: string; fin: string; libelle: string } {
-  const maintenant = new Date();
-  const debut = new Date(maintenant.getFullYear(), maintenant.getMonth() - 1, 1);
-  const fin = new Date(maintenant.getFullYear(), maintenant.getMonth(), 0);
+  const mois = moisPrecedentADouala();
+  const [annee, m] = mois.split("-").map(Number);
   const iso = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  const debut = new Date(Date.UTC(annee, m - 1, 1));
+  // ⚠️ Le jour 0 du mois suivant EST le dernier jour du mois voulu — 28, 29, 30
+  // ou 31 sans avoir à le savoir. C'est le seul calcul qui traite février 2028
+  // correctement sans cas particulier.
+  const fin = new Date(Date.UTC(annee, m, 0));
   return {
     debut: iso(debut),
     fin: iso(fin),
-    libelle: debut.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
+    libelle: debut.toLocaleDateString("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" }),
   };
 }

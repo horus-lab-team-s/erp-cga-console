@@ -23,6 +23,7 @@ import { appeler, ErreurApi } from "./api";
 import { versUtc } from "./heure-douala";
 import type { EtatActe } from "./saisie";
 import type { DepotConstate, PenaliteSimulee } from "./obligations";
+import { jourADouala } from "./heure-douala";
 
 export async function constaterUnDepot(
   _precedent: EtatActe,
@@ -102,7 +103,11 @@ export async function constaterLeDepotTva(_precedent: EtatActe, donnees: FormDat
   const requete = new URLSearchParams({
     periode_debut: debut,
     periode_fin: fin,
-    a_la_date: new Date().toISOString().slice(0, 10),
+    // ⚠️ Le jour de DOUALA, pas celui du conteneur. `toISOString` rendait le
+    // jour UTC : entre minuit et une heure du matin, le dépôt de TVA était
+    // constaté à la date de la veille — sur une déclaration dont la date de
+    // dépôt est précisément ce qui prouve qu'on a respecté l'échéance.
+    a_la_date: jourADouala(),
   });
   try {
     const r = await appeler<DepotConstate>(

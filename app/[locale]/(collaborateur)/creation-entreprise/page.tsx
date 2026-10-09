@@ -20,7 +20,7 @@ import {
 } from "@/app/lib/creations";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Création d'entreprise — Plateforme CGA" };
+export const metadata: Metadata = { title: "Création d'entreprise · Plateforme CGA" };
 
 // Le pipeline se lit à la date du jour — l'immobilité d'un dossier se compte
 // depuis aujourd'hui, et un rendu figé au build afficherait des retards périmés.
@@ -255,9 +255,24 @@ function CarteDossier({ dossier }: { dossier: LigneCreation }) {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        Sans mouvement depuis {dossier.jours_d_immobilite} j ·{" "}
-        {dateCourte(dossier.immobile_depuis)}
+        {dossier.attend_le_cabinet
+          ? `Elle a déposé il y a ${dossier.jours_d_attente} j · ${dateCourte(dossier.immobile_depuis)}`
+          : `Sans mouvement depuis ${dossier.jours_d_immobilite} j · ${dateCourte(dossier.immobile_depuis)}`}
       </span>
+
+      {/*
+        ⚠️ LE SIGNAL LE PLUS FORT DE LA LISTE, ET IL DOIT L'ÊTRE.
+
+        « Sans mouvement depuis 1 j » se lit comme un dossier actif. Il l'est,
+        mais c'est ELLE qui a bougé : la balle est dans notre camp, et un client
+        qui a fait sa part sans obtenir de réponse est celui qui part.
+
+        Le serveur remonte déjà ces dossiers en tête ; ce signal dit pourquoi
+        ils y sont.
+      */}
+      {dossier.attend_le_cabinet && (
+        <Signal ton="danger" texte="Elle attend votre réponse" />
+      )}
 
       {dossier.pieces_manquantes > 0 && (
         <Signal

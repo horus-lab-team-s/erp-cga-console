@@ -14,7 +14,7 @@ import "@/app/styles/vitrine.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Courriels de recette — CGA",
+  title: "Courriels de recette · CGA",
   // ⚠️ Cette page affiche des liens d'activation en clair. Aucun moteur ne doit
   // la connaître, même si elle n'existe qu'en mode démonstration.
   robots: { index: false, follow: false },

@@ -1,3 +1,22 @@
+/**
+ * ⚠️ **CE FICHIER EXISTE EN DOUBLE, DANS LA CONSOLE ET DANS LA VITRINE.**
+ *
+ * Les deux copies portent le même texte et la même logique ; elles ne diffèrent
+ * que par leur habillage, chaque dépôt employant son propre en-tête et son
+ * propre pied, et par le retour au site qui doit être une adresse absolue depuis la console.
+ *
+ * **Toute correction de texte doit être portée des deux côtés.** Le 30 septembre
+ * 2026, la purge du tiret cadratin a dû être écrite deux fois pour ces trois
+ * composants, et le second passage n'a été fait que parce qu'une garde l'a
+ * signalé.
+ *
+ * L'autre copie : `erp-cga-vitrine/app/components/vitrine/EcranMotDePasse.tsx`.
+ *
+ * ⚠️ Mutualiser demanderait un paquet partagé, un sous-module ou un dépôt
+ * unique. C'est une décision d'architecture, pas une commodité, et elle n'est
+ * pas prise : ce rappel tient lieu de garde en attendant.
+ */
+
 import Image from "next/image";
 
 import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
@@ -102,7 +121,7 @@ export function EcranMotDePasse({
                 margin: 0,
               }}
             >
-              Ce lien est incomplet — il lui manque son jeton. Ouvrez-le depuis le
+              Ce lien est incomplet : il lui manque son jeton. Ouvrez-le depuis le
               courriel plutôt que de le recopier à la main. S’il a expiré,
               demandez-en un nouveau depuis la{" "}
               <Link href="/connexion" style={{ color: "#fff", textDecoration: "underline" }}>

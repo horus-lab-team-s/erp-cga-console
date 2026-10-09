@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   interface:
-    name: Console — types, lint et compilation
+    name: Console — types, lint, tests et compilation
     runs-on: ubuntu-latest
 
     steps:
@@ -53,6 +53,19 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Tests
+        # ⚠️ AVANT LA COMPILATION, ET C'EST L'ORDRE QUI COMPTE.
+        #
+        # Une compilation réussie ne dit que « le code tient debout » : elle ne
+        # lit pas un montant, ne pose pas un témoin, ne refuse rien. Ce dépôt
+        # n'a longtemps eu QUE cette étape-là, et trente écrans reposaient sur
+        # une vérification à la main faite une fois.
+        #
+        # Les cas tournent en quelques secondes ; la compilation prend des
+        # minutes. Échouer d'abord sur ce qui est rapide et précis épargne
+        # l'attente, et le message est lisible.
+        run: npm test
 
       - name: Compilation
         run: npm run build

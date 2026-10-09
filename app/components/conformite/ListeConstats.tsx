@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { Constat } from "@/app/lib/api";
-import { montantFcfa } from "@/app/lib/formats";
+import { montantFcfa, TIRET } from "@/app/lib/formats";
 import { APPARENCE, type Severite } from "../Gravite";
 
 /**
@@ -144,7 +144,7 @@ export function ListeConstats({ constats }: { constats: Constat[] }) {
                     font: "600 11px/1.4 var(--police-texte)",
                   }}
                 >
-                  Référence légale — {constat.fondement.texte}
+                  Référence légale : {constat.fondement.texte}
                 </span>
 
                 <p
@@ -224,7 +224,7 @@ function Detail({ terme, valeur }: { terme: string; valeur: string }) {
 function consequenceCourte(constat: Constat): string {
   if (constat.consequence.rectification_requise) return "Facture rectificative";
   if (constat.consequence.verification_requise) return "À vérifier";
-  return "—";
+  return TIRET;
 }
 
 function consequenceLongue(constat: Constat): string {

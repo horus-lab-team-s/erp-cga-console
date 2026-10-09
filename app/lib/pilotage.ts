@@ -184,6 +184,25 @@ export type PropositionDeReaffectation = {
   raison: string;
 };
 
+/**
+ * Un dossier qu'**aucun comptable** ne porte.
+ *
+ * ⚠️ Une société peut être adhérente, payer, et n'être tenue par personne : ses
+ * pièces déposées sont introuvables du comptable, et rien ne le signalait. Le
+ * geste d'affectation existe pourtant ; il manquait qu'on soit prévenu.
+ *
+ * ⚠️ Un dossier suivi par un chargé de clientèle **compte quand même** : c'est
+ * le métier qui manque, pas un porteur quelconque.
+ */
+export type DossierSansComptable = {
+  niu: string;
+  denomination: string;
+  /** Ce qui s'y accumule pendant que personne ne le tient. */
+  pieces_en_attente: number;
+  echeances_du_mois: number;
+  retards: number;
+};
+
 export type ChargeEtProduction = {
   a_la_date: string;
   mois_du: string;
@@ -191,9 +210,27 @@ export type ChargeEtProduction = {
   dossiers: number;
   echeances_du_mois: number;
   collaborateurs: LigneDeCharge[];
+  sans_comptable: DossierSansComptable[];
   propositions: PropositionDeReaffectation[];
   reglages: { seuil_de_saturation: number; seuil_cible: number; source: string };
 };
+
+/**
+ * Les dossiers qu'aucun comptable ne porte, **sous la permission d'agir**.
+ *
+ * ⚠️ La même liste que `charge-et-production`, mais sous `AFFECTER_DOSSIER` et
+ * non `LIRE_PILOTAGE`. L'administrateur, l'un des deux responsables de
+ * l'affectation, n'a pas `LIRE_PILOTAGE` : il recevait 403 sur l'écran qui lui
+ * dit quoi affecter. Il avait le droit d'agir et pas celui de savoir.
+ *
+ * ⚠️ Lui ouvrir toute la vue de pilotage aurait donné la production nominative
+ * de chaque collaborateur pour qu'il lise une liste d'orphelins.
+ */
+export async function lireLesDossiersSansComptable(): Promise<DossierSansComptable[]> {
+  return appeler<DossierSansComptable[]>("/pilotage/dossiers-sans-comptable", {
+    authentifie: true,
+  });
+}
 
 export async function lireLaChargeEtLaProduction(): Promise<ChargeEtProduction> {
   return appeler<ChargeEtProduction>("/pilotage/charge-et-production", { authentifie: true });

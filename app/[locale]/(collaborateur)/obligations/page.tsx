@@ -11,7 +11,7 @@ import {
 import { Montant, PastilleStatut, type Statut } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import {
   lireCatalogueDesObligations,
   lireEcheancier,
@@ -29,7 +29,7 @@ import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 import { lireMesEcheances } from "@/app/lib/espace-adherent";
 
-export const metadata: Metadata = { title: "Obligations — Plateforme CGA" };
+export const metadata: Metadata = { title: "Obligations · Plateforme CGA" };
 
 /**
  * E-F01 · L'échéancier d'un dossier.
@@ -73,10 +73,35 @@ const COLONNES: Colonne[] = [
   { cle: "echeance", libelle: "Échéance", largeur: "96px" },
   { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 2fr)" },
   { cle: "periode", libelle: "Période", largeur: "180px" },
-  { cle: "montant", libelle: "Montant estimé", largeur: "132px", aDroite: true },
   { cle: "jours", libelle: "Reste", largeur: "92px", aDroite: true },
   { cle: "statut", libelle: "Statut", largeur: "124px" },
 ];
+
+/**
+ * ⚠️ LA COLONNE DU MONTANT NE S'OUVRE QUE SI UN MONTANT EXISTE.
+ *
+ * Même règle qu'au tableau de bord, et même raison : `montant_estime` est
+ * déclaré par le backend et calculé nulle part. La colonne affichait un tiret sur
+ * chacune des cinquante lignes de l'échéancier et coûtait 132 px. Elle n'est pas
+ * supprimée : le jour où une seule obligation porte une estimation, elle revient
+ * seule.
+ *
+ * ⚠️ « Reste » ne reçoit pas ce traitement, et ce n'est pas un oubli : elle est
+ * vide sur les périodes déjà déclarées et pleine sur celles qui viennent. Une
+ * colonne vide sur le haut de la liste n'est pas une colonne morte.
+ */
+const COLONNES_CHIFFREES: Colonne[] = [
+  ...COLONNES.slice(0, 3),
+  { cle: "montant", libelle: "Montant estimé", largeur: "132px", aDroite: true },
+  ...COLONNES.slice(3),
+];
+
+/**
+ * Au-delà de ce retard, l'échéance passe du liseré orange au liseré rouge.
+ * Un mois : c'est le pas des obligations mensuelles, et un retard qui le dépasse
+ * n'est plus un dépôt tardif, c'est une période entière qui manque.
+ */
+const SEUIL_RETARD_LOURD = 30;
 
 const LIBELLES: Record<string, Statut> = {
   A_FAIRE: "À faire",
@@ -115,6 +140,10 @@ export default async function Obligations({
   const courant = dossiers.find((d) => d.niu === niu)!;
   const jour = aujourdhui();
   const echeances = await lireEcheancier(niu, exercice, jour);
+  // Voir `COLONNES_CHIFFREES` : la colonne du montant ne s'ouvre que si au
+  // moins une obligation porte une estimation.
+  const montantsEstimes = echeances.some((l) => l.obligation.montant_estime);
+  const colonnes = montantsEstimes ? COLONNES_CHIFFREES : COLONNES;
 
   // ⚠️ Un filtre d'affichage, pas une règle : voir `ConstatDepot.tsx`. La TVA est
   // exclue parce qu'elle a son parcours, et le backend la refuserait ici.
@@ -182,13 +211,15 @@ export default async function Obligations({
             />
           ) : (
             <>
-              <EnteteTableau colonnes={COLONNES} />
+              <EnteteTableau colonnes={colonnes} />
               {echeances.map((ligne, rang) => (
                 <Ligne
                   key={`${ligne.obligation.code_obligation}${ligne.obligation.periode_fin}`}
                   ligne={ligne}
                   niu={niu}
                   rang={rang}
+                  colonnes={colonnes}
+                  montantsEstimes={montantsEstimes}
                 />
               ))}
             </>
@@ -298,7 +329,7 @@ export default async function Obligations({
                         ? `${t.delai_jours_apres_cloture} j après clôture`
                         : t.jour_civil && t.mois_civil
                           ? `le ${t.jour_civil}/${String(t.mois_civil).padStart(2, "0")}`
-                          : "—"}
+                          : TIRET}
                   </Cellule>
                   <Cellule couleur="var(--ink-500)">
                     {[
@@ -340,19 +371,28 @@ function Ligne({
   ligne,
   niu,
   rang,
+  colonnes,
+  montantsEstimes,
 }: {
   ligne: LigneEcheance;
   niu: string;
   rang: number;
+  colonnes: Colonne[];
+  montantsEstimes: boolean;
 }) {
   const o = ligne.obligation;
   const estTva = o.code_obligation === "TVA";
+  const retard = ligne.en_retard ? -ligne.jours_restants : 0;
   return (
     <LigneTableau
-      colonnes={COLONNES}
-      // Le ton `alerte` est réservé à ce qui bloque réellement : un dépôt en
-      // retard fait courir une pénalité, et elle s'accroît par mois entamé.
-      ton={ligne.en_retard ? "alerte" : rang % 2 ? "alterne" : "normal"}
+      colonnes={colonnes}
+      /* ⚠️ Le liseré gradue, l'aplat noierait. Un dépôt en retard fait courir une
+         pénalité qui s'accroît par mois entamé, et c'est bien ce qu'il faut
+         signaler. Mais teinter le fond suppose que peu de lignes le portent : sur
+         un dossier où tout est en retard, le panneau entier virait au rose et la
+         teinte ne distinguait plus rien. Même arbitrage qu'au tableau de bord. */
+      ton={rang % 2 ? "alterne" : "normal"}
+      bord={retard > SEUIL_RETARD_LOURD ? "critique" : retard > 0 ? "attention" : undefined}
     >
       <Cellule tabulaire gras>{dateCourte(o.echeance)}</Cellule>
       <Cellule titre={o.libelle}>
@@ -383,16 +423,18 @@ function Ligne({
       </Cellule>
       {/* Un montant estimé sur un dossier incomplet n'engage à rien : le tiret
           vaut mieux qu'un zéro, qui laisserait croire qu'il n'y a rien à payer. */}
-      <Cellule aDroite tabulaire>
-        {o.montant_estime ? <Montant valeur={o.montant_estime} /> : "—"}
-      </Cellule>
+      {montantsEstimes && (
+        <Cellule aDroite tabulaire>
+          {o.montant_estime ? <Montant valeur={o.montant_estime} /> : TIRET}
+        </Cellule>
+      )}
       <Cellule
         aDroite
         tabulaire
         couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-500)"}
       >
         {o.deposee
-          ? "—"
+          ? TIRET
           : ligne.jours_restants < 0
             ? `${-ligne.jours_restants} j de retard`
             : `${ligne.jours_restants} j`}

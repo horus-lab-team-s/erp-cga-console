@@ -181,7 +181,7 @@ export function BarreLaterale({
         {!repliee && "Retour au site"}
       </a>
 
-      <div className="barre__compte" title={`${acces.nom_complet} — ${role}`}>
+      <div className="barre__compte" title={`${acces.nom_complet} · ${role}`}>
         <span className="barre__compte-jeton">{initiales(acces.nom_complet)}</span>
         {!repliee && (
           <span style={{ minWidth: 0, flex: 1 }}>
@@ -245,7 +245,7 @@ function Entree({
       <span
         className="lien-nav lien-nav--a-venir"
         aria-disabled="true"
-        title={`${entree.libelle} — écran à venir`}
+        title={`${entree.libelle} · écran à venir`}
       >
         <span className="lien-nav__icone">
           <Icone nom={entree.icone} />

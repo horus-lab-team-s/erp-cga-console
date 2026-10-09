@@ -80,6 +80,16 @@ const authentifie = { authentifie: true } as const;
 
 export const lireDossiersCommerciaux = () =>
   appeler<DossierCommercial[]>("/acquisition/dossiers", authentifie);
+/**
+ * Les dossiers commerciaux **payés**, du plus ancien au plus récent.
+ *
+ * ⚠️ Ils ne figurent PAS dans la file « en cours » : un dossier payé n'attend
+ * plus rien de personne, et l'y laisser le ferait traiter deux fois. Mais il
+ * doit rester retrouvable — c'est là qu'on vérifie qu'une création payée a bien
+ * ouvert son dossier de formalité. Voir le panneau « Créations payées ».
+ */
+export const lireDossiersPayes = () =>
+  appeler<DossierCommercial[]>("/acquisition/dossiers?etat=PAYEE", authentifie);
 export const lireDossiersEnSouffrance = () =>
   appeler<DossierEnSouffrance[]>("/acquisition/dossiers/en-souffrance", authentifie);
 export const lireRappels = () => appeler<Rappel[]>("/acquisition/rappels", authentifie);
@@ -117,6 +127,8 @@ export type FicheDossier = {
   reference: string;
   etat: EtatDossierCommercial;
   responsable: string | null;
+  /** Le nom du responsable, résolu par le serveur ; `null` hors annuaire du cabinet. */
+  responsable_nom: string | null;
   depuis_le: string;
   motif_affectation: string | null;
   /** L'adresse du futur espace, retenue à la demande de règlement ou à l'encaissement. */
@@ -138,6 +150,11 @@ export type FicheDossier = {
     message: string | null;
     canal_prefere: string;
     deposee_le: string;
+    /**
+     * L'accord d'être contacté sur WhatsApp. ⚠️ Lire `accorde` ET `revoque_le` :
+     * un accord révoqué n'autorise plus rien (voir `vautMaintenant`).
+     */
+    consentement?: { accorde: boolean; revoque_le: string | null };
   };
 };
 
@@ -168,12 +185,101 @@ export const lireQualification = (reference: string) =>
 
 // ══ La proforma (pas 67) ═════════════════════════════════════════════════════
 
+/**
+ * Le lien d'une proforma, relu pour le renvoyer au client.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ CE QUI MANQUAIT, ET CE QUE LE CLIENT PERDAIT
+ *
+ * Le lien n'était rendu qu'à **l'émission**. `FicheDossier` le gardait dans
+ * l'état de son composant, et le perdait au premier rechargement : le bouton
+ * « Envoyer sur WhatsApp » disparaissait alors pour toujours.
+ *
+ * Vérifié le 29 septembre sur la pile, sur sept dossiers réels en
+ * `PROFORMA_EMISE` : **aucun** ne l'affichait. Le responsable qui revenait le
+ * lendemain n'avait plus d'autre voie que le courriel, y compris pour une
+ * cliente qui avait expressément autorisé la messagerie et donné son seul numéro.
+ *
+ * ⚠️ **UNE LECTURE, PAS `POST /transmission`.** Celle-ci rend le lien elle aussi,
+ * et l'on aurait pu s'en servir. Mais elle DATE l'envoi, et c'est cette date qui
+ * arme la relance : la rappeler pour relire un lien remettrait le compteur à zéro
+ * à chaque consultation. Elle obligerait de plus à déclarer « j'ai envoyé le
+ * lien » avant de l'avoir.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export type LienDeLaProforma = {
+  numero: string;
+  version: number;
+  etat: string;
+  montant: string;
+  lien_client: string;
+  expire_le: string;
+  telephone: string;
+  nom: string;
+  /** Accord de messagerie en vigueur : accordé ET non révoqué, tel que le serveur le dit. */
+  whatsapp_autorise: boolean;
+};
+
+export const lireLeLienDeLaProforma = (numero: string) =>
+  appeler<LienDeLaProforma>(
+    `/acquisition/proformas/${encodeURIComponent(numero)}/lien`,
+    authentifie,
+  );
+
+/**
+ * Une composition de document proposable à l'émission (pas 148).
+ *
+ * ⚠️ Le détail des rubriques vient avec, et non le seul code : le responsable
+ * choisit un document qu'il doit pouvoir lire avant de l'envoyer à une cliente.
+ * Un menu de codes nus l'obligerait à ouvrir le référentiel à côté.
+ */
+export type CompositionOfferte = {
+  code: string;
+  service: string;
+  forme_juridique: string;
+  titre: string;
+  libelle: string;
+  total: string;
+  /**
+   * ⚠️ `TRANSCRIT` tant que la direction n'a pas confirmé les montants, `VALIDE`
+   * ensuite. L'écran doit le montrer : envoyer une proforma issue d'une
+   * transcription non validée se sait avant, pas après.
+   */
+  statut: string;
+  rubriques: {
+    numero: string;
+    intitule: string;
+    lignes: { libelle: string; montant: string }[];
+    sous_total: string;
+  }[];
+};
+
+export const lireLesCompositions = (service: string) =>
+  appeler<CompositionOfferte[]>(
+    `/acquisition/compositions-proforma?service=${encodeURIComponent(service)}`,
+    authentifie,
+  );
+
 export type ProformaEmise = {
   numero: string;
   version: number;
   etat: string;
   montant: string;
+  /** ⚠️ Le SCEAU seul, malgré son nom. Voir `lien_client`. */
   lien_acceptation: string | null;
+  /**
+   * L'adresse complète que la cliente ouvre, composée **par le serveur**.
+   *
+   * ⚠️ La console la recomposait à partir du sceau, de la version et de
+   * l'expiration. Deux recettes pour une même adresse : elles ont divergé une
+   * première fois — le lien partait sur le domaine de production au lieu de la
+   * vitrine — et la cliente recevait un lien vers un site où sa proforma
+   * n'existe pas. Le serveur la compose une fois, là où il compose celle du
+   * courriel.
+   */
+  lien_client: string | null;
+  /** Le téléphone du prospect, pour ouvrir WhatsApp. */
+  telephone?: string | null;
   expire_le: string | null;
   plancher: string | null;
   reference: string | null;
@@ -181,6 +287,13 @@ export type ProformaEmise = {
   chiffre_par: string;
   valide_par: string;
   separation_respectee: boolean;
+  /**
+   * L'envoi par courriel demandé à l'émission : `ENVOYE` (et la proforma est
+   * transmise), `SANS_ADRESSE`, `REFUSE`, ou `null` s'il n'a pas été demandé.
+   */
+  courriel?: "ENVOYE" | "SANS_ADRESSE" | "REFUSE" | null;
+  courriel_masque?: string | null;
+  transmise_le?: string | null;
 };
 
 export type ProformaConsultee = {
@@ -203,3 +316,37 @@ export type EtatDesCanaux = {
 };
 
 export const lireEtatDesCanaux = () => appeler<EtatDesCanaux>("/acquisition/canaux");
+
+/**
+ * Ce que l'ouverture de l'espace a **réellement** fait.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ `terminee` N'EST PAS `utilisable`, ET C'EST TOUTE LA QUESTION.
+ *
+ * La saga d'ouverture franchit sept étapes, dont « le compte administrateur
+ * existe, avec son jeton d'activation ». Quand l'infrastructure manque, une
+ * étape est **substituée** : traversée sans rien faire. La saga se termine, le
+ * tenant existe, son sous-domaine répond — et le client n'a ni compte ni lien.
+ *
+ * Le serveur le calcule et l'inscrit depuis toujours. Personne ne l'exposait,
+ * et l'écran annonçait « l'espace s'ouvre » dans tous les cas.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export type OuvertureDeLEspace = {
+  dossier: string;
+  /** Faux tant que le relais n'a pas publié l'événement. Ce n'est pas un échec. */
+  demarree: boolean;
+  terminee: boolean;
+  /** ⚠️ Vrai seulement si AUCUNE étape n'a été substituée. */
+  utilisable: boolean;
+  etapes_substituees: string[];
+  slug: string | null;
+  dernier_echec: string | null;
+};
+
+export function lireOuvertureDeLEspace(reference: string) {
+  return appeler<OuvertureDeLEspace>(
+    `/acquisition/dossiers/${encodeURIComponent(reference)}/ouverture`,
+    authentifie,
+  );
+}

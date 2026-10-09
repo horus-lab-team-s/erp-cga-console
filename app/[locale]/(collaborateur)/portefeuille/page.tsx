@@ -10,16 +10,16 @@ import {
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Admission, Resiliation } from "@/app/components/portefeuille/GestesDAdhesion";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui, lireDossiers, type Dossier } from "@/app/lib/portefeuille";
-import { lireAnomaliesDuPortefeuille } from "@/app/lib/fiche-dossier";
+import { lireAnomaliesDuPortefeuille, type AnomalieIdentifiant } from "@/app/lib/fiche-dossier";
 import { ErreurApi } from "@/app/lib/api";
 import { Link } from "@/i18n/navigation";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Portefeuille — Plateforme CGA" };
+export const metadata: Metadata = { title: "Portefeuille · Plateforme CGA" };
 
 /**
  * E-B01 · Le portefeuille du collaborateur.
@@ -90,7 +90,7 @@ export default async function Portefeuille() {
           <p>
             {dossiers.length} dossier{dossiers.length > 1 ? "s" : ""}
             {acces.dossiers === null
-              ? " — vous couvrez tout le cabinet"
+              ? ", vous couvrez tout le cabinet"
               : " affecté" + (dossiers.length > 1 ? "s" : "") + " à votre portefeuille"}
             {" · statuts résolus au "}
             {new Date(jour).toLocaleDateString("fr-FR", {
@@ -106,20 +106,7 @@ export default async function Portefeuille() {
             Le contrôle des identifiants ne se lit pas : {anomalies}
           </div>
         ) : (
-          anomalies.length > 0 && (
-            <div className="avertissement-ecran" role="alert">
-              <strong style={{ display: "block", fontWeight: 600 }}>
-                {anomalies.length} identifiant{anomalies.length > 1 ? "s" : ""} douteux dans le portefeuille
-              </strong>
-              {anomalies.map((a) => (
-                <span key={`${a.niu_entreprise}-${a.champ}-${a.motif}`} style={{ display: "block" }}>
-                  <Link href={`/portefeuille/${encodeURIComponent(a.niu_entreprise)}`}>{a.denomination}</Link> ·{" "}
-                  {a.champ.toUpperCase()} {a.valeur ? `« ${a.valeur} »` : "absent"}
-                  {a.bloquante ? " (bloquant)" : ""} : {a.motif}
-                </span>
-              ))}
-            </div>
-          )
+          anomalies.length > 0 && <IdentifiantsDouteux anomalies={anomalies} />
         )}
 
         <Panneau
@@ -148,6 +135,86 @@ export default async function Portefeuille() {
         </Panneau>
       </div>
     </>
+  );
+}
+
+/**
+ * ⚠️ LE CONSTAT TIENT EN UNE LIGNE, LE DÉTAIL SE DÉPLIE
+ *
+ * Rendu à plat, un identifiant par ligne, ce bloc occupait quatre-vingts lignes
+ * sur un portefeuille ordinaire : la même société y revenait deux fois (NIU
+ * puis RCCM) et le tableau des dossiers, qui est la raison d'être de l'écran,
+ * partait hors de l'écran. On garde donc l'alerte — un NIU hors format se
+ * découvre ici et pas le jour d'un rejet — mais on la ramène à ce qu'elle dit :
+ * un compte, une gravité, et le détail à un clic.
+ *
+ * Le regroupement se fait par entreprise, et le repli est natif (`<details>`) :
+ * pas de JavaScript, donc l'écran reste rendu côté serveur.
+ */
+function libelleDuChamp(champ: string) {
+  // Le backend nomme aussi les identifiants des tiers : « tiers.FOU-001.niu ».
+  // Écrit tel quel en majuscules, c'est du jargon de route.
+  const tiers = /^tiers\.(.+)\.(\w+)$/.exec(champ);
+  if (tiers) return `${tiers[2].toUpperCase()} du tiers ${tiers[1]}`;
+  return champ.toUpperCase();
+}
+
+function IdentifiantsDouteux({ anomalies }: { anomalies: AnomalieIdentifiant[] }) {
+  // Une société revient autant de fois qu'elle a de champs douteux. On la
+  // rassemble : c'est l'entreprise qu'on va corriger, pas le champ.
+  const parEntreprise = new Map<string, { denomination: string; champs: AnomalieIdentifiant[] }>();
+  for (const anomalie of anomalies) {
+    const groupe = parEntreprise.get(anomalie.niu_entreprise) ?? {
+      denomination: anomalie.denomination,
+      champs: [],
+    };
+    groupe.champs.push(anomalie);
+    parEntreprise.set(anomalie.niu_entreprise, groupe);
+  }
+  const entreprises = [...parEntreprise.entries()];
+  const bloquantes = anomalies.filter((a) => a.bloquante).length;
+
+  return (
+    // Court, le détail est déjà ouvert : replier trois lignes n'économise rien.
+    <details className="anomalies" open={entreprises.length <= 3}>
+      <summary className="anomalies__resume">
+        <span className={"anomalies__pastille" + (bloquantes > 0 ? " anomalies__pastille--bloquante" : "")}>
+          {anomalies.length}
+        </span>
+        <span className="anomalies__phrase">
+          identifiant{anomalies.length > 1 ? "s" : ""} à vérifier sur {entreprises.length} entreprise
+          {entreprises.length > 1 ? "s" : ""}
+          {bloquantes > 0
+            ? `, dont ${bloquantes} bloquant${bloquantes > 1 ? "s" : ""} pour une déclaration`
+            : ", aucun bloquant"}
+        </span>
+        <span className="anomalies__bascule" aria-hidden="true" />
+      </summary>
+      <ul className="anomalies__liste">
+        {entreprises.map(([niu, groupe]) => (
+          <li key={niu} className="anomalies__entreprise">
+            <Link className="anomalies__nom" href={`/portefeuille/${encodeURIComponent(niu)}`}>
+              {groupe.denomination}
+            </Link>
+            <span className="anomalies__champs">
+              {groupe.champs.map((a) => (
+                <span
+                  key={`${a.champ}-${a.motif}`}
+                  className={"anomalies__champ" + (a.bloquante ? " anomalies__champ--bloquante" : "")}
+                >
+                  {/* La gravité ne tient pas à la couleur seule : le mot est écrit. */}
+                  {/* ⚠️ Sans valeur, le motif du backend vaut déjà « absent » : répéter le
+                      mot donnait « RCCM absent · absent ». Le motif suffit. */}
+                  <b>{libelleDuChamp(a.champ)}</b> {a.valeur ? `« ${a.valeur} » · ` : ""}
+                  {a.motif}
+                  {a.bloquante ? " · bloquant" : ""}
+                </span>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -188,7 +255,7 @@ function Ligne({
         <Adhesion dossier={dossier} jour={jour} peutInscrire={peutInscrire} />
       </Cellule>
       <Cellule aDroite tabulaire couleur="var(--ink-500)">
-        {dossier.exercice_courant ?? "—"}
+        {dossier.exercice_courant ?? TIRET}
       </Cellule>
     </LigneTableau>
   );

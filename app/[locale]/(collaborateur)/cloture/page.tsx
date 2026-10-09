@@ -31,7 +31,7 @@ import {
   type SystemeDsf,
 } from "@/app/lib/cloture";
 
-export const metadata: Metadata = { title: "Clôture et DSF — Plateforme CGA" };
+export const metadata: Metadata = { title: "Clôture et DSF · Plateforme CGA" };
 
 // La liasse se recalcule depuis la balance et le référentiel : pré-rendre
 // figerait des montants que la moindre écriture de régularisation dément.
@@ -353,7 +353,7 @@ function TableauDePassage({ liasse }: { liasse: Liasse }) {
             <Montant valeur={Number(liasse.tva_rejetee_a_verifier)} /> de TVA rejetée par le
             contrôle
           </strong>{" "}
-          — <strong>non réintégrée</strong>, et c’est voulu : une TVA non déductible relève de
+          et <strong>non réintégrée</strong>, ce qui est voulu : une TVA non déductible relève de
           la déclaration de TVA, pas du résultat. La réintégrer ferait payer l’impôt deux fois
           sur la même somme. À vérifier : {liasse.pieces_a_verifier.join(", ")}.
         </div>

@@ -31,7 +31,52 @@ import { appeler, ErreurApi } from "./api";
 export type NatureService = "ABONNEMENT" | "ANNUEL" | "PONCTUEL" | "SUR_ETUDE";
 export type Periodicite = "MENSUELLE" | "ANNUELLE" | "UNIQUE";
 
-export type Tarif = { montant: string | null; du: string; au: string | null; motif: string | null };
+/** `A_VALIDER` tant que le gérant n'a pas arrêté le prix ; `FIXE` ensuite. */
+export type StatutTarif = "A_VALIDER" | "FIXE";
+
+export type Tarif = {
+  montant: string | null;
+  du: string;
+  au: string | null;
+  motif: string | null;
+  statut: StatutTarif;
+};
+
+/** Le prix d'une prestation, ou d'une de ses tranches, à une date — écran du gérant. */
+export type LigneDeTarif = {
+  service: string;
+  libelle: string;
+  formule: string | null;
+  libelle_formule: string | null;
+  montant: string | null;
+  statut: StatutTarif;
+  en_vigueur_depuis: string;
+  fixe_par: string | null;
+  fixe_par_nom: string | null;
+  fixe_le: string | null;
+  /** Faux pour ce qui se chiffre sur étude : aucun prix unique à y fixer. */
+  fixable: boolean;
+};
+
+/** Une décision de prix du gérant, telle qu'elle est conservée. */
+export type TarifFixe = {
+  identifiant: string;
+  service: string;
+  formule: string | null;
+  montant: string;
+  a_partir_du: string;
+  motif: string;
+  fixe_par: string;
+  fixe_par_nom: string | null;
+  fixe_le: string;
+};
+
+export type EtatDesTarifs = {
+  a_la_date: string;
+  lignes: LigneDeTarif[];
+  a_fixer: number;
+  decisions: TarifFixe[];
+};
 
 export type Formule = {
   code: string;
@@ -245,6 +290,13 @@ export function lireEcheancier(reference: string, jour: string): Promise<Lecture
 // ── Le cabinet ──────────────────────────────────────────────────────────────
 
 /** Les souscriptions payées dont l'accès n'est pas ouvert : direction et administration. */
+/** Les prix de l'offre et ce qui reste à fixer : direction seule (`FIXER_LES_TARIFS`). */
+export function lireTarifs(jour: string): Promise<EtatDesTarifs> {
+  return appeler<EtatDesTarifs>(`/souscription/tarifs?a_la_date=${encodeURIComponent(jour)}`, {
+    authentifie: true,
+  });
+}
+
 export function lireAActiver(): Promise<Souscription[]> {
   return appeler<Souscription[]>("/souscription/a-activer", { authentifie: true });
 }

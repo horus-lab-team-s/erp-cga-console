@@ -88,7 +88,7 @@ export function SelecteurEntreprise({
         aria-expanded={ouvert}
         title={
           entrepriseCourante
-            ? `${entrepriseCourante.denomination} — changer de dossier`
+            ? `${entrepriseCourante.denomination} · changer de dossier`
             : "Choisir un dossier"
         }
         onClick={() => setOuvert((o) => !o)}

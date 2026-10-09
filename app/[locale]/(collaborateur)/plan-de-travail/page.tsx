@@ -10,7 +10,7 @@ import { lireLePlanDeTravail, type LigneDeDossier, type PlanDeTravail, type Tach
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Mon plan de travail — Plateforme CGA" };
+export const metadata: Metadata = { title: "Mon plan de travail · Plateforme CGA" };
 // Tout dépend du jour : un rendu figé serait faux dès le lendemain.
 export const dynamic = "force-dynamic";
 

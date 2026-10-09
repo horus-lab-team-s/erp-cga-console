@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TIRET } from "@/app/lib/formats";
 
 import { EtatErreur } from "@/app/components/Tableau";
 import { BoiteReception, type LignePiece } from "@/app/components/collecte/BoiteReception";
@@ -16,7 +17,7 @@ import { ClasserLaPiece, ImportAuCabinet, LectureDePiece } from "@/app/component
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Pièces justificatives — Plateforme CGA" };
+export const metadata: Metadata = { title: "Pièces justificatives · Plateforme CGA" };
 
 // Le contrôle dépend du référentiel courant : pré-rendre figerait les verdicts.
 export const dynamic = "force-dynamic";
@@ -270,7 +271,7 @@ function construireLignes(
       identifiant: piece.identifiant,
       reference: piece.reference_document,
       adherent: noms.get(piece.entreprise) ?? reponse?.facture.destinataire.denomination ?? piece.entreprise,
-      fournisseur: piece.emetteur ?? "—",
+      fournisseur: piece.emetteur ?? TIRET,
       date: piece.date_document ?? piece.recue_le.slice(0, 10),
       // Le backend rend un nombre ; la ligne garde la chaîne que `montantFcfa` formate.
       ttc: piece.montant_ttc === null ? null : String(piece.montant_ttc),

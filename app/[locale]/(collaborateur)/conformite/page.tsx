@@ -7,12 +7,12 @@ import { ExporterLeJournal } from "@/app/components/conformite/GestesRevue";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { lireLeJournalDesDerogations, type FiltresDesDerogations, type JournalDesDerogations } from "@/app/lib/conformite-revue";
-import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Journal des dérogations — Plateforme CGA" };
+export const metadata: Metadata = { title: "Journal des dérogations · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -164,7 +164,7 @@ export default async function JournalDesDerogationsPage({
                     <span style={{ color: "var(--ink-500)" }}>aucune</span>
                   )}
                 </Cellule>
-                <Cellule aDroite tabulaire>{d.enjeu ? montantFcfa(d.enjeu) : "—"}</Cellule>
+                <Cellule aDroite tabulaire>{d.enjeu ? montantFcfa(d.enjeu) : TIRET}</Cellule>
                 <Cellule>{STATUTS[d.statut] ?? d.statut}</Cellule>
               </LigneTableau>
             ))

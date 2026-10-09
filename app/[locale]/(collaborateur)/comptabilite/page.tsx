@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TIRET } from "@/app/lib/formats";
 
 import {
   Cellule,
@@ -30,7 +31,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Comptabilité — Plateforme CGA" };
+export const metadata: Metadata = { title: "Comptabilité · Plateforme CGA" };
 
 /**
  * E-E01 · Balance et santé comptable d'un dossier.
@@ -277,7 +278,7 @@ function Sante({ sante }: { sante: Awaited<ReturnType<typeof lireSante>> }) {
         <strong>Les trois contrôles d&rsquo;avant dépôt passent.</strong>
         Balance équilibrée, numérotation continue, résultat de l&rsquo;exercice :{" "}
         <Montant valeur={sante.resultat} avecDevise />. ⚠️ Cela ne dit rien de la{" "}
-        <em>sincérité</em> des écritures — seulement de leur cohérence formelle.
+        <em>sincérité</em> des écritures, seulement de leur cohérence formelle.
       </div>
     );
   }
@@ -327,7 +328,7 @@ function Ligne({
         </Link>
       </Cellule>
       <Cellule couleur="var(--ink-500)" titre={intitule ?? "absent du plan de référence"}>
-        {intitule ?? "—"}
+        {intitule ?? TIRET}
       </Cellule>
       <Cellule aDroite tabulaire>
         <Montant valeur={solde.total_debit} />
@@ -356,7 +357,7 @@ function Totaux({ sante }: { sante: Awaited<ReturnType<typeof lireSante>> }) {
         <Montant valeur={sante.total_credit} />
       </Cellule>
       <Cellule aDroite tabulaire gras>
-        {sante.equilibree ? "—" : <Montant valeur={String(Number(sante.total_debit) - Number(sante.total_credit))} />}
+        {sante.equilibree ? TIRET : <Montant valeur={String(Number(sante.total_debit) - Number(sante.total_credit))} />}
       </Cellule>
     </LigneTableau>
   );

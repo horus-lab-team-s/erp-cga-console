@@ -59,7 +59,7 @@ export async function generateMetadata({
   params: Promise<{ reference: string }>;
 }): Promise<Metadata> {
   const { reference } = await params;
-  return { title: `Pièce ${reference} — Plateforme CGA` };
+  return { title: `Pièce ${reference} · Plateforme CGA` };
 }
 
 export default async function DetailPiece({
@@ -270,7 +270,7 @@ export default async function DetailPiece({
                     color: "var(--ink-500)",
                   }}
                 >
-                  Aucune anomalie détectée — {rapport.regles_appliquees} règles appliquées.
+                  Aucune anomalie détectée : {rapport.regles_appliquees} règles appliquées.
                 </p>
               ) : (
                 <ListeConstats constats={rapport.constats} />
@@ -510,7 +510,7 @@ function TraceDuControle({ rapport }: { rapport: ReponseControle["rapport"] }) {
           color: "var(--brand-indigo-700)",
         }}
       >
-        Trace du contrôle — {rapport.parametres_employes.length} paramètre(s) du référentiel
+        Trace du contrôle : {rapport.parametres_employes.length} paramètre(s) du référentiel
       </summary>
       <div
         style={{

@@ -16,7 +16,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
-  title: "Mes justificatifs — CGA Broad Range Consulting Group",
+  title: "Mes justificatifs · CGA Broad Range Consulting Group",
 };
 
 const STATUTS: StatutPourLAdherent[] = ["A_CORRIGER", "RECU", "ENREGISTRE", "CLASSE"];

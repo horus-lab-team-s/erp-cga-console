@@ -14,7 +14,7 @@ import { redirect } from "@/i18n/navigation";
 
 import { appeler, ErreurApi } from "./api";
 import type { VueRevue } from "./revue";
-import type { EtatActe } from "./saisie";
+import { MOIS_VALIDE, type EtatActe } from "./saisie";
 
 function rafraichir() {
   revalidatePath("/[locale]/comptabilite/revues", "page");
@@ -44,7 +44,7 @@ async function executer(appel: () => Promise<unknown>, fait: string): Promise<Et
 export async function transmettreUnMois(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
   const dossier = String(donnees.get("dossier") ?? "");
   const mois = String(donnees.get("mois") ?? "");
-  if (!/^\d{4}-\d{2}$/.test(mois)) return { echec: "Choisissez le mois à transmettre.", fait: null };
+  if (!MOIS_VALIDE.test(mois)) return { echec: "Choisissez le mois à transmettre.", fait: null };
   const [annee, m] = mois.split("-").map(Number);
   const du = `${mois}-01`;
   const au = new Date(Date.UTC(annee, m, 0)).toISOString().slice(0, 10);

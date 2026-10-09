@@ -45,7 +45,6 @@ import { appeler, ErreurApi } from "./api";
 import type { EtatActe } from "./saisie";
 import { DEMARCHES, type DemandeSoumise, type ResultatDemande } from "./acquisition";
 import type { ProformaConsultee, ProformaEmise, Proposition } from "./console-acquisition";
-import { adresseAbsolue } from "./site";
 
 type AccuseDeDemande = {
   recue: boolean;
@@ -277,6 +276,14 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
   const montant = String(donnees.get("montant") ?? "").replace(/\s/g, "");
   const motif = String(donnees.get("motif") ?? "").trim();
   const score = String(donnees.get("score_charge") ?? "0").trim() || "0";
+  // ⚠️ Case cochée : le SERVEUR écrit au client, avec le lien, au moment même où il
+  // le forge. Le lien ne transite alors par personne.
+  const parCourriel = donnees.get("envoyer_par_courriel") === "oui";
+  // ⚠️ LA COMPOSITION DU DOCUMENT (pas 148). C'est le « sélectionner les services »
+  // du parcours réel : le même montant n'a pas le même détail selon que le suivi
+  // sur douze mois est inclus. Vide, aucun PDF n'est produit et l'empreinte reste
+  // celle du résumé, comme pour toutes les proformas émises avant.
+  const composition = String(donnees.get("composition") ?? "").trim();
   const vide = { proforma: null, lien: null };
   if (!/^\d+$/.test(montant)) return { echec: "Le montant arrêté s'écrit en francs, sans décimales.", ...vide };
   if (!/^\d+$/.test(score)) return { echec: "Le score de charge est un entier positif.", ...vide };
@@ -286,20 +293,75 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
       {
         methode: "POST",
         authentifie: true,
-        corps: { montant, motif: motif || null, score_charge: Number(score) },
+        corps: {
+          montant,
+          motif: motif || null,
+          score_charge: Number(score),
+          envoyer_par_courriel: parCourriel,
+          composition: composition || null,
+        },
       },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
-    const lien =
-      proforma.lien_acceptation && proforma.expire_le
-        ? adresseAbsolue(
-            `/proforma/${encodeURIComponent(proforma.numero)}?v=${proforma.version}` +
-              `&e=${encodeURIComponent(proforma.expire_le)}&s=${proforma.lien_acceptation}`,
-          )
-        : null;
-    return { echec: null, proforma, lien };
+    // ⚠️ L'ADRESSE VIENT DU SERVEUR, ET N'EST PLUS RECOMPOSÉE ICI.
+    //
+    // Elle l'était, sur la vitrine, « même adresse que celle que le serveur met
+    // dans le courriel » — deux recettes pour une seule adresse. Elles ont
+    // divergé une première fois : le lien partait sur le domaine de production
+    // au lieu de la vitrine, et la cliente recevait un lien vers un site où sa
+    // proforma n'existe pas. Le courriel, lui, continuait de marcher : rien ne
+    // le signalait.
+    //
+    // Le serveur compose désormais `lien_client` là où il compose celle du
+    // courriel. Un paramètre renommé les change toutes les deux, ou aucune.
+    return { echec: null, proforma, lien: proforma.lien_client };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, ...vide };
+    throw erreur;
+  }
+}
+
+/**
+ * Déclare que le client a été joint. C'est le geste qui engage l'échange.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ POURQUOI CE GESTE EXISTE, ALORS QU'IL N'EXISTAIT PAS
+ *
+ * Le seul chemin vers `EN_CONVERSATION` passait par l'enregistrement d'une
+ * qualification. Deux conséquences, constatées le 29 septembre :
+ *
+ * **Un.** Un responsable qui appelait son client sans pouvoir le qualifier —
+ * parce que le client n'était pas prêt, parce qu'il fallait un devis d'abord —
+ * laissait le dossier `AFFECTÉE`, et la veille des vingt-quatre heures le
+ * réaffectait à un collègue qui rappelait le même client.
+ *
+ * **Deux.** Les services sans questionnaire — `FORMATION`, `DOMICILIATION` —
+ * ne pouvaient jamais quitter `AFFECTÉE`, donc jamais être vendus. Le site
+ * public les proposait pourtant.
+ *
+ * ⚠️ Rejouable : un dossier déjà en conversation rend `200` sans rien changer.
+ * Un double clic n'est pas une faute.
+ */
+export async function declarerLePremierContact(
+  _precedent: EtatActe,
+  donnees: FormData,
+): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  if (!reference) return { echec: "Dossier non désigné.", fait: null };
+  const commentaire = String(donnees.get("commentaire") ?? "").trim();
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/premier-contact`, {
+      methode: "POST",
+      corps: { commentaire },
+      authentifie: true,
+    });
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    return {
+      echec: null,
+      fait: "Échange engagé : le dossier ne sera plus réaffecté pour absence de contact.",
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
   }
 }

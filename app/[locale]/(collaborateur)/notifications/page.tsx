@@ -7,7 +7,7 @@ import { ErreurApi } from "@/app/lib/api";
 import { lireMesNotifications, type MesNotifications } from "@/app/lib/notifications";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Notifications — Plateforme CGA" };
+export const metadata: Metadata = { title: "Notifications · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

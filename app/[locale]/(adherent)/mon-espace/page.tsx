@@ -34,7 +34,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
-  title: "Mon espace — CGA Broad Range Consulting Group",
+  title: "Mon espace · CGA Broad Range Consulting Group",
 };
 
 /**
@@ -116,7 +116,7 @@ export default async function MonEspace() {
               refus d'un écran vide, et un adhérent qui appellerait le cabinet doit
               lire la même formule que celle affichée aux collaborateurs. */}
           <strong>Accès réservé.</strong> Cet espace est celui des adhérents du
-          centre, et votre rôle n&rsquo;ouvre aucun dossier — rien n&rsquo;a
+          centre, et votre rôle n&rsquo;ouvre aucun dossier, rien n&rsquo;a
           échoué, votre session est valide. Si vous travaillez au cabinet, votre
           espace est le <Link href="/tableau-de-bord">tableau de bord</Link>.
         </p>
@@ -246,7 +246,7 @@ export default async function MonEspace() {
       {dossiers.length === 0 ? (
         <p className="adherent__vide">
           Aucun dossier ne vous est encore rattaché. Si vous venez de souscrire, le
-          cabinet finalise l&rsquo;ouverture de votre dossier — vous n&rsquo;avez rien à
+          cabinet finalise l&rsquo;ouverture de votre dossier : vous n&rsquo;avez rien à
           faire.
         </p>
       ) : (

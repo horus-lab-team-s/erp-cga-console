@@ -8,13 +8,25 @@
  */
 
 /** Les démarches proposées par le formulaire, dans l'ordre d'affichage. */
+/**
+ * ⚠️ LES CODES DU CATALOGUE, alignés le 27 septembre sur ceux de la vitrine.
+ *
+ * Cette liste portait des minuscules. Le catalogue du serveur publie
+ * `CREATION`, `ADHESION`, `PONCTUEL`… et le référentiel de qualification est
+ * indexé sur ces mêmes codes depuis la même date. Une demande déposée avec un
+ * code d'ici ne pouvait donc être ni qualifiée ni chiffrée.
+ *
+ * Elle n'alimente aujourd'hui aucun écran de la console — seule l'action
+ * serveur la revérifie —, et c'est justement pourquoi elle serait restée
+ * fausse sans qu'on le voie.
+ */
 export const DEMARCHES = [
-  "creation",
-  "adhesion",
-  "ponctuel",
-  "domiciliation",
-  "formation",
-  "autre",
+  "CREATION",
+  "ADHESION",
+  "PONCTUEL",
+  "DOMICILIATION",
+  "FORMATION",
+  "AUTRE",
 ] as const;
 
 export type Demarche = (typeof DEMARCHES)[number];

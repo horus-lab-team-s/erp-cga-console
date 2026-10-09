@@ -16,3 +16,7 @@ next-env.d.ts
 
 .DS_Store
 *.log
+
+# Les traces et rapports du parcours navigateur : produits à chaque exécution.
+/test-results/
+/playwright-report/

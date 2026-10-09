@@ -12,7 +12,7 @@ import { dateCourte } from "@/app/lib/formats";
 import { LIBELLES_NIVEAU, lireLeRapportMensuel, type RapportMensuel } from "@/app/lib/pilotage";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Rapport mensuel — Plateforme CGA" };
+export const metadata: Metadata = { title: "Rapport mensuel · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

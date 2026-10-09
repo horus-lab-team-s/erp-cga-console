@@ -14,7 +14,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui, lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import {
@@ -31,7 +31,7 @@ import {
 import { ContratDuSalarie, EmbaucheSalarie } from "@/app/components/social/GestesPersonnel";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Social et paie — Plateforme CGA" };
+export const metadata: Metadata = { title: "Social et paie · Plateforme CGA" };
 
 // La déclaration se calcule à la date du jour pour juger le retard : un rendu
 // figé au build afficherait un retard périmé.
@@ -178,7 +178,7 @@ export default async function SocialEtPaie({
                 </span>
                 <span style={{ display: "block" }}>
                   Aucun bulletin produit ici n&rsquo;est opposable, et la taxe de
-                  développement local est <strong>indicative</strong> — son barème est à
+                  développement local est <strong>indicative</strong> : son barème est à
                   montant fixe par palier, modélisé faute de mieux en pourcentage.
                 </span>
               </div>
@@ -287,17 +287,17 @@ export default async function SocialEtPaie({
                           {salarie.prenom} {salarie.nom}
                         </strong>
                       </Cellule>
-                      <Cellule>{salarie.poste ?? "—"}</Cellule>
+                      <Cellule>{salarie.poste ?? TIRET}</Cellule>
                       <Cellule>{salarie.type_contrat ?? "sorti"}</Cellule>
                       <Cellule>
-                        {salarie.depuis ? dateCourte(salarie.depuis) : "—"}
+                        {salarie.depuis ? dateCourte(salarie.depuis) : TIRET}
                       </Cellule>
                       <Cellule>{salarie.matricule_cnps ?? "à obtenir"}</Cellule>
                       <Cellule aDroite>
                         {salarie.salaire_base ? (
                           <Montant valeur={Number(salarie.salaire_base)} />
                         ) : (
-                          "—"
+                          TIRET
                         )}
                       </Cellule>
                       <span style={{ minWidth: 0, paddingBlock: 6, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>

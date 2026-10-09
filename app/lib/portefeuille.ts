@@ -22,6 +22,7 @@
  */
 
 import { appeler } from "./api";
+import { jourADouala } from "./heure-douala";
 
 export type RegimeFiscal = "REEL" | "IGS";
 export type CentreRattachement = "CIME" | "DGE" | "CDI";
@@ -45,9 +46,16 @@ export type Dossier = {
   exercice_courant: string | null;
 };
 
-/** Le jour, au format ISO, tel que le backend l'attend. */
+/**
+ * Le jour, au format ISO, tel que le backend l'attend — **à l'heure de Douala**.
+ *
+ * ⚠️ Rendait le jour UTC. Ces pages étant des composants serveur, « aujourd'hui »
+ * valait la veille entre minuit et une heure du matin, et cette date part au
+ * backend comme `a_la_date` : ce qui est échu, ce qui est en retard, quel
+ * exercice est courant. Voir `heure-douala.ts`.
+ */
 export function aujourdhui(): string {
-  return new Date().toISOString().slice(0, 10);
+  return jourADouala();
 }
 
 /** Un exercice tel que la fiche du dossier le rend. Bornes incluses. */

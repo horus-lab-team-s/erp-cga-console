@@ -21,7 +21,7 @@ import { lireLaRevue, type Remarque, type VueRevue } from "@/app/lib/revue";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Revue d'un mois — Plateforme CGA" };
+export const metadata: Metadata = { title: "Revue d'un mois · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

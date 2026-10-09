@@ -22,7 +22,7 @@ import { aujourdhui, lireLesAccesAdherents } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Fiche du dossier — Plateforme CGA" };
+export const metadata: Metadata = { title: "Fiche du dossier · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

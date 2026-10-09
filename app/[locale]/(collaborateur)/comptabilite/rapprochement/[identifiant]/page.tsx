@@ -20,7 +20,7 @@ import { lireRapprochement, signe, type LigneLue, type VueRapprochement } from "
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Rapprochement — Plateforme CGA" };
+export const metadata: Metadata = { title: "Rapprochement · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

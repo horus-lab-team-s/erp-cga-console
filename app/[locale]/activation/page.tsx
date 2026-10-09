@@ -5,7 +5,7 @@ import { EcranMotDePasse } from "@/app/components/vitrine/EcranMotDePasse";
 import "@/app/styles/vitrine.css";
 
 export const metadata: Metadata = {
-  title: "Activer mon espace — CGA Broad Range Consulting Group",
+  title: "Activer mon espace · CGA Broad Range Consulting Group",
   description: "Définissez le mot de passe de votre espace adhérent.",
   // ⚠️ L'URL porte un secret d'usage unique. Un moteur qui l'indexerait le
   // rendrait public ; un aperçu de lien le ferait consommer avant son
@@ -43,7 +43,7 @@ export default async function Activation({
   return (
     <EcranMotDePasse
       jeton={jeton}
-      titre="Bienvenue — activez votre espace"
+      titre="Bienvenue : activez votre espace"
       chapeau="Votre souscription est encaissée et votre espace est ouvert. Il reste à choisir votre mot de passe."
       libelleAction="Activer mon espace"
       note="Ce lien ne fonctionne qu'une fois. S'il a expiré, demandez-en un nouveau depuis la page de connexion."

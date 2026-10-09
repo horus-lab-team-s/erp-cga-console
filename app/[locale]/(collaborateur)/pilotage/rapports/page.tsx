@@ -10,8 +10,9 @@ import { dateCourte } from "@/app/lib/formats";
 import { lireLesRapportsMensuels, type ResumeDeRapport } from "@/app/lib/pilotage";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { moisPrecedentADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Rapports mensuels — Plateforme CGA" };
+export const metadata: Metadata = { title: "Rapports mensuels · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -23,10 +24,6 @@ export const dynamic = "force-dynamic";
  * présentée au comité.
  */
 
-function moisPrecedent(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
-}
 
 function libelleDuMois(mois: string) {
   return new Date(`${mois}-01T12:00:00Z`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
@@ -54,7 +51,7 @@ export default async function RapportsMensuels() {
         </div>
 
         <Panneau titre="Générer" aide="Les sections reprennent exactement les chiffres des écrans, à la date du rapport">
-          <GenererLeRapport moisParDefaut={moisPrecedent()} />
+          <GenererLeRapport moisParDefaut={moisPrecedentADouala()} />
         </Panneau>
 
         <Panneau titre="Rapports archivés" aide="Les plus récents d'abord ; une regénération crée une version suivante">

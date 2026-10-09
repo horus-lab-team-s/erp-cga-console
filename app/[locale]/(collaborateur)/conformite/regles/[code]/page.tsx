@@ -9,12 +9,12 @@ import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { lireLesConstatsDeLaRegle, type VueDEcartEnMasse } from "@/app/lib/conformite-revue";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Constats d'une règle — Plateforme CGA" };
+export const metadata: Metadata = { title: "Constats d'une règle · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -55,7 +55,7 @@ export default async function ConstatsDeLaRegle({
     { libelle: "Adhérents concernés", valeur: <>{vue.adherents}</> },
     {
       libelle: "Taux d'écartement de la règle",
-      valeur: <>{vue.taux_d_ecartement === null ? "—" : `${Math.round(vue.taux_d_ecartement * 100)} %`}</>,
+      valeur: <>{vue.taux_d_ecartement === null ? TIRET : `${Math.round(vue.taux_d_ecartement * 100)} %`}</>,
     },
   ];
 

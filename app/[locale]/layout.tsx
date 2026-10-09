@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/app/lib/site";
 import "@/app/globals.css";
+import { headers } from "next/headers";
 
 /* § 10.2 — Inter pour tout le corps de texte, Poppins cantonnée aux titres de page
    et aux grands chiffres : géométrique et large, superbe en grand, coûteuse en
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "CGA Broad Range Consulting Group",
-    template: "%s — CGA Broad Range Consulting Group",
+    template: "%s · CGA Broad Range Consulting Group",
   },
   description:
     "Cabinet comptable, d'audit et de conseil agréé par le ministre des Finances. " +
@@ -72,6 +73,10 @@ export default async function LayoutRacine({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // ⚠️ Le nonce de la requête, posé par l'intergiciel. `null` en théorie
+  // seulement : l'intergiciel couvre toutes les pages. `?? undefined` parce que
+  // React refuse `nonce={null}`.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   if (!hasLocale(routing.locales, locale)) notFound();
 
   // Permet le rendu statique des pages : sans cela, toute page appelant un message
@@ -92,7 +97,12 @@ export default async function LayoutRacine({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: APPLIQUER_THEME }} />
+        {/* ⚠️ LE NONCE EST OBLIGATOIRE : la politique de contenu n'autorise
+            que les scripts en ligne qui le portent. Sans lui, le thème ne
+            s'applique plus avant le premier rendu, et la page clignote en blanc
+            — un symptôme visible, ce qui est le bon échec. Voir
+            `middleware.ts`. */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: APPLIQUER_THEME }} />
       </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>

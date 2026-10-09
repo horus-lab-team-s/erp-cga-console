@@ -5,7 +5,7 @@ import { startTransition, useActionState, useState } from "react";
 import { Montant } from "@/app/components/Montant";
 import { Cellule, EnteteTableau, LigneTableau, type Colonne } from "@/app/components/Tableau";
 import { delettrer, lettrerLaSelection } from "@/app/lib/actions-lettrage";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { Link } from "@/i18n/navigation";
 
@@ -143,16 +143,16 @@ export function DetailDuCompte({
                 )}
               </Cellule>
               <Cellule aDroite tabulaire>
-                {ligne.sens === "DEBIT" ? <Montant valeur={ligne.montant} /> : "—"}
+                {ligne.sens === "DEBIT" ? <Montant valeur={ligne.montant} /> : TIRET}
               </Cellule>
               <Cellule aDroite tabulaire>
-                {ligne.sens === "CREDIT" ? <Montant valeur={ligne.montant} /> : "—"}
+                {ligne.sens === "CREDIT" ? <Montant valeur={ligne.montant} /> : TIRET}
               </Cellule>
               <Cellule aDroite tabulaire gras>
                 <Montant valeur={ligne.solde_progressif} />
               </Cellule>
               <span style={{ display: "flex", gap: 6, alignItems: "center", font: "600 12px/1 var(--police-texte)" }}>
-                {ligne.lettrage ?? <span style={{ color: "var(--ink-400)", fontWeight: 400 }}>—</span>}
+                {ligne.lettrage ?? <span style={{ color: "var(--ink-400)", fontWeight: 400 }}>{TIRET}</span>}
                 {ligne.lettrage_origine === "REPRISE" && <span style={{ ...note, fontSize: 11 }}>reprise</span>}
                 {ligne.lettrage_origine === "PLATEFORME" && peutLettrer && ligne.lettrage_identifiant && (
                   <button

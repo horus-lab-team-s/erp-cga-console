@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { ReponseControle } from "@/app/lib/api";
-import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { BadgeGravite, type Severite } from "../Gravite";
 import { PastilleStatut, type Statut } from "../Montant";
 import { ApercuPiece } from "./ApercuPiece";
@@ -391,7 +391,7 @@ function Ligne({
         className="tabulaire"
         style={{ textAlign: "right", fontWeight: 500, whiteSpace: "nowrap" }}
       >
-        {ligne.ttc ? montantFcfa(ligne.ttc) : "—"}
+        {ligne.ttc ? montantFcfa(ligne.ttc) : TIRET}
       </span>
       <span style={{ color: "var(--ink-500)" }}>{ligne.canal}</span>
       <span>

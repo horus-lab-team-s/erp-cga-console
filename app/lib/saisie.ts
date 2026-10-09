@@ -64,3 +64,26 @@ export const ETAT_PROPOSITION_INITIAL: EtatProposition = {
   dossier: null,
   enregistree: null,
 };
+
+/**
+ * Un mois de travail, `AAAA-MM`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ LE MOTIF EST STRICT SUR LE NUMÉRO DE MOIS, ET CE N'EST PAS DE LA COQUETTERIE.
+ *
+ * `/^\d{4}-\d{2}$/` — la version qui était en place dans deux actions — accepte
+ * `2026-00`, `2026-13`, `2026-99`. Le mois sert ensuite à borner une période :
+ *
+ *   · `2026-13` → du 2026-13-01 au 2027-01-31 ;
+ *   · `2026-00` → du 2026-00-01 au **2025-12-31**, période inversée ;
+ *   · `2026-99` → du 2026-99-01 au 2034-03-31, huit ans de revue.
+ *
+ * Le backend refuserait « 2026-99-01 » comme date invalide, mais l'écran aurait
+ * envoyé du charabia au lieu de refuser, et le collaborateur lirait un message
+ * de schéma là où il attend « choisissez le mois ».
+ *
+ * Trois pages employaient déjà le motif strict ; deux actions employaient le
+ * lâche. C'est le genre d'écart qui ne se voit qu'en les mettant côte à côte.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export const MOIS_VALIDE = /^\d{4}-(0[1-9]|1[0-2])$/;

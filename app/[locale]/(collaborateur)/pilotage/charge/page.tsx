@@ -10,7 +10,7 @@ import { dateCourte } from "@/app/lib/formats";
 import { lireLaChargeEtLaProduction, type ChargeEtProduction, type LigneDeCharge } from "@/app/lib/pilotage";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Charge et production — Plateforme CGA" };
+export const metadata: Metadata = { title: "Charge et production · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -70,6 +70,47 @@ export default async function ChargeEtProductionPage() {
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                   {vue.collaborateurs.map((c) => (
                     <Collaborateur key={c.habilitation} c={c} seuil={vue.reglages.seuil_de_saturation} />
+                  ))}
+                </ul>
+              )}
+            </Panneau>
+
+            {/*
+              ⚠️ AVANT LES RÉAFFECTATIONS, ET C'EST VOULU.
+
+              Réaffecter équilibre ce qui est déjà porté ; ces dossiers-ci ne
+              sont portés par personne. Une société peut être adhérente, payer,
+              et n'être tenue par aucun comptable : ses pièces déposées lui sont
+              **introuvables**, et rien ne le signalait.
+
+              ⚠️ On montre ce qui s'y accumule. Un dossier orphelin et vide n'est
+              pas le même problème qu'un dossier orphelin où les pièces
+              s'entassent : c'est ce chiffre qui dit lequel regarder d'abord.
+            */}
+            <Panneau
+              titre="Dossiers sans comptable"
+              aide="Personne ne les tient : leurs pièces sont introuvables du comptable"
+            >
+              {vue.sans_comptable.length === 0 ? (
+                <EtatVide
+                  titre="Chaque dossier a son comptable"
+                  detail="Un dossier nouvellement créé n'entre dans aucun périmètre tant qu'on ne l'y a pas mis."
+                />
+              ) : (
+                <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                  {vue.sans_comptable.map((d) => (
+                    <li
+                      key={d.niu}
+                      style={{ display: "grid", gap: 4, padding: "12px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.5 var(--police-texte)" }}
+                    >
+                      <strong>{d.denomination}</strong>
+                      <span style={{ color: "var(--ink-500)", fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>
+                        {d.niu} · {d.pieces_en_attente} pièce
+                        {d.pieces_en_attente > 1 ? "s" : ""} en attente · {d.echeances_du_mois} échéance
+                        {d.echeances_du_mois > 1 ? "s" : ""} ce mois
+                        {d.retards > 0 ? ` · ${d.retards} en retard` : ""}
+                      </span>
+                    </li>
                   ))}
                 </ul>
               )}

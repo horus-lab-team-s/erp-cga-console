@@ -9,11 +9,11 @@ import { redirect } from "@/i18n/navigation";
 
 import { appeler, ErreurApi } from "./api";
 import type { RapportMensuel } from "./pilotage";
-import type { EtatActe } from "./saisie";
+import { MOIS_VALIDE, type EtatActe } from "./saisie";
 
 export async function genererLeRapport(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
   const mois = String(donnees.get("mois") ?? "");
-  if (!/^\d{4}-\d{2}$/.test(mois)) return { echec: "Choisissez le mois du rapport.", fait: null };
+  if (!MOIS_VALIDE.test(mois)) return { echec: "Choisissez le mois du rapport.", fait: null };
   let identifiant: string;
   try {
     const rapport = await appeler<RapportMensuel>("/pilotage/rapports-mensuels", {

@@ -8,13 +8,14 @@ import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { lireJournaux } from "@/app/lib/comptabilite";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { lireProfilsDeReleve, lireRapprochements, type ResumeDeRapprochement } from "@/app/lib/rapprochement";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { moisPrecedentADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Rapprochement bancaire — Plateforme CGA" };
+export const metadata: Metadata = { title: "Rapprochement bancaire · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -51,11 +52,18 @@ const STATUTS: Record<string, { libelle: string; couleur: string }> = {
   ABANDONNE: { libelle: "Abandonné", couleur: "var(--ink-400)" },
 };
 
+/**
+ * Le mois écoulé, en bornes de relevé.
+ *
+ * ⚠️ Calculait en UTC, comme les quatre autres copies qui traînaient dans les
+ * pages. Le premier du mois entre minuit et une heure à Douala, le relevé
+ * proposé était celui de l'avant-dernier mois.
+ */
 function moisPrecedent(): { du: string; au: string } {
-  const aujourdhui = new Date();
-  const debut = new Date(Date.UTC(aujourdhui.getUTCFullYear(), aujourdhui.getUTCMonth() - 1, 1));
-  const fin = new Date(Date.UTC(aujourdhui.getUTCFullYear(), aujourdhui.getUTCMonth(), 0));
-  return { du: debut.toISOString().slice(0, 10), au: fin.toISOString().slice(0, 10) };
+  const [annee, mois] = moisPrecedentADouala().split("-").map(Number);
+  const dernier = new Date(Date.UTC(annee, mois, 0)).getUTCDate();
+  const mm = String(mois).padStart(2, "0");
+  return { du: `${annee}-${mm}-01`, au: `${annee}-${mm}-${String(dernier).padStart(2, "0")}` };
 }
 
 export default async function Rapprochements({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
@@ -122,10 +130,10 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
                   </Cellule>
                   <Cellule couleur={STATUTS[r.statut]?.couleur}>{STATUTS[r.statut]?.libelle ?? r.statut}</Cellule>
                   <Cellule aDroite tabulaire>
-                    {r.statut === "ABANDONNE" ? "—" : `${r.a_traiter} / ${r.lignes}`}
+                    {r.statut === "ABANDONNE" ? TIRET : `${r.a_traiter} / ${r.lignes}`}
                   </Cellule>
                   <Cellule aDroite tabulaire>
-                    {r.statut === "ABANDONNE" ? "—" : <Montant valeur={r.ecart_inexplique} />}
+                    {r.statut === "ABANDONNE" ? TIRET : <Montant valeur={r.ecart_inexplique} />}
                   </Cellule>
                 </LigneTableau>
               ))}

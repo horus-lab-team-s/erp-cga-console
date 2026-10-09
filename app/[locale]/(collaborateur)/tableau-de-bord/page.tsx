@@ -18,13 +18,13 @@ import { detient } from "@/app/lib/acces";
 import { controlerToutLeFlux, type Constat } from "@/app/lib/api";
 import { lireDemandes, lirePieces } from "@/app/lib/collecte";
 import { exerciceCourant } from "@/app/lib/comptabilite";
-import { dateCourte, dateLongue, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, dateLongue, montantFcfa, TIRET } from "@/app/lib/formats";
 import { lireEcheancier, type LigneEcheance } from "@/app/lib/obligations";
 import { aujourdhui, lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 
 export const metadata: Metadata = {
-  title: "Tableau de bord — Plateforme CGA",
+  title: "Tableau de bord · Plateforme CGA",
 };
 
 // Tout ce qui s'affiche ici dépend du jour : un rendu figé serait faux dès le lendemain.
@@ -104,22 +104,56 @@ type Indicateur = {
  * demande une centaine. Dimensionner sur ce qu'on voit aujourd'hui ferait
  * réapparaître la coupure le jour où l'estimation fonctionne.
  */
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ LA LARGEUR DU PANNEAU EST UN BUDGET, ET IL EST ÉTROIT
+ *
+ * Les panneaux du tableau de bord ne font pas la largeur de l'écran : sur
+ * 1440 px, le plus large en reçoit environ 660 et les autres 490. Or
+ * `largeurMinimale()` accorde 150 px de plancher à chaque colonne en fractions
+ * et garde les colonnes fixes telles quelles : six colonnes réclamaient 742 px,
+ * et le tableau défilait horizontalement dès l'ouverture — l'en-tête
+ * « Statut » se lisait « ST… » et la dernière colonne était coupée.
+ *
+ * Les jeux ci-dessous tiennent dans leur panneau. Toute colonne ajoutée se
+ * paye : il faut en retirer une autre, ou accepter le défilement.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 const COLONNES_ECHEANCES: Colonne[] = [
-  { cle: "date", libelle: "Date", largeur: "80px" },
-  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.4fr)" },
-  { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.7fr)" },
-  { cle: "montant", libelle: "Montant estimé", largeur: "104px", aDroite: true },
-  { cle: "restant", libelle: "Jours restants", largeur: "98px", aDroite: true },
+  // 84 et non 80 : « 15/08/2026 » mesure 78 px, et 76 px coupait la date en
+  // « 15/08/20… » — une date tronquée par la droite n'est plus une date.
+  { cle: "date", libelle: "Échéance", largeur: "84px" },
+  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.3fr)" },
+  { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.6fr)" },
+  { cle: "restant", libelle: "Délai", largeur: "100px", aDroite: true },
   { cle: "statut", libelle: "Statut", largeur: "92px" },
 ];
 
-/** Mêmes mesures, même raison : voir `COLONNES_ECHEANCES`. */
+/**
+ * ⚠️ LA COLONNE DU MONTANT N'APPARAÎT QUE SI UN MONTANT EXISTE.
+ *
+ * `montant_estime` est déclaré par le backend mais n'est aujourd'hui calculé
+ * nulle part : la colonne affichait « non estimé » sur chaque ligne et coûtait
+ * 104 px à un panneau qui n'en avait pas. Elle n'est pas supprimée pour autant
+ * — le jour où une seule obligation porte une estimation, elle revient seule.
+ */
+const COLONNES_ECHEANCES_CHIFFREES: Colonne[] = [
+  ...COLONNES_ECHEANCES.slice(0, 3),
+  { cle: "montant", libelle: "Montant estimé", largeur: "104px", aDroite: true },
+  ...COLONNES_ECHEANCES.slice(3),
+];
+
+/**
+ * Mêmes mesures, même raison : voir `COLONNES_ECHEANCES`.
+ *
+ * ⚠️ Cinq colonnes réclamaient 660 px dans un panneau de 490. La gravité rejoint
+ * le libellé de la règle — elle le qualifie, elle ne vit pas à part — et la
+ * référence de la facture passe sous la dénomination, où elle reste cliquable.
+ */
 const COLONNES_ANOMALIES: Colonne[] = [
-  { cle: "gravite", libelle: "Gravité", largeur: "96px" },
-  { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.3fr)" },
-  { cle: "regle", libelle: "Règle", largeur: "minmax(0, 1.9fr)" },
-  { cle: "enjeu", libelle: "Conséquence", largeur: "108px", aDroite: true },
-  { cle: "piece", libelle: "Facture", largeur: "96px" },
+  { cle: "entreprise", libelle: "Dossier et facture", largeur: "minmax(0, 1fr)" },
+  { cle: "regle", libelle: "Règle", largeur: "minmax(0, 1.4fr)" },
+  { cle: "enjeu", libelle: "Conséquence", largeur: "96px", aDroite: true },
 ];
 
 const COLONNES_ATTENDUES: Colonne[] = [
@@ -131,6 +165,14 @@ const COLONNES_ATTENDUES: Colonne[] = [
 
 /** Horizon des échéances affichées. Au-delà, l'échéancier du dossier. */
 const HORIZON_JOURS = 30;
+
+/**
+ * Au-delà de ce retard, l'échéance passe du liseré orange au liseré rouge.
+ *
+ * Un mois : c'est le pas des obligations mensuelles. Un retard qui dépasse un
+ * mois n'est plus un dépôt tardif, c'est une période entière qui manque.
+ */
+const SEUIL_RETARD_LOURD = 30;
 
 const STATUT_OBLIGATION: Record<LigneEcheance["obligation"]["statut"], Statut> = {
   A_FAIRE: "À faire",
@@ -158,6 +200,13 @@ export default async function TableauDeBord() {
   } catch (cause) {
     erreur = cause instanceof Error ? cause.message : String(cause);
   }
+
+  // Voir `COLONNES_ECHEANCES_CHIFFREES` : la colonne du montant ne s'ouvre que
+  // si au moins une obligation porte une estimation.
+  const montantsEstimes = (donnees?.echeances ?? []).some(
+    ({ ligne }) => ligne.obligation.montant_estime !== null,
+  );
+  const colonnesEcheances = montantsEstimes ? COLONNES_ECHEANCES_CHIFFREES : COLONNES_ECHEANCES;
 
   return (
     <>
@@ -202,50 +251,66 @@ export default async function TableauDeBord() {
                 action={<LienPanneau href="/obligations">Obligations</LienPanneau>}
                 style={{ gridRow: "span 2" }}
               >
-                <EnteteTableau colonnes={COLONNES_ECHEANCES} />
+                <EnteteTableau colonnes={colonnesEcheances} />
                 {donnees.echeances.length === 0 ? (
                   <EtatVide
                     titre="Rien à déposer"
                     detail={`Aucune obligation non déposée d'ici ${HORIZON_JOURS} jours sur votre portefeuille.`}
                   />
                 ) : (
-                  donnees.echeances.map(({ ligne, denomination }, index) => (
-                    <LigneTableau
-                      key={`${ligne.obligation.entreprise}-${ligne.obligation.code_obligation}-${ligne.obligation.periode_debut}`}
-                      colonnes={COLONNES_ECHEANCES}
-                      ton={ligne.en_retard ? "alerte" : index % 2 ? "alterne" : "normal"}
-                    >
-                      <Cellule tabulaire couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-500)"}>
-                        {dateCourte(ligne.obligation.echeance)}
-                      </Cellule>
-                      <Cellule lignes={2} couleur="var(--brand-indigo-700)" titre={denomination}>
-                        {denomination}
-                      </Cellule>
-                      <Cellule lignes={2} couleur="var(--ink-500)" titre={ligne.obligation.libelle}>
-                        {ligne.obligation.libelle}
-                      </Cellule>
-                      {/* Un montant que le backend n'estime pas ne s'affiche pas : un zéro
-                          inventé laisserait croire à une obligation sans enjeu. */}
-                      <Cellule aDroite tabulaire gras={ligne.obligation.montant_estime !== null}>
-                        {ligne.obligation.montant_estime === null ? (
-                          <span style={{ color: "var(--ink-500)" }}>non estimé</span>
-                        ) : (
-                          montantFcfa(ligne.obligation.montant_estime)
-                        )}
-                      </Cellule>
-                      <Cellule
-                        aDroite
-                        tabulaire
-                        gras
-                        couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
+                  donnees.echeances.map(({ ligne, denomination }, index) => {
+                    const retard = ligne.en_retard ? Math.abs(ligne.jours_restants) : 0;
+                    return (
+                      <LigneTableau
+                        key={`${ligne.obligation.entreprise}-${ligne.obligation.code_obligation}-${ligne.obligation.periode_debut}`}
+                        colonnes={colonnesEcheances}
+                        /* ⚠️ L'alternance seule pour le fond, le liseré pour l'urgence.
+                           Teinter chaque ligne en retard donnait un panneau entièrement
+                           rose le jour où tout est en retard — c'est-à-dire tous les
+                           jours sur un portefeuille chargé. Le liseré, lui, sépare le
+                           retard installé du retard lourd. */
+                        ton={index % 2 ? "alterne" : "normal"}
+                        bord={retard > SEUIL_RETARD_LOURD ? "critique" : retard > 0 ? "attention" : undefined}
                       >
-                        {ligne.en_retard ? `${Math.abs(ligne.jours_restants)} j de retard` : `${ligne.jours_restants} j`}
-                      </Cellule>
-                      <span>
-                        <PastilleStatut statut={ligne.en_retard ? "En retard" : STATUT_OBLIGATION[ligne.obligation.statut]} />
-                      </span>
-                    </LigneTableau>
-                  ))
+                        {/* ⚠️ La date ne rougit plus. Le retard est déjà dit trois fois sur
+                            la ligne — le liseré, le délai en rouge, la pastille — et une
+                            quatrième marque rouge en début de ligne faisait basculer le
+                            panneau entier dans l'alerte. La date est une donnée, pas un
+                            avertissement. */}
+                        <Cellule tabulaire couleur="var(--ink-500)">
+                          {dateCourte(ligne.obligation.echeance)}
+                        </Cellule>
+                        <Cellule lignes={2} couleur="var(--brand-indigo-700)" titre={denomination}>
+                          {denomination}
+                        </Cellule>
+                        <Cellule lignes={2} couleur="var(--ink-500)" titre={ligne.obligation.libelle}>
+                          {ligne.obligation.libelle}
+                        </Cellule>
+                        {/* Un montant que le backend n'estime pas ne s'affiche pas : un zéro
+                            inventé laisserait croire à une obligation sans enjeu. */}
+                        {montantsEstimes && (
+                          <Cellule aDroite tabulaire gras={ligne.obligation.montant_estime !== null}>
+                            {ligne.obligation.montant_estime === null ? (
+                              <span style={{ color: "var(--ink-500)" }}>non estimé</span>
+                            ) : (
+                              montantFcfa(ligne.obligation.montant_estime)
+                            )}
+                          </Cellule>
+                        )}
+                        <Cellule
+                          aDroite
+                          tabulaire
+                          gras
+                          couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
+                        >
+                          {ligne.en_retard ? `${retard} j de retard` : `${ligne.jours_restants} j`}
+                        </Cellule>
+                        <span>
+                          <PastilleStatut statut={ligne.en_retard ? "En retard" : STATUT_OBLIGATION[ligne.obligation.statut]} />
+                        </span>
+                      </LigneTableau>
+                    );
+                  })
                 )}
               </Panneau>
 
@@ -268,14 +333,33 @@ export default async function TableauDeBord() {
                       key={`${reference}-${constat.code_regle}`}
                       colonnes={COLONNES_ANOMALIES}
                       ton={index % 2 ? "alterne" : "normal"}
+                      bord={constat.severite === "BLOQUANT" ? "critique" : "attention"}
                     >
-                      <span>
-                        <BadgeGravite severite={constat.severite as Severite} court />
+                      {/* La dénomination identifie le dossier, la référence identifie la
+                          pièce : deux lignes d'une même cellule plutôt que deux colonnes,
+                          faute de largeur. La référence reste le lien vers la facture. */}
+                      <span style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                        <span
+                          title={denomination}
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            color: "var(--brand-indigo-700)",
+                          }}
+                        >
+                          {denomination}
+                        </span>
+                        <Link
+                          href={`/pieces/${reference}`}
+                          style={{ font: "400 12px/1.2 var(--police-texte)", fontVariantNumeric: "tabular-nums" }}
+                        >
+                          {reference}
+                        </Link>
                       </span>
-                      <Cellule lignes={2} couleur="var(--brand-indigo-700)" titre={denomination}>
-                        {denomination}
-                      </Cellule>
-                      <Cellule lignes={3} couleur="var(--ink-500)" titre={`${constat.libelle} — ${constat.code_regle}`}>
+                      <Cellule lignes={3} couleur="var(--ink-500)" titre={`${constat.libelle} · ${constat.code_regle}`}>
+                        {/* La gravité qualifie la règle : elle se lit avec elle. */}
+                        <BadgeGravite severite={constat.severite as Severite} court />{" "}
                         {constat.libelle}
                       </Cellule>
                       {/* Un constat sans conséquence chiffrée n'affiche pas de montant :
@@ -286,9 +370,6 @@ export default async function TableauDeBord() {
                         ) : (
                           <Montant valeur={Number(constat.enjeu)} />
                         )}
-                      </Cellule>
-                      <Cellule tabulaire>
-                        <Link href={`/pieces/${reference}`}>{reference}</Link>
                       </Cellule>
                     </LigneTableau>
                   ))
@@ -310,7 +391,9 @@ export default async function TableauDeBord() {
                     <LigneTableau
                       key={ligne.niu}
                       colonnes={COLONNES_ATTENDUES}
-                      ton={ligne.bloquantes > 0 ? "alerte" : index % 2 ? "alterne" : "normal"}
+                      /* Même raison qu'aux échéances : le liseré signale, l'aplat noierait. */
+                      ton={index % 2 ? "alterne" : "normal"}
+                      bord={ligne.bloquantes > 0 ? "critique" : undefined}
                     >
                       <Cellule couleur="var(--brand-indigo-700)" titre={ligne.denomination}>
                         {ligne.denomination}
@@ -426,13 +509,13 @@ async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: b
     },
     {
       libelle: "Pièces en attente",
-      valeur: enAttente === null ? "—" : String(enAttente),
+      valeur: enAttente === null ? TIRET : String(enAttente),
       detail: enAttente === null ? "hors de votre rôle" : `dont ${aIdentifier} à identifier`,
       ton: "neutre",
     },
     {
       libelle: "Anomalies bloquantes",
-      valeur: anomalies === null ? "—" : String(new Set(bloquantes.map((a) => a.reference)).size),
+      valeur: anomalies === null ? TIRET : String(new Set(bloquantes.map((a) => a.reference)).size),
       detail: anomalies === null ? "hors de votre rôle" : "pièces non comptabilisables en l'état",
       ton: bloquantes.length > 0 ? "alerte" : "neutre",
     },
@@ -441,26 +524,75 @@ async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: b
   return { indicateurs, echeances, anomalies, attendues };
 }
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LA CARTE D'INDICATEUR : DU RELIEF, ET UN TON QUI NE CRIE PAS.
+ *
+ * Elle était un rectangle à filet d'un pixel, l'alerte signalée en peignant la
+ * bordure entière en rouge. Deux défauts : à plat, elle ne se distinguait pas
+ * du fond ; et un cadre rouge intégral pèse autant pour « deux pièces en
+ * attente » que pour un incident.
+ *
+ * Ce qui change :
+ *
+ * · **une élévation douce** plutôt qu'un trait. La carte se détache du fond
+ *   par une ombre courte, pas par un cadre ;
+ * · **un lavis** au lieu d'un aplat : le fond part de la teinte du ton et
+ *   revient au blanc, ce qui laisse le chiffre respirer ;
+ * · **une arête colorée à gauche**, de trois pixels. C'est elle qui porte le
+ *   ton. Elle se repère d'un coup d'œil sur une rangée de quatre cartes, et
+ *   elle ne hurle pas.
+ *
+ * ⚠️ La couleur du **chiffre** ne change que pour l'alerte. Teinter le nombre
+ * dès l'attention rendrait toute la rangée bariolée, et le regard cesserait de
+ * distinguer ce qui presse de ce qui attend.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 function Carte({ indicateur }: { indicateur: Indicateur }) {
   const tons = {
-    neutre: { bordure: "var(--line-200)", fond: "var(--surface)", valeur: "var(--ink-900)" },
-    attention: {
-      bordure: "var(--warning)",
-      fond: "var(--warning-100)",
+    neutre: {
+      arete: "var(--line-300)",
+      fond: "var(--surface)",
       valeur: "var(--ink-900)",
+      ombre: "0 1px 2px rgb(26 21 35 / 6%), 0 8px 20px -14px rgb(26 21 35 / 32%)",
     },
-    alerte: { bordure: "var(--danger)", fond: "var(--danger-100)", valeur: "var(--danger)" },
+    attention: {
+      arete: "var(--warning)",
+      fond: "linear-gradient(180deg, var(--warning-100) 0%, var(--surface) 78%)",
+      valeur: "var(--ink-900)",
+      ombre: "0 1px 2px rgb(26 21 35 / 7%), 0 8px 22px -14px rgb(180 120 0 / 45%)",
+    },
+    alerte: {
+      arete: "var(--danger)",
+      fond: "linear-gradient(180deg, var(--danger-100) 0%, var(--surface) 78%)",
+      valeur: "var(--danger)",
+      ombre: "0 1px 2px rgb(26 21 35 / 8%), 0 8px 22px -14px rgb(178 30 40 / 50%)",
+    },
   }[indicateur.ton];
 
   return (
     <article
       style={{
-        border: `1px solid ${tons.bordure}`,
-        borderRadius: "var(--rayon)",
+        position: "relative",
+        overflow: "hidden",
+        border: "1px solid var(--line-200)",
+        borderRadius: "var(--rayon-grand)",
         background: tons.fond,
-        padding: "13px 16px",
+        boxShadow: tons.ombre,
+        padding: "14px 16px 14px 19px",
       }}
     >
+      {/* L'arête qui porte le ton : lisible de loin, muette de près. */}
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          insetBlock: 0,
+          insetInlineStart: 0,
+          width: 3,
+          background: tons.arete,
+        }}
+      />
       <h2
         style={{
           margin: 0,

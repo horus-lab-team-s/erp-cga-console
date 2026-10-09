@@ -15,6 +15,7 @@ import { detient } from "@/app/lib/acces";
 import {
   LIBELLES_ETAT,
   lireDossiersCommerciaux,
+  lireDossiersPayes,
   lireDossiersEnSouffrance,
   lireMotifsDeClassement,
   lireEtatDesCanaux,
@@ -24,7 +25,7 @@ import { dateCourte } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Demandes entrantes — Plateforme CGA" };
+export const metadata: Metadata = { title: "Demandes entrantes · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -56,6 +57,12 @@ const COLONNES_DOSSIERS: Colonne[] = [
   { cle: "gestes", libelle: "", largeur: "230px" },
 ];
 
+const COLONNES_PAYES: Colonne[] = [
+  { cle: "prospect", libelle: "Prospect", largeur: "minmax(0, 1.4fr)" },
+  { cle: "service", libelle: "Service", largeur: "minmax(0, 1fr)" },
+  { cle: "depuis", libelle: "Réglé", largeur: "minmax(0, 1fr)" },
+];
+
 const COLONNES_SOUFFRANCE: Colonne[] = [
   { cle: "prospect", libelle: "Prospect", largeur: "minmax(0, 1.4fr)" },
   { cle: "etat", libelle: "État", largeur: "130px" },
@@ -80,8 +87,9 @@ export default async function ConsoleAcquisition() {
   }
   // Pas 90 : l'état des canaux, lu à côté ; sa panne ne fait pas tomber la console.
   const canaux = await lireEtatDesCanaux().catch(() => null);
-  const [dossiers, enSouffrance, rappels, motifs] = await Promise.all([
+  const [dossiers, payes, enSouffrance, rappels, motifs] = await Promise.all([
     lireDossiersCommerciaux(),
+    lireDossiersPayes(),
     lireDossiersEnSouffrance(),
     lireRappels(),
     lireMotifsDeClassement(),
@@ -189,6 +197,45 @@ export default async function ConsoleAcquisition() {
             </>
           )}
         </Panneau>
+        {/* ─────────────────────────────────────────────────────────────────
+            ⚠️ POURQUOI UN PANNEAU POUR DES DOSSIERS QUI N'ATTENDENT PLUS RIEN.
+
+            Une création payée ouvre toute seule son dossier de formalité. Si un
+            fait manquait à la qualification, elle n'en ouvre AUCUN — et le
+            dossier commercial, lui, a quitté la file « en cours » au moment du
+            paiement.
+
+            Sans ce panneau, une société payée et jamais commencée n'apparaît
+            nulle part. C'est exactement la faute que ce produit s'interdit :
+            le client a payé, le travail n'a pas commencé, et rien ne le dit.
+
+            ⚠️ Il ne dit pas lui-même si le dossier est ouvert : la fiche le
+            fait, en une requête par dossier. Le faire ici coûterait un
+            aller-retour par ligne sur un réseau qu'on sait mauvais.
+            ───────────────────────────────────────────────────────────────── */}
+        {payes.length > 0 && (
+          <Panneau
+            titre={`Créations payées (${payes.filter((d) => d.service_souhaite === "CREATION").length})`}
+            aide="Elles ont quitté la file. Ouvrir la fiche dit si le dossier de formalité s'est bien ouvert."
+          >
+            <EnteteTableau colonnes={COLONNES_PAYES} />
+            {payes
+              .filter((d) => d.service_souhaite === "CREATION")
+              .map((d, rang) => (
+                <LigneTableau key={d.reference} colonnes={COLONNES_PAYES} ton={rang % 2 ? "alterne" : "normal"}>
+                  <Cellule gras titre={d.reference}>
+                    <Link href={`/acquisition/${d.reference}`} style={{ color: "var(--brand-indigo-700)" }}>
+                      {d.nom}
+                    </Link>
+                  </Cellule>
+                  <Cellule couleur="var(--ink-500)">{d.service_souhaite}</Cellule>
+                  <Cellule couleur="var(--ink-500)">
+                    payé depuis le {dateCourte(d.depuis_le.slice(0, 10))}
+                  </Cellule>
+                </LigneTableau>
+              ))}
+          </Panneau>
+        )}
 
         {canaux && (
           <Panneau

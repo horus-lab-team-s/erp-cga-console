@@ -94,18 +94,60 @@ export async function franchirUneEtape(_precedent: EtatActe, donnees: FormData):
   );
 }
 
+/**
+ * Marque une pièce reçue, et **joint son document quand il y en a un**.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ LE DOSSIER NE DOIT PAS PORTER DEUX SORTES DE PIÈCES REÇUES.
+ *
+ * Depuis le pas 141, la fondatrice dépose ses pièces par son lien signé, et le
+ * document est rangé. Un collaborateur qui recevait la même pièce autrement —
+ * par messagerie, au guichet, par courriel — ne pouvait que cocher une case :
+ * rien ne produisait d'empreinte de son côté.
+ *
+ * Le dossier portait donc deux sortes de pièces reçues, et six mois plus tard on
+ * ne savait plus laquelle portait son document.
+ *
+ * ⚠️ **LE FICHIER RESTE FACULTATIF.** Une pièce vue au guichet et rendue au
+ * client existe : l'exiger empêcherait de la marquer reçue, et le dossier
+ * resterait bloqué pour une raison qui n'en est pas une.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 export async function recevoirUnePiece(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
   const reference = champ(donnees, "reference");
   const code = champ(donnees, "code");
   if (!reference || !code) return { echec: "Pièce non désignée.", fait: null };
+
+  const fichier = donnees.get("fichier");
+  let empreinte: string | undefined;
+  if (fichier instanceof File && fichier.size > 0) {
+    // ⚠️ Deux appels, et l'ordre compte : on ne peut pas citer une empreinte qui
+    // n'existe pas encore. C'est le même motif que pour les pièces du cabinet.
+    const envoi = new FormData();
+    envoi.append("fichier", fichier);
+    try {
+      const depose = await appeler<{ empreinte: string }>("/collecte/fichiers-de-formalite", {
+        methode: "POST",
+        authentifie: true,
+        formulaire: envoi,
+      });
+      empreinte = depose.empreinte;
+    } catch (erreur) {
+      if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+      throw erreur;
+    }
+  }
+
   return geste(
     () =>
       appeler<DossierCreation>(`/creations/${encodeURIComponent(reference)}/pieces`, {
         methode: "POST",
         authentifie: true,
-        corps: { code },
+        corps: empreinte ? { code, empreinte } : { code },
       }),
-    "Pièce marquée reçue aujourd'hui.",
+    empreinte
+      ? "Pièce reçue, document joint au dossier."
+      : "Pièce marquée reçue aujourd'hui, sans document.",
   );
 }
 

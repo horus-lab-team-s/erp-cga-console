@@ -11,8 +11,9 @@ import { lireDossiers } from "@/app/lib/portefeuille";
 import { lireLesRevues, type ResumeDeRevue } from "@/app/lib/revue";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { moisPrecedentADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Revue des dossiers — Plateforme CGA" };
+export const metadata: Metadata = { title: "Revue des dossiers · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -32,11 +33,6 @@ export const dynamic = "force-dynamic";
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-function moisPrecedent(): string {
-  const d = new Date();
-  const precedent = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
-  return precedent.toISOString().slice(0, 7);
-}
 
 export default async function Revues() {
   const acces = await exigerAcces();
@@ -94,7 +90,7 @@ export default async function Revues() {
         {detient(acces, "SAISIR_ECRITURE") && dossiers.length > 0 && (
           <Panneau titre="Transmettre un mois" aide="Depuis sa clôture : les points de contrôle d'abord, le verrou ensuite">
             <p style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)" }}>
-              <Link href={`/comptabilite/cloture?mois=${moisPrecedent()}`}>Clôturer un mois</Link> : vérifier ses points de contrôle, puis le transmettre
+              <Link href={`/comptabilite/cloture?mois=${moisPrecedentADouala()}`}>Clôturer un mois</Link> : vérifier ses points de contrôle, puis le transmettre
               au réviseur, ce qui le verrouille.
             </p>
           </Panneau>

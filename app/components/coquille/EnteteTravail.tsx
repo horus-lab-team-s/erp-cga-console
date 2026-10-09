@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TIRET } from "@/app/lib/formats";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import {
@@ -113,7 +114,7 @@ export function EnteteTravail({
 
       <div className="entete__utilisateur">
         <span className="entete__avatar" aria-hidden="true">
-          {acces ? initiales(acces.nom_complet) : "—"}
+          {acces ? initiales(acces.nom_complet) : TIRET}
         </span>
         {acces?.nom_complet ?? ""}
       </div>

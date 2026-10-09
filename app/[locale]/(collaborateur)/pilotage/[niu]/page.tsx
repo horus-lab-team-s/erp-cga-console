@@ -20,7 +20,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Vue risque — Plateforme CGA" };
+export const metadata: Metadata = { title: "Vue risque · Plateforme CGA" };
 
 // Le score se calcule à la date du jour, comme au tableau de bord.
 export const dynamic = "force-dynamic";

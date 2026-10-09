@@ -7,13 +7,14 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { lireLaRelance, type AttenteDePiece, type VueDeRelance } from "@/app/lib/relance-des-pieces";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { moisPrecedentADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Relancer un adhérent — Plateforme CGA" };
+export const metadata: Metadata = { title: "Relancer un adhérent · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -51,10 +52,6 @@ function nomDuMois(mois: string): string {
   return `${MOIS[Number(mois.slice(5, 7)) - 1]} ${mois.slice(0, 4)}`;
 }
 
-function moisPrecedent(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
-}
 
 const champ: React.CSSProperties = { padding: "6px 8px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)" };
 const etiquette: React.CSSProperties = { display: "grid", gap: 4, font: "600 12px/1.4 var(--police-texte)" };
@@ -82,7 +79,7 @@ export default async function RelancerUnAdherent({
     );
   }
   const dossier = dossiers.some((d) => d.niu === brut.dossier) ? (brut.dossier as string) : dossiers[0].niu;
-  const mois = /^\d{4}-(0[1-9]|1[0-2])$/.test(brut.mois ?? "") ? (brut.mois as string) : moisPrecedent();
+  const mois = /^\d{4}-(0[1-9]|1[0-2])$/.test(brut.mois ?? "") ? (brut.mois as string) : moisPrecedentADouala();
   // `choix=1` : le formulaire a été envoyé, et aucune case cochée veut dire « aucune ». Sans lui
   // (première visite), toutes les pièces sont proposées.
   const coches = brut.attentes === undefined ? [] : Array.isArray(brut.attentes) ? brut.attentes : [brut.attentes];
@@ -190,8 +187,8 @@ export default async function RelancerUnAdherent({
                               )}
                             </td>
                             <td style={{ padding: "6px 10px", color: "var(--ink-500)" }}>{ORIGINES[a.origine]}</td>
-                            <td style={{ padding: "6px 10px", textAlign: "right" }}>{a.montant_estime ? <Montant valeur={a.montant_estime} /> : "—"}</td>
-                            <td style={{ padding: "6px 10px", color: a.demandee_le ? "var(--warning)" : "var(--ink-500)" }}>{a.demandee_le ? dateCourte(a.demandee_le) : "—"}</td>
+                            <td style={{ padding: "6px 10px", textAlign: "right" }}>{a.montant_estime ? <Montant valeur={a.montant_estime} /> : TIRET}</td>
+                            <td style={{ padding: "6px 10px", color: a.demandee_le ? "var(--warning)" : "var(--ink-500)" }}>{a.demandee_le ? dateCourte(a.demandee_le) : TIRET}</td>
                           </tr>
                         ))}
                       </tbody>

@@ -1,5 +1,24 @@
 "use client";
 
+/**
+ * ⚠️ **CE FICHIER EXISTE EN DOUBLE, DANS LA CONSOLE ET DANS LA VITRINE.**
+ *
+ * Les deux copies portent le même texte et la même logique ; elles ne diffèrent
+ * que par leur habillage, chaque dépôt employant son propre en-tête et son
+ * propre pied.
+ *
+ * **Toute correction de texte doit être portée des deux côtés.** Le 30 septembre
+ * 2026, la purge du tiret cadratin a dû être écrite deux fois pour ces trois
+ * composants, et le second passage n'a été fait que parce qu'une garde l'a
+ * signalé.
+ *
+ * L'autre copie : `erp-cga-vitrine/app/components/vitrine/EcranOubli.tsx`.
+ *
+ * ⚠️ Mutualiser demanderait un paquet partagé, un sous-module ou un dépôt
+ * unique. C'est une décision d'architecture, pas une commodité, et elle n'est
+ * pas prise : ce rappel tient lieu de garde en attendant.
+ */
+
 import Image from "next/image";
 import { useActionState } from "react";
 
@@ -121,7 +140,7 @@ export function EcranOubli() {
               <br />
               <br />
               Vérifiez vos indésirables. Si rien n’arrive, c’est peut-être que
-              l’adresse n’est pas celle enregistrée au cabinet — appelez-nous
+              l’adresse n’est pas celle enregistrée au cabinet, alors appelez-nous
               plutôt que de réessayer.
             </p>
           ) : (

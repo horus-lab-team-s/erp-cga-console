@@ -12,7 +12,7 @@ import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "File d'anomalies — Plateforme CGA" };
+export const metadata: Metadata = { title: "File d'anomalies · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 const COLONNES: Colonne[] = [

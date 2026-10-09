@@ -50,12 +50,22 @@ export type LigneCreation = {
   jours_d_immobilite: number;
   pieces_manquantes: number;
   en_retard: boolean;
+  /**
+   * ⚠️ **ELLE A BOUGÉ LA DERNIÈRE, ET PERSONNE NE LUI A RÉPONDU.**
+   *
+   * Sans ce signal, un dossier où la cliente vient de déposer cinq documents
+   * affiche « sans mouvement depuis 1 j » et se lit comme un dossier actif,
+   * alors que c'est le cabinet qui doit le geste suivant.
+   */
+  attend_le_cabinet: boolean;
+  /** Depuis combien de jours elle attend. `0` quand ce n'est pas son tour. */
+  jours_d_attente: number;
   immatriculee: boolean;
   converti_en: string | null;
 };
 
 /**
- * Le pipeline, du plus ancien mouvement au plus récent.
+ * Le pipeline par urgence : d'abord celles qui attendent une réponse.
  *
  * ⚠️ L'ordre vient du backend et **ne doit pas être retrié ici**. Le pipeline se
  * lit par urgence : un dossier qui dort depuis trois semaines se présente avant
@@ -117,6 +127,36 @@ export type FicheCreation = {
 
 export function lireDossierCreation(reference: string) {
   return appeler<FicheCreation>(`/creations/${encodeURIComponent(reference)}`, { authentifie: true });
+}
+
+/**
+ * Le lien de suivi d'un dossier, tel que la cliente l'a reçu à l'ouverture.
+ *
+ * ⚠️ **PARCE QUE LE COURRIEL SE PERD.** Le lien ne partait qu'une fois. Perdu,
+ * classé en indésirable, adresse saisie de travers : la cliente n'avait plus
+ * aucun moyen d'entrer, et le cabinet aucun moyen de le lui rendre.
+ *
+ * ⚠️ Le sceau est **recalculé** de la référence et de la clé du cabinet : le
+ * même dossier rend toujours le même lien. Celui envoyé il y a trois semaines
+ * reste exactement celui-ci.
+ */
+export type LienDeSuivi = {
+  reference: string;
+  denomination_souhaitee: string;
+  /**
+   * ⚠️ Pas de `sceau` à côté : le serveur ne le rend plus séparément. Un secret
+   * rendu deux fois se protège deux fois moins bien, et rien n'en avait besoin.
+   */
+  lien: string;
+  /** Le dossier est clos : le lien ouvre encore, mais il n'y a plus rien à déposer. */
+  clos: boolean;
+};
+
+export function lireLeLienDeSuivi(reference: string) {
+  return appeler<LienDeSuivi>(
+    `/creations/${encodeURIComponent(reference)}/lien-de-suivi`,
+    { authentifie: true },
+  );
 }
 
 export function lireChecklist(forme: string) {

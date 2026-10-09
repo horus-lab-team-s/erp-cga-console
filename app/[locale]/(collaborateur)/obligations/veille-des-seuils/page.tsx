@@ -13,7 +13,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { InscrireReclassement } from "@/app/components/obligations/InscrireReclassement";
 import { detient } from "@/app/lib/acces";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { ErreurApi } from "@/app/lib/api";
@@ -27,7 +27,7 @@ import {
 } from "@/app/lib/veille-des-seuils";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Veille des seuils — Plateforme CGA" };
+export const metadata: Metadata = { title: "Veille des seuils · Plateforme CGA" };
 
 /**
  * E-F03 · La veille des seuils du portefeuille.
@@ -231,7 +231,7 @@ function Chiffre({
 }: {
   mesure: { chiffre_affaires: string; taux_d_approche: string; part_ecoulee: string; exercice: string } | null;
 }) {
-  if (!mesure) return <span style={{ color: "var(--ink-500)" }}>—</span>;
+  if (!mesure) return <span style={{ color: "var(--ink-500)" }}>{TIRET}</span>;
   const partielle = Number(mesure.part_ecoulee) < 1;
   return (
     <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end" }}>

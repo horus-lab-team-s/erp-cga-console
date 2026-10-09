@@ -71,7 +71,10 @@ export type Permission =
   | "SUIVRE_FORMALITE"
   | "GERER_COMPTES"
   | "AFFECTER_DOSSIER"
-  | "EDITER_VITRINE";
+  | "EDITER_VITRINE"
+  // Arrêter le prix d'une prestation du catalogue : direction seule. Le prix est une
+  // décision humaine ; tant qu'il n'est pas fixé, il ne se paie pas en ligne.
+  | "FIXER_LES_TARIFS";
 
 /**
  * Ce que `GET /transverse/moi` rend.

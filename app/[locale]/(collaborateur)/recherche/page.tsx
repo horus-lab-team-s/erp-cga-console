@@ -7,7 +7,7 @@ import { chercherDans, lireSourcesDeRecherche, type ReponseDeRecherche, type Sou
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Recherche — Plateforme CGA" };
+export const metadata: Metadata = { title: "Recherche · Plateforme CGA" };
 
 // Le résultat dépend de la requête et du périmètre de la session : rien à pré-rendre.
 export const dynamic = "force-dynamic";

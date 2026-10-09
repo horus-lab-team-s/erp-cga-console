@@ -20,8 +20,9 @@ import { lireLesComptesUtilises, lireUneEcriture } from "@/app/lib/fiche-ecritur
 import { aujourdhui, lireDossiers, lireExercicesDuDossier, type ExerciceDuDossier } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourADouala } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Saisie comptable — Plateforme CGA" };
+export const metadata: Metadata = { title: "Saisie comptable · Plateforme CGA" };
 
 // La liste des écritures change à chaque saisie : un rendu figé montrerait le
 // journal d'avant, et le comptable croirait sa saisie perdue.
@@ -141,7 +142,11 @@ export default async function SaisieComptable({
               exercice={exercice}
               journaux={journaux}
               comptes={comptes}
-              aujourdHui={new Date().toISOString().slice(0, 10)}
+              /* ⚠️ Le jour de DOUALA. Cette page est un composant serveur : le
+                  jour UTC du conteneur devenait la date par défaut d'une
+                  ÉCRITURE COMPTABLE. Une écriture datée de la veille, saisie
+                  après minuit, tombe dans le mauvais mois le premier du mois. */
+              aujourdHui={jourADouala()}
               modele={modele}
               comptesUtilises={comptesUtilises}
             />

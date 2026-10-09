@@ -5,6 +5,7 @@ import {
   Conversion,
   FranchirEtape,
   Identifiants,
+  LienDeSuiviDeLaCliente,
   RecevoirPiece,
 } from "@/app/components/creations/GestesCreation";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
@@ -12,8 +13,14 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EtatErreur, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
-import { LIBELLES_ETAPE, lireDossierCreation, type FicheCreation } from "@/app/lib/creations";
-import { dateCourte } from "@/app/lib/formats";
+import {
+  LIBELLES_ETAPE,
+  lireDossierCreation,
+  lireLeLienDeSuivi,
+  type FicheCreation,
+  type LienDeSuivi,
+} from "@/app/lib/creations";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
@@ -21,7 +28,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ reference: string }> }): Promise<Metadata> {
   const { reference } = await params;
-  return { title: `Création ${reference} — Plateforme CGA` };
+  return { title: `Création ${reference} · Plateforme CGA` };
 }
 
 /**
@@ -53,6 +60,16 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
     fiche = await lireDossierCreation(reference);
   } catch (cause) {
     erreur = cause instanceof ErreurApi ? cause.message : String(cause);
+  }
+  // ⚠️ Tolérante : un lien qu'on ne peut pas relire ne doit pas emporter la
+  // fiche entière. Le panneau disparaît, le reste du dossier s'ouvre.
+  let lienDeSuivi: LienDeSuivi | null = null;
+  if (fiche) {
+    try {
+      lienDeSuivi = await lireLeLienDeSuivi(reference);
+    } catch (cause) {
+      if (!(cause instanceof ErreurApi)) throw cause;
+    }
   }
   const miettes = [{ libelle: "Création d’entreprise", href: "/creation-entreprise" }, { libelle: reference }];
   if (!fiche) {
@@ -124,6 +141,15 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
           </Panneau>
         )}
 
+        {lienDeSuivi && (
+          <Panneau
+            titre="Le lien de suivi de la cliente"
+            aide="À lui redonner si elle a perdu le courriel d'ouverture"
+          >
+            <LienDeSuiviDeLaCliente lien={lienDeSuivi.lien} clos={lienDeSuivi.clos} />
+          </Panneau>
+        )}
+
         <Panneau titre="Pièces de constitution" aide="Une pièce inconnue réclamée par le guichet s'ajoute au dossier">
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {dossier.pieces.map((p) => (
@@ -137,7 +163,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
                 ) : clos ? (
                   <span style={{ ...texte, color: "var(--ink-500)" }}>Non reçue</span>
                 ) : (
-                  <RecevoirPiece reference={dossier.reference} code={p.code} />
+                  <RecevoirPiece reference={dossier.reference} code={p.code} libelle={p.libelle} />
                 )}
               </li>
             ))}
@@ -147,8 +173,8 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
         <Panneau titre="Identifiants délivrés">
           <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             <p style={texte}>
-              RCCM {im.rccm ?? "—"}{im.rccm_obtenu_le && ` (${dateCourte(im.rccm_obtenu_le)})`} · NIU {im.niu ?? "—"}
-              {im.niu_obtenu_le && ` (${dateCourte(im.niu_obtenu_le)})`} · Patente {im.patente ?? "—"} · CNPS {im.cnps ?? "—"}
+              RCCM {im.rccm ?? TIRET}{im.rccm_obtenu_le && ` (${dateCourte(im.rccm_obtenu_le)})`} · NIU {im.niu ?? TIRET}
+              {im.niu_obtenu_le && ` (${dateCourte(im.niu_obtenu_le)})`} · Patente {im.patente ?? TIRET} · CNPS {im.cnps ?? TIRET}
             </p>
             {!clos && <Identifiants reference={dossier.reference} />}
           </div>

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ErreurApi } from "@/app/lib/api";
+import { lireLesDossiersSansComptable, type DossierSansComptable } from "@/app/lib/pilotage";
 
 import {
   Cellule,
@@ -29,11 +31,12 @@ import {
   type LigneCompte,
 } from "@/app/lib/administration";
 import { LIBELLES_MOTIF_MANDAT, type MandatAccorde } from "@/app/lib/mandats";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
+import { depuisUtc } from "@/app/lib/heure-douala";
 
-export const metadata: Metadata = { title: "Comptes et habilitations — Plateforme CGA" };
+export const metadata: Metadata = { title: "Comptes et habilitations · Plateforme CGA" };
 
 /**
  * E-K01 · Les comptes, leurs habilitations, et le journal d'audit.
@@ -96,7 +99,10 @@ const HABILITATIONS: Colonne[] = [
 
 const AUDIT: Colonne[] = [
   { cle: "rang", libelle: "#", largeur: "56px", aDroite: true },
-  { cle: "horodatage", libelle: "Horodatage", largeur: "150px" },
+  // ⚠️ LE FUSEAU EST DANS L'INTITULÉ, ET CE N'EST PAS COSMÉTIQUE. Une heure
+  // affichée sans dire laquelle est une heure qu'on ne peut pas opposer : lors
+  // d'un contrôle, « 20:09 » ne prouve rien si l'on ignore le fuseau.
+  { cle: "horodatage", libelle: "Horodatage (Douala)", largeur: "150px" },
   { cle: "acteur", libelle: "Acteur", largeur: "104px" },
   { cle: "action", libelle: "Action", largeur: "minmax(0, 1.3fr)" },
   { cle: "objet", libelle: "Objet", largeur: "minmax(0, 1.2fr)" },
@@ -138,6 +144,16 @@ export default async function Comptes() {
     : null;
 
   const affecte = detient(acces, "AFFECTER_DOSSIER");
+  // ⚠️ Tolérante : une liste illisible ne doit pas emporter la page entière.
+  // Le panneau disparaît, la gestion des comptes reste.
+  let orphelins: DossierSansComptable[] = [];
+  if (affecte) {
+    try {
+      orphelins = await lireLesDossiersSansComptable();
+    } catch (cause) {
+      if (!(cause instanceof ErreurApi)) throw cause;
+    }
+  }
 
   // ⚠️ Compté sur le journal, pas sur les mandats. Un mandat accordé dit ce qui est
   // **permis** ; le journal dit ce qui a été **fait**, et c'est l'écart entre les deux
@@ -209,6 +225,47 @@ export default async function Comptes() {
               </span>
             )}
           </div>
+        )}
+
+        {/*
+          ⚠️ ICI, PARCE QUE C'EST ICI QU'ON PEUT AGIR.
+
+          L'affectation d'un dossier porte sur une **habilitation** : le manque
+          se lit à côté de ce qui le comble. La direction voit la même liste
+          depuis la charge et la production, où elle sert à équilibrer ; ce
+          n'est pas la même question, et ce ne sont pas les mêmes lecteurs.
+
+          ⚠️ Une société peut être adhérente, payer, et n'être tenue par
+          personne : ses pièces déposées sont introuvables du comptable.
+        */}
+        {affecte && (
+          <Panneau
+            titre="Dossiers sans comptable"
+            aide="Personne ne les tient : leurs pièces sont introuvables du comptable"
+          >
+            {orphelins.length === 0 ? (
+              <EtatVide
+                titre="Chaque dossier a son comptable"
+                detail="Un dossier nouvellement créé n'entre dans aucun périmètre tant qu'on ne l'y a pas mis."
+              />
+            ) : (
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {orphelins.map((d) => (
+                  <li
+                    key={d.niu}
+                    style={{ display: "grid", gap: 4, padding: "12px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.5 var(--police-texte)" }}
+                  >
+                    <strong>{d.denomination}</strong>
+                    <span style={{ color: "var(--ink-500)", fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>
+                      {d.niu} · {d.pieces_en_attente} pièce{d.pieces_en_attente > 1 ? "s" : ""} en
+                      attente · {d.echeances_du_mois} échéance{d.echeances_du_mois > 1 ? "s" : ""} ce
+                      mois{d.retards > 0 ? ` · ${d.retards} en retard` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panneau>
         )}
 
         <Panneau
@@ -287,7 +344,7 @@ export default async function Comptes() {
 
         <Panneau
           titre="Journal d'audit"
-          aide="Append-only et chaîné par hachage. Modifier une entrée ancienne invalide toutes les suivantes — la falsification devient détectable."
+          aide="Append-only et chaîné par hachage. Modifier une entrée ancienne invalide toutes les suivantes : la falsification devient détectable."
         >
           {entrees.length === 0 ? (
             <EtatVide
@@ -306,7 +363,12 @@ export default async function Comptes() {
                       {entree.rang}
                     </Cellule>
                     <Cellule tabulaire couleur="var(--ink-500)">
-                      {entree.horodatage.replace("T", " ").slice(0, 19)}
+                      {/* ⚠️ LE BACKEND HORODATE EN UTC. Cette ligne découpait la
+                          chaîne telle quelle : le journal qui fait foi affichait
+                          « 20:09:43 » pour une action faite à 21:09:43 à Douala.
+                          Une heure fausse d'une heure dans le seul registre
+                          opposable, c'est une heure fausse devant un contrôleur. */}
+                      {depuisUtc(entree.horodatage).replace("T", " ")}
                     </Cellule>
                     <Cellule tabulaire>{entree.acteur}</Cellule>
                     <Cellule gras titre={entree.motif ?? undefined}>
@@ -364,7 +426,7 @@ function Ligne({
           : `${ligne.dossiers.length} dossier${ligne.dossiers.length > 1 ? "s" : ""}`}
       </Cellule>
       <Cellule couleur={ligne.compte.second_facteur_actif ? undefined : "var(--ink-500)"}>
-        {ligne.compte.second_facteur_actif ? "Enrôlé" : "—"}
+        {ligne.compte.second_facteur_actif ? "Enrôlé" : TIRET}
         {ligne.compte.second_facteur_actif && ligne.compte.identifiant !== soi && (
           <ReinitialiserSecondFacteur
             identifiant={ligne.compte.identifiant}

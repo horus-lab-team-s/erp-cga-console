@@ -7,11 +7,11 @@ import { SignalerLaRegle } from "@/app/components/conformite/GestesRevue";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { LIBELLES_LECTURE, lireLaQualiteDesRegles, type QualiteDesRegles } from "@/app/lib/conformite-revue";
-import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Qualité des règles — Plateforme CGA" };
+export const metadata: Metadata = { title: "Qualité des règles · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -45,7 +45,7 @@ const TON: Record<string, string> = {
 };
 
 function pourcent(taux: number | null) {
-  return taux === null ? "—" : `${Math.round(taux * 100)} %`;
+  return taux === null ? TIRET : `${Math.round(taux * 100)} %`;
 }
 
 export default async function QualiteDesReglesPage({ searchParams }: { searchParams: Promise<{ du?: string; au?: string }> }) {
@@ -120,7 +120,7 @@ export default async function QualiteDesReglesPage({ searchParams }: { searchPar
                 <Cellule aDroite tabulaire couleur={TON[r.lecture]} gras>
                   {r.ecartes} · {pourcent(r.taux_d_ecartement)}
                 </Cellule>
-                <Cellule aDroite tabulaire>{Number(r.enjeu_retenu) > 0 ? montantFcfa(r.enjeu_retenu) : "—"}</Cellule>
+                <Cellule aDroite tabulaire>{Number(r.enjeu_retenu) > 0 ? montantFcfa(r.enjeu_retenu) : TIRET}</Cellule>
                 <Cellule>
                   <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <strong style={{ color: TON[r.lecture], fontWeight: 600 }}>{LIBELLES_LECTURE[r.lecture]}</strong>

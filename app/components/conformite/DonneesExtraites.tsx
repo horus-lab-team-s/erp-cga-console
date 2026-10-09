@@ -154,7 +154,7 @@ export function DonneesExtraites({ facture }: { facture: FactureAControler }) {
                   <span
                     className="tabulaire"
                     style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}
-                    title="Extraction peu fiable — à vérifier sur le document"
+                    title="Extraction peu fiable : à vérifier sur le document"
                   >
                     △ {Math.round(confiance * 100)} %
                   </span>

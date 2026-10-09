@@ -10,7 +10,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
-  title: "Réglages — CGA Broad Range Consulting Group",
+  title: "Réglages · CGA Broad Range Consulting Group",
 };
 
 /**

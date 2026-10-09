@@ -12,7 +12,7 @@ import { Montant } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
 import { ErreurApi } from "@/app/lib/api";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import {
   lireDeclarationTva,
   lireDossierDepot,
@@ -28,7 +28,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { ConstatDepotTva } from "@/app/components/obligations/GestesEcheancier";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 
-export const metadata: Metadata = { title: "Déclaration de TVA — Plateforme CGA" };
+export const metadata: Metadata = { title: "Déclaration de TVA · Plateforme CGA" };
 
 /**
  * E-F02 · La déclaration de TVA d'une période, et son dépôt.
@@ -177,7 +177,7 @@ export default async function Declarations({
                         {ligne.base === null ? "" : <Montant valeur={ligne.base} />}
                       </Cellule>
                       <Cellule aDroite tabulaire gras>
-                        {ligne.montant === null ? "—" : EN_DEDUCTION.has(ligne.grandeur) && Number(ligne.montant) > 0 ? <>(<Montant valeur={ligne.montant} />)</> : <Montant valeur={ligne.montant} />}
+                        {ligne.montant === null ? TIRET : EN_DEDUCTION.has(ligne.grandeur) && Number(ligne.montant) > 0 ? <>(<Montant valeur={ligne.montant} />)</> : <Montant valeur={ligne.montant} />}
                       </Cellule>
                       <Cellule aDroite tabulaire couleur="var(--ink-500)" titre={ligne.ecritures.join(", ") || "aucune écriture"}>
                         {ligne.ecritures.length}
@@ -219,7 +219,7 @@ export default async function Declarations({
                   {declaration.completude.pieces_traitees > 1 ? "s" : ""}
                 </dd>
                 <dt>Complétude</dt>
-                <dd>{declaration.completude.taux === null ? "—" : `${Math.round(declaration.completude.taux * 100)} %`}</dd>
+                <dd>{declaration.completude.taux === null ? TIRET : `${Math.round(declaration.completude.taux * 100)} %`}</dd>
                 <dt>TVA rejetée par le contrôle</dt>
                 <dd>
                   <Montant valeur={declaration.tva_rejetee} avecDevise />
@@ -286,7 +286,7 @@ export default async function Declarations({
                 {declaration.neant && (
                   <p style={{ padding: "0 var(--espace-3) var(--espace-2)", margin: 0, font: "400 12.5px/1.6 var(--police-texte)", color: "var(--ink-500)" }}>
                     Aucune opération sur la période : la déclaration est à néant.{" "}
-                    <strong>Elle reste due</strong> — l&rsquo;obligation naît de
+                    <strong>Elle reste due</strong> : l&rsquo;obligation naît de
                     l&rsquo;assujettissement, pas de l&rsquo;activité.
                   </p>
                 )}
@@ -373,7 +373,7 @@ export default async function Declarations({
                       {/* Sans pièce, l'écriture : c'est elle qui porte la TVA refusée. */}
                       <Cellule tabulaire gras titre={rejet.ecriture}>{rejet.piece ?? rejet.ecriture}</Cellule>
                       <Cellule tabulaire couleur="var(--brand-indigo-700)">
-                        {rejet.code_regle ?? "—"}
+                        {rejet.code_regle ?? TIRET}
                       </Cellule>
                       <Cellule titre={rejet.motif ?? undefined}>{rejet.motif ?? "motif non renseigné"}</Cellule>
                       <Cellule aDroite tabulaire gras couleur="var(--danger)">
@@ -485,7 +485,7 @@ function Constat({ anomalie }: { anomalie: Anomalie }) {
       {anomalie.enjeu && Number(anomalie.enjeu) > 0 && (
         <span style={{ color: "var(--danger)" }}>
           {" "}
-          — <Montant valeur={anomalie.enjeu} avecDevise />
+          : <Montant valeur={anomalie.enjeu} avecDevise />
         </span>
       )}
     </span>

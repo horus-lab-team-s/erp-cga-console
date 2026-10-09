@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { TIRET } from "@/app/lib/formats";
 
 import { Montant } from "@/app/components/Montant";
 import { ecarterEnMasse, type EtatEcartEnMasse } from "@/app/lib/actions-conformite-revue";
@@ -141,7 +142,7 @@ export function EcarterEnMasse({
               {l.fournisseur ?? "fournisseur inconnu"}
               <span style={{ color: "var(--ink-500)" }}> · {l.piece}</span>
             </span>
-            <span style={{ fontVariantNumeric: "tabular-nums" }}>{l.enjeu ? <Montant valeur={l.enjeu} /> : "—"}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{l.enjeu ? <Montant valeur={l.enjeu} /> : TIRET}</span>
             <span style={{ flexBasis: "100%", minWidth: 0, paddingLeft: 24, fontSize: 12, color: "var(--ink-500)", overflowWrap: "anywhere" }}>
               {dateCourte(l.date)} · vérification DGI :{" "}
               <span style={{ color: l.verification_dgi === false ? "var(--danger)" : l.verification_dgi ? "var(--success)" : "var(--ink-500)" }}>

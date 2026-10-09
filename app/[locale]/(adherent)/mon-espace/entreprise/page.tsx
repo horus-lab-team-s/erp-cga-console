@@ -10,7 +10,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
-  title: "Mon entreprise — CGA Broad Range Consulting Group",
+  title: "Mon entreprise · CGA Broad Range Consulting Group",
 };
 
 const ROLES: Record<string, string> = {

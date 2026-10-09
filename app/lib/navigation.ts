@@ -110,6 +110,8 @@ export const ICONES: Record<string, string> = {
   acquisition: "M4 4h16v12H7l-3 3zM8 8h8M8 12h5",
   // Une carte de paiement : les souscriptions réglées en ligne (pas 83).
   souscriptions: "M3 6h18v12H3zM3 10h18M7 15h4",
+  // Une étiquette de prix : les tarifs fixés par la direction.
+  tarifs: "M3 12V4h8l10 10-8 8zM7.5 8.5h.01",
   // Un pouls : l'état de la plateforme (pas 84).
   exploitation: "M3 12h4l2-5 4 10 2-5h6",
   replier: "M9 6l6 6-6 6M4 4v16",
@@ -303,6 +305,15 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     icone: "souscriptions",
     permission: "GERER_COMPTES",
     ouAussi: ["LIRE_PILOTAGE", "RELANCER_ADHERENT"],
+    construit: true,
+  },
+  {
+    // Les prix de l'offre. La direction seule : le prix est une décision humaine, et
+    // tant qu'elle ne l'a pas prise, rien ne se paie en ligne.
+    libelle: "Tarifs de l'offre",
+    href: "/tarifs",
+    icone: "tarifs",
+    permission: "FIXER_LES_TARIFS",
     construit: true,
   },
   {

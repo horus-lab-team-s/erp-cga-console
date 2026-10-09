@@ -5,7 +5,7 @@ import { EcranOubli } from "@/app/components/vitrine/EcranOubli";
 import "@/app/styles/vitrine.css";
 
 export const metadata: Metadata = {
-  title: "Mot de passe oublié — CGA Broad Range Consulting Group",
+  title: "Mot de passe oublié · CGA Broad Range Consulting Group",
   description: "Recevez un lien pour choisir un nouveau mot de passe.",
 };
 

@@ -40,7 +40,7 @@ import {
 import { ErreurApi, controlerPieceDemonstration, listerPiecesDemonstration } from "@/app/lib/api";
 import { lireCatalogueDesRegles } from "@/app/lib/regles";
 
-export const metadata: Metadata = { title: "Référentiel — Plateforme CGA" };
+export const metadata: Metadata = { title: "Référentiel · Plateforme CGA" };
 
 /**
  * E-A01 · Le référentiel normatif et son état de validation.

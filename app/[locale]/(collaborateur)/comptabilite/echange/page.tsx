@@ -11,7 +11,7 @@ import { lirePlanImputation, lireProfilsDEchange } from "@/app/lib/echange";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Échange comptable — Plateforme CGA" };
+export const metadata: Metadata = { title: "Échange comptable · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**

@@ -9,7 +9,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
-  title: "Mes documents — CGA Broad Range Consulting Group",
+  title: "Mes documents · CGA Broad Range Consulting Group",
 };
 
 /**

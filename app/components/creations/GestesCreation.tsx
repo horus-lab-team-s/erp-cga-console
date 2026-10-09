@@ -128,15 +128,45 @@ export function FranchirEtape({ reference, vers, libelle }: { reference: string;
   );
 }
 
-export function RecevoirPiece({ reference, code }: { reference: string; code: string }) {
+/**
+ * Marquer une pièce reçue, en joignant son document si on l'a.
+ *
+ * ⚠️ **LE FICHIER EST FACULTATIF, ET LE BOUTON LE DIT.** Une pièce vue au
+ * guichet et rendue au client existe : exiger le document empêcherait de la
+ * marquer reçue, et le dossier resterait bloqué pour une raison qui n'en est pas
+ * une. Le libellé change selon qu'un fichier est choisi, pour que le
+ * collaborateur sache ce qu'il s'apprête à enregistrer.
+ */
+export function RecevoirPiece({
+  reference,
+  code,
+  libelle,
+}: {
+  reference: string;
+  code: string;
+  libelle: string;
+}) {
   const [etat, recevoir, enCours] = useActionState(recevoirUnePiece, ETAT_ACTE_INITIAL);
+  const [avecFichier, setAvecFichier] = useState(false);
   if (etat.fait) return <Retour etat={etat} />;
   return (
-    <form action={recevoir} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+    <form action={recevoir} style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />
       <input type="hidden" name="code" value={code} />
+      <label style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+        {/* Le libellé de la pièce pour les lecteurs d'écran : sur une liste de
+            neuf lignes, « Choisir un fichier » seul ne dit pas laquelle. */}
+        <span className="visuellement-cache">Document de : {libelle}</span>
+        <input
+          type="file"
+          name="fichier"
+          accept="image/jpeg,image/png,image/tiff,application/pdf"
+          onChange={(e) => setAvecFichier(Boolean(e.target.files?.length))}
+          style={{ font: "400 12px/1.4 var(--police-texte)", maxWidth: 190 }}
+        />
+      </label>
       <button type="submit" className="bouton-discret" disabled={enCours}>
-        {enCours ? "…" : "Marquer reçue"}
+        {enCours ? "…" : avecFichier ? "Joindre et marquer reçue" : "Marquer reçue"}
       </button>
       <Retour etat={etat} />
     </form>
@@ -237,5 +267,78 @@ export function Conversion({ reference }: { reference: string }) {
         <Retour etat={etat} />
       </span>
     </form>
+  );
+}
+
+/**
+ * Redonner à la cliente le lien de son suivi.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * ⚠️ POURQUOI CE PANNEAU EXISTE : LE COURRIEL SE PERD.
+ *
+ * Le lien ne partait qu'une fois, à l'ouverture du dossier. Perdu, classé en
+ * indésirable, adresse saisie de travers, cliente qui change de téléphone :
+ * elle n'avait plus aucun moyen d'entrer, et **le collaborateur aucun moyen de
+ * le lui rendre**. Le sceau n'apparaissait nulle part dans la console.
+ *
+ * Cas de tous les jours, pas cas limite.
+ *
+ * ⚠️ LE LIEN EST AFFICHÉ EN CLAIR, ET C'EST VOULU
+ *
+ * Contrairement à celui de la proforma, ce sceau est **réutilisable et sans
+ * expiration** : il se recalcule de la référence, il vaut jusqu'à
+ * l'immatriculation. Le cacher derrière un unique « copier » obligerait à
+ * recharger la page quand le presse-papiers est refusé, ce qui arrive.
+ *
+ * ⚠️ RIEN N'EST ENVOYÉ D'ICI. Le collaborateur relit, puis choisit son canal :
+ * courriel, WhatsApp, ou il le dicte. Envoyer d'un clic mêlerait deux gestes.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export function LienDeSuiviDeLaCliente({
+  lien,
+  clos,
+}: {
+  lien: string;
+  /** Le dossier est clos : le lien ouvre encore, mais il n'y a plus rien à déposer. */
+  clos: boolean;
+}) {
+  const [copie, setCopie] = useState(false);
+  return (
+    <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+      <p style={{ margin: 0, font: "400 13px/1.6 var(--police-texte)", color: "var(--ink-700)" }}>
+        {clos
+          ? "Ce dossier est clos. Le lien ouvre encore son suivi, mais il n’y a plus de pièce à déposer."
+          : "Ce lien ouvre son suivi sans mot de passe et reste valable jusqu’à l’immatriculation. Il est personnel : elle ne doit pas le transférer."}
+      </p>
+      <code
+        style={{
+          font: "400 12px/1.5 var(--police-code, monospace)",
+          color: "var(--ink-900)",
+          background: "var(--surface-100)",
+          padding: "8px 10px",
+          borderRadius: 6,
+          wordBreak: "break-all",
+          userSelect: "all",
+        }}
+      >
+        {lien}
+      </code>
+      <div>
+        <button
+          type="button"
+          className="bouton-discret"
+          onClick={() => {
+            // ⚠️ Le presse-papiers peut être refusé (page non sécurisée, réglage
+            // du navigateur) : le lien reste lisible et sélectionnable au-dessus.
+            navigator.clipboard?.writeText(lien).then(
+              () => setCopie(true),
+              () => setCopie(false),
+            );
+          }}
+        >
+          {copie ? "Lien copié" : "Copier le lien"}
+        </button>
+      </div>
+    </div>
   );
 }

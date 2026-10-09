@@ -16,7 +16,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 
-export const metadata: Metadata = { title: "Grand livre — Plateforme CGA" };
+export const metadata: Metadata = { title: "Grand livre · Plateforme CGA" };
 
 /**
  * E-E02 · Le grand livre d'un compte.

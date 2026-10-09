@@ -14,7 +14,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { ActiverSouscription, TachesDExploitation } from "@/app/components/souscription/GestesSouscriptions";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
-import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import {
@@ -26,7 +26,7 @@ import {
   type Souscription,
 } from "@/app/lib/souscription";
 
-export const metadata: Metadata = { title: "Souscriptions en ligne — Plateforme CGA" };
+export const metadata: Metadata = { title: "Souscriptions en ligne · Plateforme CGA" };
 
 /**
  * Les souscriptions en ligne, côté cabinet (pas 83).
@@ -218,7 +218,7 @@ function LigneAOuvrir({ s, rang, administre }: { s: Souscription; rang: number; 
       </Cellule>
       <Cellule>{s.libelle}</Cellule>
       <Cellule tabulaire couleur="var(--ink-500)">
-        {s.payee_le ? dateCourte(s.payee_le.slice(0, 10)) : "—"}
+        {s.payee_le ? dateCourte(s.payee_le.slice(0, 10)) : TIRET}
       </Cellule>
       <Cellule aDroite tabulaire>
         {montantFcfa(s.montant)}
@@ -238,7 +238,7 @@ function LigneRelance({ r, rang }: { r: RappelEcheance; rang: number }) {
   return (
     <LigneTableau colonnes={RELANCES} ton={r.derniere ? "alerte" : rang % 2 ? "alterne" : "normal"}>
       <Cellule gras titre={r.telephone}>{r.courriel}</Cellule>
-      <Cellule tabulaire>{r.niu ?? "—"}</Cellule>
+      <Cellule tabulaire>{r.niu ?? TIRET}</Cellule>
       <Cellule aDroite tabulaire>{montantFcfa(r.montant)}</Cellule>
       <Cellule aDroite tabulaire>{r.jours_de_retard} j</Cellule>
       <Cellule>{r.derniere ? "Dernière : annonce l'arrêt du service" : `Jalon J+${r.jalon}`}</Cellule>

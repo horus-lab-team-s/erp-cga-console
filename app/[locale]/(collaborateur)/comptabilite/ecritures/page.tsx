@@ -16,12 +16,12 @@ import {
   type ImpactDeLaContrepassation,
   type LigneDeFiche,
 } from "@/app/lib/fiche-ecriture";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui, lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
-export const metadata: Metadata = { title: "Écriture — Plateforme CGA" };
+export const metadata: Metadata = { title: "Écriture · Plateforme CGA" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -50,7 +50,7 @@ function moisDe(jour: string) {
 
 function attribut(ligne: LigneDeFiche): string {
   const a = ligne.attribut_fiscal;
-  if (!a) return "—";
+  if (!a) return TIRET;
   const morceaux = [];
   if (a.tva_deductible === false) morceaux.push("TVA non déductible");
   if (a.charge_deductible === false) morceaux.push("charge non déductible");
