@@ -1755,6 +1755,7 @@ a.action-secondaire {
   color: var(--danger);
 }
 .adherent__echeance-etat[data-etat="DEPOSEE"],
+.adherent__echeance-etat[data-etat="PAYEE"],
 .adherent__echeance-etat[data-etat="PREUVE_ENVOYEE"] {
   color: var(--success);
 }
@@ -2052,4 +2053,1124 @@ a.adherent__quitter {
   .anomalies__entreprise {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MA PAIE, DANS L'ESPACE ADHÉRENT
+
+   L'adhérent ouvre son téléphone entre deux clients : une colonne, des cibles
+   larges, et le chiffre qui compte en premier. Ce n'est pas l'écran dense du
+   collaborateur, et il ne doit pas le devenir.
+   ───────────────────────────────────────────────────────────────────────────*/
+.paie-resume {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espace-2) var(--espace-4);
+  margin-bottom: var(--espace-3);
+}
+
+.paie-resume__total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espace-2);
+  margin: 0;
+}
+
+.paie-resume__libelle {
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* Le chiffre que l'adhérent cherche en ouvrant la page. */
+.paie-resume__chiffre {
+  font: 600 var(--taille-grand-chiffre)/1.1 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.paie-resume__appoint {
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.paie-resume__echeance {
+  margin: 0;
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* ⚠️ Le retard se dit en mots ET en couleur, jamais en couleur seule. */
+.paie-resume__retard {
+  margin: 0;
+  font: 600 13px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+.paie-chiffres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--line-200);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  overflow: hidden;
+}
+
+.paie-chiffres__case {
+  padding: var(--espace-2) var(--espace-3);
+  background: var(--surface);
+}
+
+.paie-chiffres__case dt {
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.paie-chiffres__case dd {
+  margin: 2px 0 0;
+  font: 600 16px/1.3 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.paie-personnel,
+.paie-retenues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paie-personnel li,
+.paie-retenues li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espace-2) var(--espace-3);
+  /* 44 px de cible : l'adhérent est sur un téléphone, debout. */
+  min-height: 44px;
+  padding: var(--espace-2) 0;
+  font: 400 14px/1.4 var(--police-texte);
+}
+
+.paie-personnel li + li,
+.paie-retenues li + li {
+  border-top: 1px solid var(--line-100);
+}
+
+.paie-personnel__nom {
+  flex: 1 1 40%;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.paie-personnel__poste,
+.paie-personnel__sans,
+.paie-retenues__taux {
+  color: var(--ink-500);
+  font-size: 13px;
+}
+
+.paie-personnel__salaire,
+.paie-retenues__montant {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+/* ⚠️ Les sortis restent au fichier, atténués et jamais effacés : la CNPS peut
+   réclamer un état nominatif des années après un départ. Le contraste reste
+   au-dessus du seuil, un nom qu'on ne peut pas lire ne dit pas « sorti ». */
+.paie-personnel__sorti .paie-personnel__nom {
+  color: var(--ink-500);
+  font-weight: 500;
+}
+
+.paie-retenues__libelle {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.paie-retenues__reserve {
+  color: var(--warning);
+  font-size: 12px;
+  font-style: normal;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   L'ÉMISSION D'UNE PROFORMA, ET SON APERÇU RETOUCHABLE
+
+   La feuille ressemble au document que le client recevra : même en-tête, mêmes
+   rubriques numérotées, même cartouche de total. Le responsable corrige ce qu'il
+   reconnaît. Elle est bornée en largeur pour garder les proportions d'une page.
+   ───────────────────────────────────────────────────────────────────────────*/
+.emission {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 16px;
+}
+
+.emission__etiquette {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.emission__etiquette--court {
+  max-width: 220px;
+}
+
+.emission__champ {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+  background: var(--surface);
+}
+
+.emission__indice {
+  font: 400 12px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.emission__prix {
+  margin: 0;
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.emission__prix strong {
+  font-weight: 700;
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.emission__courriel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.emission__courriel[data-inactif] {
+  color: var(--ink-500);
+}
+
+.emission__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.emission__echec {
+  margin: 0;
+  flex: 1 1 320px;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--danger);
+}
+
+.feuille {
+  max-width: 820px;
+  padding: 0 0 18px;
+  border: 1px solid var(--line-200);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 12, 40, 0.06), 0 8px 24px rgba(20, 12, 40, 0.06);
+  color: #1c1626;
+}
+
+.feuille__entete {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 0 0 14px;
+}
+
+.feuille__logo {
+  flex: 0 0 auto;
+  width: 96px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.feuille__bandeau {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 16px;
+  background: #3b2a6b;
+  color: #fff;
+}
+
+.feuille__bandeau strong {
+  font: 700 17px/1.2 var(--police-texte);
+  letter-spacing: 0.01em;
+}
+
+.feuille__bandeau span {
+  font: 400 8.5px/1.3 var(--police-texte);
+  letter-spacing: 0.02em;
+}
+
+.feuille__titre {
+  margin: 16px 28px 0;
+  padding: 7px 10px;
+  background: #ede7f3;
+  text-align: center;
+  font: 700 13.5px/1.3 var(--police-texte);
+}
+
+.feuille__libelle {
+  margin: 10px 60px 0;
+  text-align: center;
+  font: 700 11px/1.45 var(--police-texte);
+}
+
+.feuille__pour {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 28px 4px;
+  font: 400 11.5px/1.4 var(--police-texte);
+  color: #555;
+}
+
+.feuille__rubrique {
+  margin: 14px 28px 0;
+}
+
+.feuille__rubrique h5 {
+  margin: 0 0 6px;
+  text-align: center;
+  font: 700 12px/1.4 var(--police-texte);
+}
+
+.feuille__ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px auto 26px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+/* Les champs se font oublier tant qu'on ne les touche pas : au repos la feuille
+   se lit comme le document, au survol elle dit qu'elle se corrige. */
+.feuille__ligne input {
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: inherit;
+}
+
+.feuille__ligne input:hover {
+  border-color: var(--line-200);
+}
+
+.feuille__ligne input:focus {
+  border-color: #8c2d86;
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(140, 45, 134, 0.16);
+}
+
+.feuille__ligne .feuille__montant {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.feuille__devise {
+  font: 400 12px/1.4 var(--police-texte);
+  color: #555;
+}
+
+.feuille__retirer {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-500);
+  font: 400 16px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.feuille__retirer:hover:not(:disabled) {
+  background: #fbe9ec;
+  color: var(--danger);
+}
+
+.feuille__retirer:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.feuille__pied-rubrique {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 4px 32px 0 0;
+}
+
+.feuille__pied-rubrique strong {
+  padding-top: 4px;
+  border-top: 1px solid #1c1626;
+  min-width: 150px;
+  text-align: right;
+  font: 700 12.5px/1.4 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+}
+
+.feuille__ajouter {
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: #8c2d86;
+  font: 500 12px/1.4 var(--police-texte);
+  cursor: pointer;
+}
+
+.feuille__ajouter:hover {
+  text-decoration: underline;
+}
+
+.feuille__total {
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 28px 0;
+  padding: 9px 14px;
+  border: 1.6px solid #1c1626;
+  font: 700 15px/1.3 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+}
+
+.feuille__suite {
+  margin: 12px 28px 0;
+  font: 400 11.5px/1.5 var(--police-texte);
+  color: #555;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LA CAISSE
+
+   Une file, pas un tableau : chaque ligne porte son geste, et la caissière ne
+   cherche pas une colonne. Le montant est ce qu'elle lit d'abord, donc ce qui
+   pèse le plus.
+   ───────────────────────────────────────────────────────────────────────────*/
+.caisse__chiffres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.caisse__chiffres > div {
+  padding: 14px 16px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  background: var(--surface);
+}
+
+.caisse__chiffres dt {
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.caisse__chiffres dd {
+  margin: 2px 0 0;
+  font: 600 22px/1.2 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.caisse__file {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caisse__ligne {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+  gap: 12px 24px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.caisse__ligne + .caisse__ligne {
+  border-top: 1px solid var(--line-100);
+}
+
+.caisse__identite {
+  display: grid;
+  gap: 2px;
+}
+
+.caisse__identite strong {
+  font: 600 14px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.caisse__identite span {
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.caisse__montant {
+  margin-top: 2px;
+  font: 700 17px/1.3 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.caisse__constat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: flex-end;
+}
+
+.caisse__etiquette {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 220px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.caisse__champ {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 9px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+  background: var(--surface);
+}
+
+.caisse__attestation {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex: 1 1 240px;
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.caisse__echec,
+.caisse__renvoi,
+.caisse__vide,
+.caisse__fait,
+.caisse__regle {
+  margin: 0;
+  font: 400 13px/1.5 var(--police-texte);
+}
+
+.caisse__echec {
+  flex-basis: 100%;
+  color: var(--danger);
+}
+
+.caisse__renvoi,
+.caisse__vide {
+  color: var(--ink-500);
+}
+
+.caisse__vide {
+  padding: 14px 16px;
+}
+
+.caisse__fait {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.caisse__regle {
+  color: var(--ink-700);
+}
+
+.caisse__pastille {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--success-100);
+  color: var(--success);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .caisse__ligne {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Ma création : l'espace de la cliente avant l'immatriculation (14 octobre 2026) ──
+   Pensé d'abord pour un téléphone : une colonne, des cibles de 44 px, la frise qui
+   défile horizontalement plutôt que de se tasser sous 360 px. */
+.creation {
+  padding: var(--espace-4) var(--espace-3);
+  background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-lg, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-3);
+}
+
+.creation__surtitre {
+  margin: 0;
+  font: 600 11px/1.4 var(--police-texte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-magenta-600);
+}
+
+.creation__titre {
+  margin: 0;
+  font: 600 22px/1.25 var(--police-titre);
+  color: var(--ink-900);
+  overflow-wrap: anywhere;
+}
+
+.creation__invisible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.jalons {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(64px, 1fr));
+  overflow-x: auto;
+  counter-reset: none;
+}
+
+.jalons__etape {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+/* Le trait qui relie une étape à la suivante. */
+.jalons__etape + .jalons__etape::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--line-200);
+  z-index: 0;
+}
+
+.jalons__etape[data-etat="faite"] + .jalons__etape::before,
+.jalons__etape[data-etat="faite"] + .jalons__etape[data-etat="en-cours"]::before {
+  background: var(--brand-indigo-700);
+}
+
+.jalons__pastille {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 600 13px/1 var(--police-texte);
+  background: var(--surface);
+  border: 2px solid var(--line-200);
+  color: var(--ink-500);
+}
+
+.jalons__etape[data-etat="faite"] .jalons__pastille {
+  background: var(--brand-indigo-700);
+  border-color: var(--brand-indigo-700);
+  color: #fff;
+}
+
+.jalons__etape[data-etat="en-cours"] .jalons__pastille {
+  border-color: var(--brand-magenta-600);
+  color: var(--brand-magenta-600);
+  box-shadow: 0 0 0 4px var(--brand-magenta-100);
+}
+
+.jalons__nom {
+  font: 500 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.jalons__etape[data-etat="en-cours"] .jalons__nom {
+  color: var(--ink-900);
+  font-weight: 600;
+}
+
+.creation__encart {
+  margin: 0;
+  padding: var(--espace-3);
+  border-radius: var(--rayon);
+  background: var(--brand-indigo-100);
+  color: var(--ink-900);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font: 400 14px/1.55 var(--police-texte);
+}
+
+.creation__encart p {
+  margin: 0;
+}
+
+.creation__etiquette {
+  display: block;
+  font: 600 10.5px/1.4 var(--police-texte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brand-indigo-700);
+}
+
+.creation__bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.creation__intertitre {
+  margin: 0;
+  font: 600 15px/1.3 var(--police-titre);
+  color: var(--ink-900);
+}
+
+.creation__numeros {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.creation__numeros dt {
+  font: 500 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.creation__numeros dd {
+  margin: 0;
+  font: 600 14px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.creation__progression {
+  margin: 0;
+  font: 400 13.5px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.creation__jauge {
+  width: 100%;
+  height: 8px;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--line-100);
+}
+
+.creation__jauge::-webkit-progress-bar {
+  background: var(--line-100);
+}
+
+.creation__jauge::-webkit-progress-value {
+  background: var(--brand-indigo-700);
+  border-radius: 999px;
+}
+
+.creation__jauge::-moz-progress-bar {
+  background: var(--brand-indigo-700);
+  border-radius: 999px;
+}
+
+.creation__pieces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.creation__piece {
+  padding: 12px 0;
+  border-top: 1px solid var(--line-100);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font: 400 14px/1.45 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.creation__piece[data-recue="oui"] {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-700);
+}
+
+.creation__facultatif {
+  color: var(--ink-500);
+}
+
+.creation__depot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.creation__fichier input {
+  max-width: 100%;
+  font: 400 13px/1.3 var(--police-texte);
+}
+
+.creation__envoyer {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--rayon);
+  background: var(--brand-indigo-700);
+  color: #fff;
+  font: 600 13.5px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.creation__envoyer:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.creation__recu {
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--success);
+}
+
+.creation__echec {
+  flex-basis: 100%;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+.creation__recus summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font: 500 13.5px/1.3 var(--police-texte);
+  color: var(--brand-indigo-700);
+}
+
+.creation__note {
+  margin: 0;
+  font: 400 12.5px/1.55 var(--police-texte);
+  color: var(--ink-500);
+}
+
+/* ── Le document d'une pièce de création : aperçu et téléchargement (14 octobre 2026) ── */
+.document-piece {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-basis: 100%;
+}
+
+.document-piece__gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.document-piece__echec {
+  font: 500 12px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+.document-piece__apercu {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  background: var(--surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.document-piece__pdf {
+  width: 100%;
+  height: min(70vh, 640px);
+  border: 0;
+  background: var(--surface);
+}
+
+.document-piece__image {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* ── Honoraires des adhérents (14 octobre 2026) ───────────────────────────── */
+.honoraires__resume {
+  padding: var(--espace-3);
+  border-radius: var(--rayon-lg, 12px);
+  background: var(--brand-indigo-100);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.honoraires__contrat {
+  margin: 0;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.honoraires__du {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.honoraires__du strong {
+  font: 700 26px/1.1 var(--police-titre);
+  color: var(--brand-indigo-900);
+}
+
+.honoraires__retard {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.honoraires__a-jour {
+  margin: 0;
+  font: 400 14px/1.5 var(--police-texte);
+  color: var(--success);
+}
+
+.honoraires__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.honoraires__ligne {
+  padding: 12px 0;
+  border-top: 1px solid var(--line-100);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.honoraires__periode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font: 400 14px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.honoraires__montant {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.honoraires__etat,
+.caisse__etat {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 600 11px/1.6 var(--police-texte);
+  background: var(--line-100);
+  color: var(--ink-700);
+}
+
+.honoraires__etat[data-etat="REGLEE"] {
+  background: var(--success-100);
+  color: var(--success);
+}
+
+.honoraires__etat[data-etat="EN_RETARD"],
+.caisse__etat[data-etat="EN_RETARD"] {
+  background: var(--danger-100);
+  color: var(--danger);
+}
+
+.honoraires__etat[data-etat="A_REGLER"],
+.caisse__etat[data-etat="A_REGLER"] {
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+}
+
+.honoraires__exigible,
+.honoraires__regle,
+.honoraires__reference {
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.honoraires__regle {
+  color: var(--success);
+}
+
+.honoraires__payer {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--rayon);
+  background: var(--brand-magenta-600);
+  color: #fff;
+  font: 600 14px/1 var(--police-texte);
+  cursor: pointer;
+}
+
+.honoraires__payer:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.honoraires__formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.honoraires__etiquette {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.honoraires__champ {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  font: 400 15px/1.3 var(--police-texte);
+}
+
+.honoraires__attente {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--rayon);
+  background: var(--surface-alt);
+  font: 500 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.honoraires__echec {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+.contrat-honoraires {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.contrat-honoraires label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.contrat-honoraires input,
+.contrat-honoraires select {
+  padding: 5px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.contrat-honoraires__retour {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--success);
+}
+
+.contrat-honoraires__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.adherent__refus {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.juger-quittance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.juger-quittance__motif {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 280px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.juger-quittance__motif input {
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.juger-quittance__echec {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--danger);
 }

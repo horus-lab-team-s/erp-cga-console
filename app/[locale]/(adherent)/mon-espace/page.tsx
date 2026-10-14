@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { ListeDesNotifications } from "@/app/components/coquille/ListeDesNotifications";
 import { lireMesNotifications } from "@/app/lib/notifications";
 
@@ -31,7 +32,7 @@ import { ChoisirMonEntreprise } from "@/app/components/adherent/ChoisirMonEntrep
 import { initiales } from "@/app/lib/acces";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
   title: "Mon espace · CGA Broad Range Consulting Group",
@@ -91,6 +92,12 @@ export default async function MonEspace() {
   // L'espace adhérent n'est pas un écran de travail : le refus s'écrit donc
   // dans sa propre langue, sans la coquille collaborateur.
   // ─────────────────────────────────────────────────────────────────────────
+  // ⚠️ La cliente d'une création n'a pas encore d'entreprise au portefeuille : sa page
+  // est sa création (14 octobre 2026). Lui dire « accès réservé » ici, à elle qui vient
+  // de payer, ferait chercher une panne là où il n'y a qu'une autre porte.
+  if (!detient(acces, "LIRE_DOSSIER") && detient(acces, "SUIVRE_MA_CREATION")) {
+    redirect({ href: "/ma-creation", locale: await getLocale() });
+  }
   if (!detient(acces, "LIRE_DOSSIER")) {
     return (
       <main className="adherent">

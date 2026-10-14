@@ -252,6 +252,15 @@ export const NAVIGATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 14 octobre 2026. Rangée après les demandes et avant la formalité : c'est
+    // l'ordre du parcours, le client accepte, il paie, son dossier s'ouvre.
+    libelle: "Caisse",
+    href: "/caisse",
+    icone: "souscriptions",
+    permission: "ENCAISSER",
+    construit: true,
+  },
+  {
     libelle: "Création d\u2019entreprise",
     href: "/creation-entreprise",
     icone: "creation",

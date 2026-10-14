@@ -28,7 +28,10 @@ export type Role =
   | "CHARGE_FORMALITES"
   | "DIRECTION"
   | "ADMINISTRATEUR"
+  | "CAISSE"
   | "ADHERENT"
+  // La cliente qui a payé la création de sa société, avant qu'elle existe (14 octobre 2026).
+  | "CLIENT_CREATION"
   | "INSPECTEUR";
 
 export type Permission =
@@ -68,8 +71,19 @@ export type Permission =
   | "REPONDRE_AU_CABINET"
   | "SIGNALER_UN_CHANGEMENT"
   | "REGLER_SES_RAPPELS"
+  // Tenir la paie de SA PROPRE entreprise : le libre service. Elle n'ouvre que
+  // la paie, et jamais les livres du dossier.
+  | "TENIR_SA_PAIE"
+  // Suivre la création de SA société et y déposer ses pièces : la cliente, depuis son compte.
+  | "SUIVRE_MA_CREATION"
+  // 14 octobre 2026 : régler ses honoraires depuis son espace (l'adhérent).
+  | "REGLER_SES_HONORAIRES"
+  // 14 octobre 2026 : vérifier la quittance d'un adhérent (comptable, réviseur).
+  | "VERIFIER_UN_REGLEMENT"
   | "SUIVRE_FORMALITE"
   | "GERER_COMPTES"
+  // Constater un règlement : la responsable de caisse, et l'administrateur.
+  | "ENCAISSER"
   | "AFFECTER_DOSSIER"
   | "EDITER_VITRINE"
   // Arrêter le prix d'une prestation du catalogue : direction seule. Le prix est une
@@ -140,7 +154,9 @@ export const LIBELLES_ROLE: Record<Role, string> = {
   CHARGE_FORMALITES: "Chargé de formalités",
   DIRECTION: "Direction",
   ADMINISTRATEUR: "Administrateur",
+  CAISSE: "Responsable de caisse",
   ADHERENT: "Adhérent",
+  CLIENT_CREATION: "Client en création",
   INSPECTEUR: "Inspecteur assistant",
 };
 

@@ -107,6 +107,8 @@ export type Question = {
   valeurs: string[] | null;
   unite: string | null;
   aide: string;
+  /** Le nom lisible de chaque valeur d'une liste, quand le référentiel le donne. */
+  libelles_valeurs?: Record<string, string>;
 };
 
 export type Questionnaire = { service: string; version: string; questions: Question[] };
@@ -150,6 +152,11 @@ export type FicheDossier = {
     message: string | null;
     canal_prefere: string;
     deposee_le: string;
+    /**
+     * Ce que le client a répondu lui-même sur le site, par code de question, tel
+     * qu'il l'a écrit. Ces réponses ont ouvert la qualification déjà remplie.
+     */
+    declarations?: Record<string, string>;
     /**
      * L'accord d'être contacté sur WhatsApp. ⚠️ Lire `accorde` ET `revoque_le` :
      * un accord révoqué n'autorise plus rien (voir `vautMaintenant`).
@@ -342,7 +349,31 @@ export type OuvertureDeLEspace = {
   etapes_substituees: string[];
   slug: string | null;
   dernier_echec: string | null;
+  /**
+   * ⚠️ Cette vente n'ouvre pas d'espace de plateforme, et n'en ouvrira jamais : une
+   * création d'entreprise ouvre un dossier de formalité, pas un locataire. Sans ce
+   * champ, `demarree: false` se lisait « pas encore ».
+   */
+  sans_objet?: boolean;
 };
+
+/** Une ligne de la caisse : un règlement à constater, ou déjà constaté. */
+export type ReglementDeCaisse = {
+  dossier: string;
+  client: string;
+  telephone: string;
+  service: string;
+  proforma: string;
+  montant: string;
+  etat: "A_ENCAISSER" | "ENCAISSE";
+  payee_le: string | null;
+  /** Vrai seulement pour l'offre qui ouvre un espace : une adresse est alors due. */
+  ouvre_un_espace: boolean;
+};
+
+export function lireLaCaisse() {
+  return appeler<ReglementDeCaisse[]>("/acquisition/caisse", authentifie);
+}
 
 export function lireOuvertureDeLEspace(reference: string) {
   return appeler<OuvertureDeLEspace>(

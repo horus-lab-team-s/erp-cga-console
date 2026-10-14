@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { EnvoyerLaPreuve } from "@/app/components/adherent/EnvoyerLaPreuve";
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
+import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
 import {
   cleDEcheance,
@@ -94,6 +96,8 @@ function situation(e: EcheanceDeLAdherent): string {
       return e.jours === 0 ? "À régler aujourd'hui" : `À régler dans ${e.jours} jour${e.jours > 1 ? "s" : ""}`;
     case "PREUVE_ENVOYEE":
       return `Preuve envoyée le ${dateCourte(e.preuve!.envoyee_le)} : le cabinet la vérifie`;
+    case "PAYEE":
+      return `Payée : quittance vérifiée par le cabinet${e.preuve?.verifiee_le ? ` le ${dateCourte(e.preuve.verifiee_le)}` : ""}`;
     case "DEPOSEE":
       return `Déposée le ${dateCourte(e.declaree_le!)}`;
   }
@@ -121,6 +125,9 @@ function ListeDesEcheances({ vue }: { vue: VueDesEcheances }) {
               <span className="adherent__echeance-etat" data-etat={e.etat}>
                 {situation(e)}
               </span>
+              {e.preuve?.verdict === "REFUSEE" && (
+                <span className="adherent__refus">Quittance refusée : {e.preuve.motif}</span>
+              )}
               {e.autres_periodes_en_retard > 0 && (
                 <span>
                   et {e.autres_periodes_en_retard} autre{e.autres_periodes_en_retard > 1 ? "s" : ""} période
@@ -151,9 +158,9 @@ function FicheDEcheance({
   const aRegler = e.etat === "EN_RETARD" || e.etat === "A_VENIR";
   return (
     <>
-      <section className="adherent__bandeau" data-etat={e.etat === "EN_RETARD" ? "A_ENVOYER" : e.etat === "DEPOSEE" ? "COMPLET" : "EN_VERIFICATION"}>
+      <section className="adherent__bandeau" data-etat={e.etat === "EN_RETARD" ? "A_ENVOYER" : e.etat === "DEPOSEE" || e.etat === "PAYEE" ? "COMPLET" : "EN_VERIFICATION"}>
         <span className="adherent__bandeau-glyphe" aria-hidden="true">
-          {e.etat === "EN_RETARD" ? "!" : e.etat === "DEPOSEE" ? "✓" : "…"}
+          {e.etat === "EN_RETARD" ? "!" : e.etat === "DEPOSEE" || e.etat === "PAYEE" ? "✓" : "…"}
         </span>
         <div>
           <h2 className="adherent__bandeau-titre">{situation(e)}</h2>
@@ -168,6 +175,15 @@ function FicheDEcheance({
           </p>
         </div>
       </section>
+
+      {/* ⚠️ 14 octobre 2026 : le motif du refus, en tête. Sans lui, l'adhérent renverrait la même
+          quittance, ou croirait l'affaire réglée. */}
+      {e.preuve?.verdict === "REFUSEE" && (
+        <p className="adherent__consigne" role="alert">
+          Le cabinet a refusé la quittance envoyée le {dateCourte(e.preuve.envoyee_le)} : {e.preuve.motif} Envoyez
+          la bonne ci-dessous.
+        </p>
+      )}
 
       {e.autres_periodes_en_retard > 0 && (
         <p className="adherent__consigne">
@@ -211,10 +227,20 @@ function FicheDEcheance({
               <dt className="adherent__fait-libelle">Preuve envoyée</dt>
               <dd className="adherent__fait-valeur">
                 le {dateCourte(e.preuve.envoyee_le)} (pièce {e.preuve.piece})
+                {e.preuve.verdict === "VALIDEE" && " · vérifiée par le cabinet"}
+                {e.preuve.verdict === "REFUSEE" && " · refusée par le cabinet"}
               </dd>
             </>
           )}
         </dl>
+        {/* Ce qu'il a envoyé, relu sans quitter la page (« prévisualisation des documents chargés »). */}
+        {e.preuve && (
+          <DocumentDeLaPiece
+            champs={{ identifiant: e.preuve.piece }}
+            libelle="la quittance envoyée"
+            lire={lireLeDocumentDUnePiece}
+          />
+        )}
       </section>
 
       {aRegler && (

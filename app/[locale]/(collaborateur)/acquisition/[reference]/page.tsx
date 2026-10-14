@@ -55,7 +55,15 @@ export default async function FicheDossierCommercial({
   // ⚠️ Lue seulement quand le dossier est payé : avant l'encaissement, la saga
   // n'existe pas, et interroger pour rien coûte un aller-retour sur chaque
   // fiche commerciale ouverte.
-  const ouverture = fiche.etat === "PAYEE" ? await lireOuvertureDeLEspace(reference) : null;
+  // ⚠️ Lue dès l'acceptation, et plus seulement après le paiement : c'est elle qui
+  // dit si la vente ouvre un espace, donc s'il y a une adresse à demander au
+  // moment du règlement. La règle vit au serveur ; la recopier ici en ferait une
+  // seconde, qui divergerait le jour où une offre s'ajoute.
+  const ouverture =
+    fiche.etat === "PAYEE" || fiche.etat === "ACCEPTEE"
+      ? await lireOuvertureDeLEspace(reference).catch(() => null)
+      : null;
+  const ouvreUnEspace = !ouverture?.sans_objet;
   // ⚠️ LE DOSSIER DE FORMALITÉ, depuis le 27 septembre : une création payée en
   // ouvre un toute seule, et le collaborateur n'avait aucun chemin vers lui.
   //
@@ -89,6 +97,10 @@ export default async function FicheDossierCommercial({
   const termine = ["ACCEPTEE", "PAYEE", "SANS_SUITE"].includes(fiche.etat);
   const d = fiche.demande;
   const acceptee = fiche.proformas.find((p) => p.etat === "ACCEPTEE") ?? null;
+  // Les réponses que le client a données sur le site ET qui sont à la qualification.
+  const declarees = Object.keys(fiche.demande.declarations ?? {}).filter(
+    (code) => qualification?.faits?.[code] !== undefined,
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // ⚠️ LE LIEN DE LA PROFORMA, RELU POUR POUVOIR LE RENVOYER.
@@ -181,7 +193,11 @@ export default async function FicheDossierCommercial({
           titre="Qualification"
           aide={
             questionnaire && qualification
-              ? `${qualification.avancement.repondues} réponse(s) sur ${qualification.avancement.total} · questionnaire ${questionnaire.service}, version ${questionnaire.version}`
+              ? `${qualification.avancement.repondues} réponse(s) sur ${qualification.avancement.total}${
+                  declarees.length > 0
+                    ? `, dont ${declarees.length} données par le client sur le site : confirmez-les avec lui, ne les redemandez pas`
+                    : ""
+                } · questionnaire ${questionnaire.service}, version ${questionnaire.version}`
               : "Aucun questionnaire au référentiel pour ce service."
           }
         >
@@ -190,6 +206,7 @@ export default async function FicheDossierCommercial({
               reference={reference}
               questions={questionnaire.questions}
               faits={qualification.faits ?? {}}
+              declarees={declarees}
               manquantes={qualification.manquantes}
               modifiable={peutQualifier && !termine}
             />
@@ -246,10 +263,10 @@ export default async function FicheDossierCommercial({
           >
             <EmissionProforma
               reference={reference}
-              referenceProposee={null}
               dejaEmise={fiche.etat === "PROFORMA_EMISE"}
               lienRelu={lienRelu}
               compositions={compositions}
+              formeJuridique={qualification?.faits?.forme_juridique ?? null}
               client={{
                 nom: d.nom,
                 telephone: d.telephone,
@@ -262,27 +279,35 @@ export default async function FicheDossierCommercial({
         {fiche.etat === "ACCEPTEE" && acceptee && (
           <Panneau
             titre="Règlement"
-            aide="Le client a accepté. Le règlement ouvre son espace, à l'adresse retenue."
+            aide={
+              ouvreUnEspace
+                ? "Le client a accepté. Le règlement ouvre son espace, à l'adresse retenue."
+                : "Le client a accepté. Le règlement ouvre son dossier : cette prestation n'ouvre pas d'espace de plateforme."
+            }
           >
-            {detient(acces, "GERER_COMPTES") ? (
+            {detient(acces, "ENCAISSER") ? (
               <Reglement
                 numero={acceptee.numero}
                 montant={acceptee.montant}
                 telephone={d.telephone}
                 slugRetenu={fiche.slug_retenu}
+                ouvreUnEspace={ouvreUnEspace}
               />
             ) : (
               <p style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
-                Proposition {acceptee.numero} acceptée. Le règlement se confirme par l&rsquo;administration du cabinet.
+                Proposition {acceptee.numero} acceptée. Le règlement se constate à la caisse du cabinet.
               </p>
             )}
           </Panneau>
         )}
         {fiche.etat === "PAYEE" && (
-          <Panneau titre="Règlement" aide="Encaissé. L'état réel de l'espace est dit ci-dessous.">
+          <Panneau
+            titre="Règlement"
+            aide={ouvreUnEspace ? "Encaissé. L'état réel de l'espace est dit ci-dessous." : "Encaissé. Ce que le règlement a ouvert est dit ci-dessous."}
+          >
             <p style={{ margin: 0, padding: "12px 16px 4px", font: "400 13px/1.5 var(--police-texte)" }}>
               Payé{fiche.payee_le ? ` le ${dateCourte(fiche.payee_le.slice(0, 10))}` : ""}
-              {fiche.slug_retenu ? ` · espace « ${fiche.slug_retenu} »` : ""}.
+              {ouvreUnEspace && fiche.slug_retenu ? ` · espace « ${fiche.slug_retenu} »` : ""}.
             </p>
             <EtatDeLOuverture ouverture={ouverture} />
             {fiche.demande.service_souhaite === "CREATION" && (
@@ -484,6 +509,19 @@ function EtatDeLOuverture({ ouverture }: { ouverture: OuvertureDeLEspace | null 
     borderRadius: "var(--rayon-petit)",
     font: "400 12.5px/1.6 var(--police-texte)",
   };
+
+  // ⚠️ AVANT le sablier, et c'est tout le défaut du 13 octobre 2026 : pour une
+  // création d'entreprise, aucune ouverture ne démarrera jamais, et l'écran
+  // demandait au collaborateur de « revenir sur cette fiche pour en voir l'issue ».
+  // Il n'y a pas d'issue à attendre : il y a un dossier de formalité, déjà ouvert.
+  if (ouverture?.sans_objet) {
+    return (
+      <p style={{ ...base, background: "var(--surface-alt)", color: "var(--ink-700)" }}>
+        Cette prestation n&rsquo;ouvre pas d&rsquo;espace de plateforme : le dossier du client vit
+        au cabinet. Le client suit son avancement par son lien personnel, sans mot de passe.
+      </p>
+    );
+  }
 
   if (!ouverture || !ouverture.demarree) {
     return (

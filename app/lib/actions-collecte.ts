@@ -24,6 +24,7 @@ import { revalidatePath } from "next/cache";
 
 import { appeler, ErreurApi, telecharger } from "./api";
 import { lirePieces, type DemandePiece } from "./collecte";
+import type { EtatDocumentDeCreation } from "./document-de-creation";
 import type { EtatActe } from "./saisie";
 
 const CHEMINS = ["/[locale]/pieces/[reference]", "/[locale]/pieces/attendues"] as const;
@@ -527,6 +528,24 @@ export async function envoyerUnePreuveDePaiement(_precedent: EtatActe, donnees: 
     });
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Le document d'une pièce, pour l'aperçu (14 octobre 2026) : la quittance que le cabinet vérifie,
+ * le justificatif que l'adhérent relit. Même route que le téléchargement, même garde de portée.
+ */
+export async function lireLeDocumentDUnePiece(
+  _precedent: EtatDocumentDeCreation,
+  donnees: FormData,
+): Promise<EtatDocumentDeCreation> {
+  const identifiant = String(donnees.get("identifiant") ?? "");
+  try {
+    const f = await telecharger(`/collecte/pieces/${encodeURIComponent(identifiant)}/fichier`);
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
     throw erreur;
   }
 }

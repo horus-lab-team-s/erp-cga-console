@@ -36,7 +36,7 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 
 import { appeler, ErreurApi, TEMOIN_SESSION } from "./api";
-import type { Acces } from "./acces";
+import { detient, type Acces } from "./acces";
 
 /** Douze heures — la durée de session du backend. Voir `DUREE_SESSION`. */
 const DUREE_TEMOIN = 12 * 60 * 60;
@@ -118,7 +118,22 @@ export async function connexion(
   // page de connexion n'offre aucun choix d'espace, parce qu'il n'y a rien à
   // choisir. Un adhérent qui atterrirait sur l'espace de travail y verrait des
   // écrans dont aucune donnée ne le concerne.
-  redirect({ href: acces.interne ? "/tableau-de-bord" : "/mon-espace", locale: langue });
+  // ⚠️ La responsable de caisse arrive sur sa caisse (14 octobre 2026). Son rôle ne
+  // porte que la permission d'encaisser : le tableau de bord, qui lit les dossiers,
+  // lui afficherait un écran réservé à sa première seconde dans le produit.
+  const seulementLaCaisse = acces.permissions.length === 1 && acces.permissions[0] === "ENCAISSER";
+  // ⚠️ La cliente d'une création arrive sur SA création (14 octobre 2026). Elle n'a pas encore
+  // d'entreprise au portefeuille : l'espace adhérent lui afficherait « aucune entreprise ». Le
+  // jour où sa société est immatriculée, son compte reçoit `LIRE_DOSSIER` et elle arrive chez elle.
+  const seulementSaCreation = !detient(acces, "LIRE_DOSSIER") && detient(acces, "SUIVRE_MA_CREATION");
+  const accueil = !acces.interne
+    ? seulementSaCreation
+      ? "/ma-creation"
+      : "/mon-espace"
+    : seulementLaCaisse
+      ? "/caisse"
+      : "/tableau-de-bord";
+  redirect({ href: accueil, locale: langue });
 
   // `redirect` interrompt l'exécution en levant : la ligne suivante n'est jamais
   // atteinte. Elle est là parce que le vérificateur de types l'ignore, et non

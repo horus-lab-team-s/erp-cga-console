@@ -285,6 +285,36 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
   // celle du résumé, comme pour toutes les proformas émises avant.
   const composition = String(donnees.get("composition") ?? "").trim();
   const vide = { proforma: null, lien: null };
+  // ⚠️ LE DÉTAIL RETOUCHÉ DANS L'APERÇU (14 octobre 2026). Il n'est envoyé qu'avec
+  // un document : c'est lui qu'il ajuste. Le serveur vérifie que le montant en est
+  // le total, et refuse une rubrique vide ; ce filtre-ci écarte seulement ce qui
+  // n'a pas la forme attendue, pour rendre une phrase plutôt qu'une trace.
+  let rubriques: { numero: string; intitule: string; lignes: { libelle: string; montant: string }[] }[] | null = null;
+  const brutes = String(donnees.get("rubriques") ?? "").trim();
+  if (composition && brutes) {
+    try {
+      const lues: unknown = JSON.parse(brutes);
+      if (!Array.isArray(lues)) throw new Error("forme");
+      rubriques = lues.map((r) => ({
+        numero: String(r.numero ?? ""),
+        intitule: String(r.intitule ?? ""),
+        lignes: (Array.isArray(r.lignes) ? r.lignes : []).map((l: { libelle?: unknown; montant?: unknown }) => ({
+          libelle: String(l.libelle ?? "").trim(),
+          montant: String(l.montant ?? "").replace(/\s/g, ""),
+        })),
+      }));
+    } catch {
+      return { echec: "Le détail de la proforma n'a pas pu être lu. Rechargez la page et recommencez.", ...vide };
+    }
+    for (const rubrique of rubriques) {
+      for (const ligne of rubrique.lignes) {
+        if (!ligne.libelle) return { echec: `Rubrique ${rubrique.numero} : une ligne n'a pas de désignation.`, ...vide };
+        if (!/^[1-9]\d*$/.test(ligne.montant)) {
+          return { echec: `Rubrique ${rubrique.numero}, « ${ligne.libelle} » : le montant s'écrit en francs, sans décimales.`, ...vide };
+        }
+      }
+    }
+  }
   if (!/^\d+$/.test(montant)) return { echec: "Le montant arrêté s'écrit en francs, sans décimales.", ...vide };
   if (!/^\d+$/.test(score)) return { echec: "Le score de charge est un entier positif.", ...vide };
   try {
@@ -299,6 +329,7 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
           score_charge: Number(score),
           envoyer_par_courriel: parCourriel,
           composition: composition || null,
+          ...(rubriques ? { rubriques } : {}),
         },
       },
     );
@@ -442,11 +473,15 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
   const numero = String(donnees.get("numero") ?? "").trim();
   const slug = String(donnees.get("slug") ?? "").trim().toLowerCase();
   const telephone = String(donnees.get("telephone") ?? "").trim();
-  if (!numero || slug.length < 3) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  // ⚠️ Une prestation n'ouvre pas d'espace : le formulaire ne demande alors aucune
+  // adresse, et le dit par `sans_espace`. Le serveur reste juge : il refuserait une
+  // vente de plateforme envoyée sans adresse.
+  const sansEspace = donnees.get("sans_espace") === "oui";
+  if (!numero || (!sansEspace && slug.length < 3)) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
   try {
     const r = await appeler<{ accepte: boolean; message: string; telephone: string; montant: string }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/reglement`,
-      { methode: "POST", authentifie: true, corps: { slug, telephone } },
+      { methode: "POST", authentifie: true, corps: sansEspace ? { telephone } : { slug, telephone } },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
     return r.accepte
@@ -468,21 +503,30 @@ export async function confirmerLEncaissement(_precedent: EtatActe, donnees: Form
   const numero = String(donnees.get("numero") ?? "").trim();
   const slug = String(donnees.get("slug") ?? "").trim().toLowerCase();
   const reference = String(donnees.get("reference_externe") ?? "").trim();
-  if (!numero || slug.length < 3) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  const sansEspace = donnees.get("sans_espace") === "oui";
+  if (!numero || (!sansEspace && slug.length < 3)) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
   if (donnees.get("rapproche") !== "oui") {
-    return { echec: "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir l'espace.", fait: null };
+    return {
+      echec: sansEspace
+        ? "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir le dossier."
+        : "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir l'espace.",
+      fait: null,
+    };
   }
   try {
     const r = await appeler<{ etat: string; tenant: string | null; rejeu: boolean }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/encaissement`,
-      { methode: "POST", authentifie: true, corps: { slug, reference_externe: reference } },
+      { methode: "POST", authentifie: true, corps: sansEspace ? { reference_externe: reference } : { slug, reference_externe: reference } },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
+    revalidatePath("/[locale]/caisse", "page");
     return {
       echec: null,
       fait: r.rejeu
         ? "Ce règlement était déjà confirmé : aucun second espace n'est ouvert."
-        : `Règlement confirmé. L'espace « ${slug} » s'ouvre.`,
+        : sansEspace
+          ? "Règlement confirmé. Le dossier du client est ouvert ; cette prestation n'ouvre pas d'espace de plateforme."
+          : `Règlement confirmé. L'espace « ${slug} » s'ouvre.`,
     };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };

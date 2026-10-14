@@ -143,7 +143,8 @@ export function deMois(nom: string): string {
 
 // ── Mes échéances (pas 113, vue D) ────────────────────────────────────────────
 
-export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "A_VENIR" | "DEPOSEE";
+// PAYEE (14 octobre 2026) : la quittance est vérifiée par le cabinet.
+export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "PAYEE" | "A_VENIR" | "DEPOSEE";
 
 export type EcheanceDeLAdherent = {
   code_obligation: string;
@@ -163,7 +164,17 @@ export type EcheanceDeLAdherent = {
   en_cas_de_retard: string | null;
   precedente: { periode: string; declaree_le: string | null; montant_constate: string | null } | null;
   prochaine_echeance: string | null;
-  preuve: { code_obligation: string; periode_debut: string; piece: string; envoyee_le: string; par: string } | null;
+  preuve: {
+    code_obligation: string;
+    periode_debut: string;
+    piece: string;
+    envoyee_le: string;
+    par: string;
+    /** 14 octobre 2026 : le verdict du cabinet. Refusée, l'échéance redevient à régler. */
+    verdict?: "VALIDEE" | "REFUSEE" | null;
+    motif?: string | null;
+    verifiee_le?: string | null;
+  } | null;
   autres_periodes_en_retard: number;
   effectif_a_confirmer: boolean;
 };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AccesDesAdherents } from "@/app/components/portefeuille/AccesDesAdherents";
+import { FixerLeContrat } from "@/app/components/portefeuille/ContratDHonoraires";
 import { notFound } from "next/navigation";
 
 import { Cellule, EnteteTableau, EtatErreur, EtatVide, LigneTableau, Panneau, type Colonne } from "@/app/components/Tableau";
@@ -17,6 +18,8 @@ import {
   type FicheEntreprise,
 } from "@/app/lib/fiche-dossier";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { lireLesHonoraires } from "@/app/lib/honoraires";
+import { LIBELLES_PERIODICITE } from "@/app/lib/honoraires-etats";
 import { LIBELLES_NIVEAU, lireDecisionsDuDossier, type DecisionLue } from "@/app/lib/pilotage";
 import { aujourdhui, lireLesAccesAdherents } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -127,6 +130,8 @@ export default async function FicheDuDossier({
     acces.interne ? lirePanneau(() => lireDecisionsDuDossier(niu)) : null,
   ]);
   const acces_adherents = detient(acces, "RELANCER_ADHERENT") ? await lirePanneau(() => lireLesAccesAdherents(niu)) : null;
+  // 14 octobre 2026 : le contrat d'honoraires et ce qui reste dû.
+  const honoraires = acces.interne ? await lirePanneau(() => lireLesHonoraires(niu)) : null;
   const siennes = "valeur" in anomalies ? anomalies.valeur.filter((a) => a.niu_entreprise === niu) : [];
 
   return (
@@ -270,6 +275,39 @@ export default async function FicheDuDossier({
             ) : (
               <AccesDesAdherents dossier={niu} acces={acces_adherents.valeur} />
             )}
+          </Panneau>
+        )}
+
+        {honoraires && (
+          <Panneau
+            titre="Honoraires"
+            aide="Ce que l'adhérent doit au cabinet. Il le lit et le règle dans son espace ; la caisse constate les règlements au guichet."
+          >
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {"echec" in honoraires ? (
+                <EtatErreur titre="Les honoraires ne se lisent pas" detail={honoraires.echec} />
+              ) : honoraires.valeur.contrat ? (
+                <p style={{ margin: 0, font: "400 13px/1.5 var(--police-texte)" }}>
+                  {montantFcfa(honoraires.valeur.contrat.montant)} {LIBELLES_PERIODICITE[honoraires.valeur.contrat.periodicite]}, depuis le{" "}
+                  {dateCourte(honoraires.valeur.contrat.debut)} ·{" "}
+                  {Number(honoraires.valeur.du) > 0 ? (
+                    <strong style={{ color: honoraires.valeur.en_retard ? "var(--danger)" : undefined }}>
+                      {montantFcfa(honoraires.valeur.du)} à régler
+                      {honoraires.valeur.en_retard ? `, dont ${honoraires.valeur.en_retard} période(s) en retard` : ""}
+                    </strong>
+                  ) : (
+                    <span style={{ color: "var(--success)" }}>à jour</span>
+                  )}
+                </p>
+              ) : (
+                <p style={{ margin: 0, font: "400 13px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
+                  Aucun contrat d&rsquo;honoraires : l&rsquo;adhérent ne voit rien à régler dans son espace.
+                </p>
+              )}
+              {detient(acces, "FIXER_LES_TARIFS") && !("echec" in honoraires) && (
+                <FixerLeContrat niu={niu} actuel={honoraires.valeur.contrat} />
+              )}
+            </div>
           </Panneau>
         )}
 

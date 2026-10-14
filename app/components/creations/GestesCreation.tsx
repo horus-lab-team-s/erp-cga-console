@@ -141,10 +141,13 @@ export function RecevoirPiece({
   reference,
   code,
   libelle,
+  remplacer = false,
 }: {
   reference: string;
   code: string;
   libelle: string;
+  /** La pièce est déjà reçue : le geste remplace son document (« le cabinet vous dira si l'un d'eux doit être repris »). */
+  remplacer?: boolean;
 }) {
   const [etat, recevoir, enCours] = useActionState(recevoirUnePiece, ETAT_ACTE_INITIAL);
   const [avecFichier, setAvecFichier] = useState(false);
@@ -165,8 +168,19 @@ export function RecevoirPiece({
           style={{ font: "400 12px/1.4 var(--police-texte)", maxWidth: 190 }}
         />
       </label>
+      {/* ⚠️ D'où vient la pièce (14 octobre 2026) : six mois plus tard, devant un document
+          illisible, on sait s'il faut le redemander à la cliente ou le chercher dans une
+          conversation. Les deux canaux de la cliente ne se déclarent pas à sa place. */}
+      <label style={{ display: "inline-flex", alignItems: "center", gap: 4, font: "400 12px/1.4 var(--police-texte)" }}>
+        <span className="visuellement-cache">Reçue par</span>
+        <select name="canal" defaultValue="WHATSAPP" aria-label={`Canal de réception : ${libelle}`} style={{ font: "400 12px/1.4 var(--police-texte)" }}>
+          <option value="WHATSAPP">par WhatsApp</option>
+          <option value="GUICHET">au guichet</option>
+          <option value="COURRIEL">par courriel</option>
+        </select>
+      </label>
       <button type="submit" className="bouton-discret" disabled={enCours}>
-        {enCours ? "…" : avecFichier ? "Joindre et marquer reçue" : "Marquer reçue"}
+        {enCours ? "…" : avecFichier ? (remplacer ? "Remplacer le document" : "Joindre et marquer reçue") : "Marquer reçue"}
       </button>
       <Retour etat={etat} />
     </form>

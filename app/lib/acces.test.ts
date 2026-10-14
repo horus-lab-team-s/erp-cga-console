@@ -76,7 +76,7 @@ describe("Les permissions", () => {
 });
 
 describe("Les libellés de rôle", () => {
-  it("nomment les neuf rôles comme le cabinet les nomme", () => {
+  it("nomment les onze rôles comme le cabinet les nomme", () => {
     const attendus: Role[] = [
       "CHARGE_CLIENTELE",
       "COMPTABLE",
@@ -85,7 +85,9 @@ describe("Les libellés de rôle", () => {
       "CHARGE_FORMALITES",
       "DIRECTION",
       "ADMINISTRATEUR",
+      "CAISSE",
       "ADHERENT",
+      "CLIENT_CREATION",
       "INSPECTEUR",
     ];
     expect(Object.keys(LIBELLES_ROLE).sort()).toEqual([...attendus].sort());

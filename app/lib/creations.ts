@@ -86,6 +86,21 @@ export type PieceConstitution = {
   obligatoire: boolean;
   fournie_le: string | null;
   empreinte: string | null;
+  /** Par où elle est arrivée (14 octobre 2026). `null` pour les pièces reçues avant. */
+  canal?: CanalDeLaPiece | null;
+  /** Le compte du cabinet qui l'a versée, ou « cliente ». */
+  versee_par?: string | null;
+};
+
+export type CanalDeLaPiece = "LIEN_DE_SUIVI" | "ESPACE_CLIENT" | "WHATSAPP" | "GUICHET" | "COURRIEL";
+
+/** Le canal dans les mots du cabinet. */
+export const LIBELLES_CANAL: Record<CanalDeLaPiece, string> = {
+  LIEN_DE_SUIVI: "déposée par la cliente, depuis son lien",
+  ESPACE_CLIENT: "déposée par la cliente, depuis son compte",
+  WHATSAPP: "reçue par WhatsApp",
+  GUICHET: "apportée au cabinet",
+  COURRIEL: "reçue par courriel",
 };
 
 export type Jalon = { etape: Etape; survenu_le: string; par: string | null; commentaire: string | null };

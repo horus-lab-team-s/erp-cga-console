@@ -8,12 +8,15 @@ import {
   LienDeSuiviDeLaCliente,
   RecevoirPiece,
 } from "@/app/components/creations/GestesCreation";
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EtatErreur, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
+import { lireLeDocumentDeLaPiece } from "@/app/lib/actions-creations";
 import { ErreurApi } from "@/app/lib/api";
 import {
+  LIBELLES_CANAL,
   LIBELLES_ETAPE,
   lireDossierCreation,
   lireLeLienDeSuivi,
@@ -159,7 +162,29 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
                   {!p.obligatoire && <span style={{ color: "var(--ink-500)" }}> (d&rsquo;usage)</span>}
                 </span>
                 {p.fournie_le ? (
-                  <span style={{ ...texte, color: "var(--success)" }}>Reçue le {dateCourte(p.fournie_le)}</span>
+                  <span style={{ display: "flex", flexDirection: "column", gap: 6, flexBasis: "100%" }}>
+                    <span style={{ ...texte, color: "var(--success)" }}>
+                      Reçue le {dateCourte(p.fournie_le)}
+                      {p.canal && <span style={{ color: "var(--ink-500)" }}> · {LIBELLES_CANAL[p.canal]}</span>}
+                      {p.versee_par && p.versee_par !== "cliente" && (
+                        <span style={{ color: "var(--ink-500)" }}>
+                          {" "}· versée par {p.versee_par === acces.compte ? "vous" : p.versee_par}
+                        </span>
+                      )}
+                      {!p.empreinte && <span style={{ color: "var(--ink-500)" }}> · sans document</span>}
+                    </span>
+                    {p.empreinte && (
+                      <DocumentDeLaPiece champs={{ reference: dossier.reference, code: p.code }} libelle={p.libelle} lire={lireLeDocumentDeLaPiece} />
+                    )}
+                    {!clos && (
+                      <details>
+                        <summary style={{ ...texte, color: "var(--brand-indigo-700)", cursor: "pointer" }}>
+                          {p.empreinte ? "Remplacer le document" : "Joindre le document"}
+                        </summary>
+                        <RecevoirPiece reference={dossier.reference} code={p.code} libelle={p.libelle} remplacer={Boolean(p.empreinte)} />
+                      </details>
+                    )}
+                  </span>
                 ) : clos ? (
                   <span style={{ ...texte, color: "var(--ink-500)" }}>Non reçue</span>
                 ) : (

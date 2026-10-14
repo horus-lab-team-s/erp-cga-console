@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { TIRET } from "@/app/lib/formats";
 
 import {
@@ -16,6 +16,8 @@ import {
 } from "@/app/lib/actions-acquisition";
 import type { CompositionOfferte, LienDeLaProforma, Question } from "@/app/lib/console-acquisition";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+
+import { FormulaireDEmission } from "./ApercuProforma";
 
 const note: React.CSSProperties = { margin: 0, font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" };
 const champ: React.CSSProperties = {
@@ -34,8 +36,18 @@ function valeurInitiale(question: Question, brute: string | undefined): string {
   if (brute === undefined) return "";
   if (question.type === "BOOLEEN") return brute === "True" ? "oui" : brute === "False" ? "non" : "";
   if (question.type === "LISTE") {
-    // Le backend rend la liste comme Python l'écrit : « ['a', 'b'] ».
-    return brute.replace(/^\[|\]$/g, "").split(",").map((m) => m.trim().replace(/^'|'$/g, "")).filter(Boolean).join(", ");
+    // Le backend rend la liste comme Python l'écrit, et Python l'écrit de deux
+    // façons : « ['a', 'b'] » pour une liste, « ('a', 'b') » pour un n-uplet,
+    // qui est la forme réellement servie. Un élément qui contient une apostrophe
+    // arrive entre guillemets doubles. Ne relire que les crochets laissait
+    // « ('CNI des associés » dans le champ, et l'enregistrement suivant
+    // réécrivait la parenthèse dans la réponse.
+    return brute
+      .replace(/^[[(]|[\])]$/g, "")
+      .split(",")
+      .map((m) => m.trim().replace(/^['"]|['"]$/g, ""))
+      .filter(Boolean)
+      .join(", ");
   }
   return brute;
 }
@@ -48,7 +60,9 @@ function Champ({ question, valeur }: { question: Question; valeur: string }) {
         <option value="">{TIRET}</option>
         {question.valeurs.map((v) => (
           <option key={v} value={v}>
-            {v.replaceAll("_", " ").toLowerCase()}
+            {/* Le nom donné par le référentiel, quand il existe : c'est celui que le
+                client a lu sur le site, et le responsable doit lire le même. */}
+            {question.libelles_valeurs?.[v] ?? v.replaceAll("_", " ").toLowerCase()}
           </option>
         ))}
       </select>
@@ -94,16 +108,44 @@ export function Qualification({
   faits,
   manquantes,
   modifiable,
+  declarees = [],
 }: {
   reference: string;
   questions: Question[];
   faits: Record<string, string>;
   manquantes: string[];
   modifiable: boolean;
+  /**
+   * Les questions auxquelles le client a répondu lui-même sur le site.
+   *
+   * ⚠️ Elles sont SIGNALÉES, pas verrouillées. Le responsable doit savoir d'où
+   * vient une valeur avant de la confirmer au téléphone, et il doit pouvoir la
+   * corriger : le client se trompe de forme juridique plus souvent que de nom.
+   */
+  declarees?: string[];
 }) {
   const [etat, envoyer, enCours] = useActionState(enregistrerLaQualification, ETAT_ACTE_INITIAL);
+
+  // ⚠️ L'ENVOI PASSE PAR `onSubmit`, ET CE N'EST PAS UNE COQUETTERIE.
+  //
+  // Après une action de formulaire, React réinitialise le formulaire. Un champ
+  // de texte y retrouve sa valeur enregistrée ; une liste déroulante non
+  // contrôlée, elle, retombe sur sa première option. Le responsable
+  // enregistrait « SARL », lisait « Qualification complète », et voyait sa
+  // liste revenue au tiret : l'écran contredisait ce qu'il venait d'annoncer,
+  // et un second enregistrement aurait effacé la réponse.
+  //
+  // Appelée dans une transition plutôt que par le formulaire, l'action ne
+  // déclenche pas cette réinitialisation. `action` reste posé : sans
+  // JavaScript, le formulaire part toujours.
+  function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
+    evenement.preventDefault();
+    const donnees = new FormData(evenement.currentTarget);
+    startTransition(() => envoyer(donnees));
+  }
+
   return (
-    <form action={envoyer} style={{ padding: "12px 16px" }}>
+    <form action={envoyer} onSubmit={soumettre} style={{ padding: "12px 16px" }}>
       <input type="hidden" name="reference" value={reference} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         {questions.map((q) => (
@@ -112,6 +154,9 @@ export function Qualification({
             {q.obligatoire ? " *" : ""}
             {manquantes.includes(q.code) && (
               <span style={{ color: "var(--warning)", fontWeight: 400 }}> · manquante</span>
+            )}
+            {declarees.includes(q.code) && faits[q.code] !== undefined && (
+              <span style={{ color: "var(--brand-700, var(--ink-500))", fontWeight: 400 }}> · dit par le client sur le site</span>
             )}
             <Champ question={q} valeur={valeurInitiale(q, faits[q.code])} />
             {q.aide && <span style={{ ...note, display: "block", marginTop: 2, fontWeight: 400 }}>{q.aide}</span>}
@@ -313,14 +358,15 @@ export function messageWhatsapp(nom: string, numero: string, montant: string, li
  */
 export function EmissionProforma({
   reference,
-  referenceProposee,
   client,
   dejaEmise,
   lienRelu,
   compositions,
+  formeJuridique = null,
 }: {
+  /** La forme juridique retenue à la qualification : elle propose le document. */
+  formeJuridique?: string | null;
   reference: string;
-  referenceProposee: string | null;
   client: DestinataireDeLaProforma;
   /** Le dossier est déjà à l'état « proforma émise » quand la page s'ouvre. */
   dejaEmise: boolean;
@@ -506,58 +552,16 @@ export function EmissionProforma({
   }
 
   return (
-    <form action={emettre} style={{ padding: "12px 16px", display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-      <input type="hidden" name="reference" value={reference} />
-      <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
-        Montant arrêté (FCFA)
-        <input name="montant" inputMode="numeric" required defaultValue={referenceProposee ?? ""} style={{ ...champ, width: 160 }} />
-      </label>
-      <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)", flex: "1 1 240px" }}>
-        Motif (obligatoire hors de l&rsquo;intervalle)
-        <input name="motif" maxLength={500} style={champ} />
-      </label>
-      <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
-        Score de charge
-        <input name="score_charge" inputMode="numeric" defaultValue="0" style={{ ...champ, width: 100 }} />
-      </label>
-      {/*
-        ⚠️ LE DOCUMENT, CHOISI EN MÊME TEMPS QUE LE PRIX (pas 148).
-
-        C'est le geste réel du cabinet : le responsable arrête le montant après
-        l'échange ET sélectionne ce que la proforma couvre. Sans choix, aucun PDF
-        n'est produit et l'empreinte reste celle du résumé, comme avant.
-
-        ⚠️ Le statut est affiché. Une composition `TRANSCRIT` n'a pas été
-        confirmée par la direction ; l'envoyer à une cliente est une décision, et
-        elle doit être prise en connaissance de cause.
-      */}
-      {compositions.length > 0 && (
-        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)", flexBasis: "100%" }}>
-          Document de la proforma
-          <select name="composition" defaultValue="" style={{ ...champ, width: "100%" }}>
-            <option value="">Aucun document (empreinte du résumé, comme avant)</option>
-            {compositions.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.titre} · {c.libelle} · {francs(c.total)}
-                {c.statut !== "VALIDE" ? ` · ${c.statut.toLowerCase()}, non confirmé par la direction` : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      <label
-        style={{ flexBasis: "100%", display: "flex", gap: 8, alignItems: "center", font: "400 13px/1.4 var(--police-texte)", color: client.courriel ? "var(--ink-900)" : "var(--ink-500)" }}
-      >
-        <input type="checkbox" name="envoyer_par_courriel" value="oui" defaultChecked={Boolean(client.courriel)} disabled={!client.courriel} />
-        {client.courriel
-          ? `Envoyer la proforma par courriel à ${client.courriel}, dès l’émission`
-          : "Aucun courriel au dossier : l’envoi se fera par WhatsApp ou par téléphone"}
-      </label>
-      <button type="submit" className="bouton-primaire" disabled={enCours}>
-        {enCours ? "…" : "Émettre la proforma"}
-      </button>
-      {etat.echec && <p role="alert" style={{ ...note, color: "var(--danger)", flexBasis: "100%" }}>{etat.echec}</p>}
-    </form>
+    <FormulaireDEmission
+      reference={reference}
+      compositions={compositions}
+      formeJuridique={formeJuridique}
+      nomDuClient={client.nom}
+      courriel={client.courriel}
+      emettre={emettre}
+      enCours={enCours}
+      echec={etat.echec}
+    />
   );
 }
 
@@ -583,14 +587,29 @@ export function Reglement({
   montant,
   telephone,
   slugRetenu,
+  ouvreUnEspace,
 }: {
   numero: string;
   montant: string;
   telephone: string;
   slugRetenu: string | null;
+  /**
+   * ⚠️ Faux pour une prestation : il n'y a alors aucune adresse à choisir, et le
+   * formulaire ne la demande pas. Le serveur le décide ; voir `sans_objet`.
+   */
+  ouvreUnEspace: boolean;
 }) {
   const [demande, demander, demandeEnCours] = useActionState(demanderLeReglement, ETAT_ACTE_INITIAL);
   const [encaisse, confirmer, confirmationEnCours] = useActionState(confirmerLEncaissement, ETAT_ACTE_INITIAL);
+  const adresse = (contenu: React.ReactNode) =>
+    ouvreUnEspace ? (
+      <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
+        Adresse de l&rsquo;espace{slugRetenu ? " (retenue)" : ""}
+        {contenu}
+      </label>
+    ) : (
+      <input type="hidden" name="sans_espace" value="oui" />
+    );
   const champSlug = slugRetenu ? (
     <>
       <input type="hidden" name="slug" value={slugRetenu} />
@@ -607,10 +626,7 @@ export function Reglement({
 
       <form action={demander} style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
         <input type="hidden" name="numero" value={numero} />
-        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
-          Adresse de l&rsquo;espace{slugRetenu ? " (retenue)" : ""}
-          {champSlug}
-        </label>
+        {adresse(champSlug)}
         <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
           Téléphone à débiter
           <input name="telephone" defaultValue={telephone} style={{ ...champ, width: 170 }} />
@@ -625,17 +641,17 @@ export function Reglement({
       <form action={confirmer} style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", borderTop: "1px solid var(--line-100)", paddingTop: 12 }}>
         <input type="hidden" name="numero" value={numero} />
         <p style={{ ...note, flexBasis: "100%" }}>Règlement reçu autrement (espèces au guichet, virement) :</p>
-        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
-          Adresse de l&rsquo;espace{slugRetenu ? " (retenue)" : ""}
-          {champSlug}
-        </label>
+        {adresse(champSlug)}
         <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
           Référence du reçu ou du virement
           <input name="reference_externe" maxLength={120} style={{ ...champ, width: 220 }} />
         </label>
         <label style={{ ...note, display: "flex", gap: 6, alignItems: "flex-start", flexBasis: "100%" }}>
           <input type="checkbox" name="rapproche" value="oui" required />
-          <span>J&rsquo;ai constaté le règlement de {francs(montant)}. La confirmation ouvre l&rsquo;espace du client.</span>
+          <span>
+            J&rsquo;ai constaté le règlement de {francs(montant)}. La confirmation ouvre{" "}
+            {ouvreUnEspace ? "l’espace du client" : "le dossier du client"}.
+          </span>
         </label>
         <button type="submit" className="bouton-discret" disabled={confirmationEnCours}>
           {confirmationEnCours ? "…" : "Confirmer le règlement"}

@@ -49,7 +49,7 @@ export class ErreurApi extends Error {
 type Options = {
   /** Transmet le témoin de session. Faux pour les routes publiques. */
   authentifie?: boolean;
-  methode?: "GET" | "POST" | "DELETE";
+  methode?: "GET" | "POST" | "PUT" | "DELETE";
   corps?: unknown;
   /**
    * Un formulaire multipart, pour envoyer un fichier (pas 81). Exclusif de `corps` :

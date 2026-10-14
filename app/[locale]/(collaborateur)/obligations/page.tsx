@@ -1,3 +1,6 @@
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
+import { JugerLaQuittance } from "@/app/components/obligations/JugerLaQuittance";
+import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import type { Metadata } from "next";
 
 import {
@@ -281,7 +284,7 @@ export default async function Obligations({
         {preuves.length > 0 && (
           <Panneau
             titre="Preuves de paiement envoyées par l'adhérent"
-            aide="Une quittance envoyée ne déclare rien : la vérifier (bonne obligation, bonne période, lisible), puis consigner le dépôt avec la pièce en pièce jointe."
+            aide="Une quittance envoyée ne déclare rien : la lire, dire si elle règle l'échéance (l'adhérent lit « Payée », ou le motif du refus), puis consigner le dépôt avec la pièce en pièce jointe."
           >
             <ul style={{ margin: 0, padding: "10px 16px", display: "flex", flexDirection: "column", gap: 6, font: "400 13px/1.5 var(--police-texte)" }}>
               {preuves.map((p) => (
@@ -290,6 +293,18 @@ export default async function Obligations({
                       d'une facture, et une quittance n'en a pas. La pièce se lit dans la boîte de réception. */}
                   <strong>{p.libelle}</strong> · {p.periode} · pièce <strong>{p.preuve!.piece}</strong>, envoyée le{" "}
                   {dateCourte(p.preuve!.envoyee_le)} · <Link href="/pieces">boîte de réception</Link>
+                  {/* 14 octobre 2026 : la lire ici, puis dire si elle règle l'échéance. */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+                    <DocumentDeLaPiece champs={{ identifiant: p.preuve!.piece }} libelle={`quittance ${p.preuve!.piece}`} lire={lireLeDocumentDUnePiece} />
+                    {detient(acces, "VERIFIER_UN_REGLEMENT") && (
+                      <JugerLaQuittance
+                        dossier={niu}
+                        codeObligation={p.code_obligation}
+                        periodeDebut={p.periode_debut}
+                        piece={p.preuve!.piece}
+                      />
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

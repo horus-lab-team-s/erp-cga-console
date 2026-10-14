@@ -190,3 +190,39 @@ export async function reglerMesRappels(_precedent: EtatActe, donnees: FormData):
     throw erreur;
   }
 }
+
+/**
+ * Valider ou refuser la quittance envoyée par l'adhérent (14 octobre 2026).
+ *
+ * ⚠️ Un verdict ne se reprend pas : il est écrit au journal chaîné. Un refus dit pourquoi, et
+ * l'adhérent le lit sur sa carte pour envoyer la bonne quittance.
+ */
+export async function jugerLaQuittance(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const verdict = String(donnees.get("verdict") ?? "");
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (verdict === "REFUSEE" && motif.length < 5) {
+    return { echec: "Dites pourquoi : l'adhérent doit savoir quelle quittance renvoyer.", fait: null };
+  }
+  try {
+    await appeler(`/obligations/dossiers/${encodeURIComponent(dossier)}/preuves-de-paiement/verdict`, {
+      methode: "POST",
+      authentifie: true,
+      corps: {
+        code_obligation: String(donnees.get("code_obligation") ?? ""),
+        periode_debut: String(donnees.get("periode_debut") ?? ""),
+        piece: String(donnees.get("piece") ?? ""),
+        verdict,
+        ...(motif ? { motif } : {}),
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath("/[locale]/obligations", "page");
+  return {
+    echec: null,
+    fait: verdict === "VALIDEE" ? "Quittance validée : l'adhérent lit « Payée »." : "Quittance refusée : l'adhérent lit le motif.",
+  };
+}
