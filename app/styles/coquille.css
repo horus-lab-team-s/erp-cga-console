@@ -1756,6 +1756,7 @@ a.action-secondaire {
 }
 .adherent__echeance-etat[data-etat="DEPOSEE"],
 .adherent__echeance-etat[data-etat="PAYEE"],
+.adherent__echeance-etat[data-etat="FONDS_RECUS"],
 .adherent__echeance-etat[data-etat="PREUVE_ENVOYEE"] {
   color: var(--success);
 }
@@ -3172,5 +3173,267 @@ a.adherent__quitter {
   flex-basis: 100%;
   margin: 0;
   font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+/* ── Fonds confiés au cabinet (14 octobre 2026) ───────────────────────────── */
+.fonds-confies {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.fonds-confies label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.fonds-confies input:not([type="file"]) {
+  padding: 5px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.fonds-confies__retour {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--success);
+}
+
+.fonds-confies__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.adherent__confie {
+  color: var(--brand-magenta-600);
+  font-weight: 600;
+}
+
+/* ── Lire une facture, le document sous les yeux (14 octobre 2026) ────────── */
+.lecture-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .lecture-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lecture-page__document,
+.lecture-page__facture {
+  padding: 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-lg, 12px);
+  background: var(--surface);
+}
+
+.lecture-page__document {
+  position: sticky;
+  top: 12px;
+}
+
+.lecture {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lecture__formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lecture__formulaire label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.lecture__formulaire input:not([type="checkbox"]) {
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13.5px/1.4 var(--police-texte);
+}
+
+.lecture__formulaire label.lecture__case {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.lecture__deux,
+.lecture__trois {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lecture__trois {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lecture__lignes {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line-100);
+  border-radius: var(--rayon);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lecture__lignes legend {
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.lecture__ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  gap: 6px;
+}
+
+.lecture__ligne input {
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.lecture__a-verifier {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+  font: 600 10.5px/1.6 var(--police-texte);
+}
+
+.lecture__ecart {
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--danger);
+}
+
+.lecture__accord {
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--success);
+}
+
+.lecture__note {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.lecture__message {
+  margin: 0;
+  font: 500 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.lecture__message[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.lecture__message[data-ton="fait"] {
+  color: var(--success);
+}
+
+.lecture__proposition {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+}
+
+.lecture__empechements {
+  padding: 10px 12px;
+  border-radius: var(--rayon);
+  background: var(--danger-100);
+  color: var(--ink-900);
+  font: 400 13px/1.5 var(--police-texte);
+}
+
+.lecture__empechements ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.lecture__ecriture {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.lecture__ecriture caption {
+  text-align: left;
+  padding-bottom: 6px;
+  font: 600 12.5px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.lecture__ecriture th,
+.lecture__ecriture td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line-100);
+  text-align: left;
+}
+
+.lecture__ecriture td.tabulaire {
+  text-align: right;
+}
+
+/* ── Les livres obligatoires en PDF (14 octobre 2026) ─────────────────────── */
+.livres-obligatoires {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+}
+
+.livres-obligatoires__intro {
+  margin: 0;
+  flex: 1 1 320px;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.livres-obligatoires__gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.livres-obligatoires__fait,
+.livres-obligatoires__echec {
+  margin: 0;
+  flex-basis: 100%;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--success);
+}
+
+.livres-obligatoires__echec {
   color: var(--danger);
 }

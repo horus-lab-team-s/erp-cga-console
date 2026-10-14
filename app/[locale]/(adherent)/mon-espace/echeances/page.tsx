@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
 import { EnvoyerLaPreuve } from "@/app/components/adherent/EnvoyerLaPreuve";
+import { ReglerUnePeriode } from "@/app/components/adherent/ReglerUnePeriode";
+import { confierLesFonds } from "@/app/lib/actions-fonds";
+import { lireLesFondsConfies } from "@/app/lib/fonds";
+import type { MesFondsConfies } from "@/app/lib/fonds-etats";
 import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
 import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
@@ -60,6 +64,8 @@ export default async function MesEcheances({
     );
   }
   const vue = await lireMesEcheances(principal).catch(() => null);
+  // 14 octobre 2026 : ce que le cabinet paie pour lui, sous mandat de paiement.
+  const fonds = await lireLesFondsConfies(principal).catch(() => null);
   const choisie = vue?.echeances.find((e) => cleDEcheance(e) === echeance);
 
   return (
@@ -79,9 +85,9 @@ export default async function MesEcheances({
           </p>
         </section>
       ) : choisie ? (
-        <FicheDEcheance vue={vue} echeance={choisie} dossier={principal} />
+        <FicheDEcheance vue={vue} echeance={choisie} dossier={principal} fonds={fonds} />
       ) : (
-        <ListeDesEcheances vue={vue} />
+        <ListeDesEcheances vue={vue} fonds={fonds} />
       )}
       <OngletsAdherent actif="echeances" />
     </main>
@@ -96,6 +102,8 @@ function situation(e: EcheanceDeLAdherent): string {
       return e.jours === 0 ? "À régler aujourd'hui" : `À régler dans ${e.jours} jour${e.jours > 1 ? "s" : ""}`;
     case "PREUVE_ENVOYEE":
       return `Preuve envoyée le ${dateCourte(e.preuve!.envoyee_le)} : le cabinet la vérifie`;
+    case "FONDS_RECUS":
+      return `Fonds reçus par le cabinet le ${dateCourte(e.fonds!.recus_le)} : il règle l'administration`;
     case "PAYEE":
       return `Payée : quittance vérifiée par le cabinet${e.preuve?.verifiee_le ? ` le ${dateCourte(e.preuve.verifiee_le)}` : ""}`;
     case "DEPOSEE":
@@ -103,7 +111,14 @@ function situation(e: EcheanceDeLAdherent): string {
   }
 }
 
-function ListeDesEcheances({ vue }: { vue: VueDesEcheances }) {
+/** L'appel de fonds encore à régler pour cette échéance, sous mandat de paiement. */
+function appelDe(fonds: MesFondsConfies | null, e: EcheanceDeLAdherent) {
+  return fonds?.appels.find(
+    (a) => a.code_obligation === e.code_obligation && a.periode_debut === e.periode_debut && a.etat === "A_REGLER",
+  );
+}
+
+function ListeDesEcheances({ vue, fonds }: { vue: VueDesEcheances; fonds: MesFondsConfies | null }) {
   if (vue.echeances.length === 0) {
     return (
       <section className="adherent__section">
@@ -128,6 +143,11 @@ function ListeDesEcheances({ vue }: { vue: VueDesEcheances }) {
               {e.preuve?.verdict === "REFUSEE" && (
                 <span className="adherent__refus">Quittance refusée : {e.preuve.motif}</span>
               )}
+              {(e.etat === "EN_RETARD" || e.etat === "A_VENIR") && appelDe(fonds, e) && (
+                <span className="adherent__confie">
+                  Le cabinet paie pour vous : {montantFcfa(Number(appelDe(fonds, e)!.montant))} à lui remettre
+                </span>
+              )}
               {e.autres_periodes_en_retard > 0 && (
                 <span>
                   et {e.autres_periodes_en_retard} autre{e.autres_periodes_en_retard > 1 ? "s" : ""} période
@@ -150,12 +170,16 @@ function FicheDEcheance({
   vue,
   echeance: e,
   dossier,
+  fonds,
 }: {
   vue: VueDesEcheances;
   echeance: EcheanceDeLAdherent;
   dossier: string;
+  fonds: MesFondsConfies | null;
 }) {
   const aRegler = e.etat === "EN_RETARD" || e.etat === "A_VENIR";
+  const mandatee = fonds?.obligations_mandatees.includes(e.code_obligation) ?? false;
+  const appel = fonds?.appels.find((a) => a.code_obligation === e.code_obligation && a.periode_debut === e.periode_debut);
   return (
     <>
       <section className="adherent__bandeau" data-etat={e.etat === "EN_RETARD" ? "A_ENVOYER" : e.etat === "DEPOSEE" || e.etat === "PAYEE" ? "COMPLET" : "EN_VERIFICATION"}>
@@ -165,11 +189,15 @@ function FicheDEcheance({
         <div>
           <h2 className="adherent__bandeau-titre">{situation(e)}</h2>
           <p className="adherent__bandeau-detail">
-            {e.montant_estime
-              ? `${montantFcfa(Number(e.montant_estime))}, montant estimé. `
-              : e.etat === "DEPOSEE" && e.montant_constate
-                ? `${montantFcfa(Number(e.montant_constate))}. `
-                : "Le cabinet vous indique le montant. "}
+            {/* ⚠️ Sous mandat, le montant arrêté par le cabinet fait foi : « le cabinet vous indique le
+                montant » au-dessus de « montant à lui remettre : 184 500 » se contredisait (prise 1). */}
+            {appel
+              ? `${montantFcfa(Number(appel.montant))}, montant arrêté par le cabinet. `
+              : e.montant_estime
+                ? `${montantFcfa(Number(e.montant_estime))}, montant estimé. `
+                : e.etat === "DEPOSEE" && e.montant_constate
+                  ? `${montantFcfa(Number(e.montant_constate))}. `
+                  : "Le cabinet vous indique le montant. "}
             {e.etat === "DEPOSEE" ? "" : `Était à régler le ${dateLongue(e.echeance)}`}
             {e.etat === "DEPOSEE" ? "" : ` · ${e.periode}`}
           </p>
@@ -224,7 +252,8 @@ function FicheDEcheance({
           </dd>
           {e.preuve && (
             <>
-              <dt className="adherent__fait-libelle">Preuve envoyée</dt>
+              {/* « Quittance » : sous mandat, c'est le cabinet qui l'a portée, pas l'adhérent. */}
+              <dt className="adherent__fait-libelle">Quittance</dt>
               <dd className="adherent__fait-valeur">
                 le {dateCourte(e.preuve.envoyee_le)} (pièce {e.preuve.piece})
                 {e.preuve.verdict === "VALIDEE" && " · vérifiée par le cabinet"}
@@ -243,9 +272,39 @@ function FicheDEcheance({
         )}
       </section>
 
+      {/* ⚠️ 14 octobre 2026 : sous mandat de paiement, le cabinet paie pour lui. Il lui remet les
+          fonds ; « payée » n'arrive qu'avec la quittance de l'administration, portée par le cabinet. */}
+      {aRegler && mandatee && (
+        <section className="adherent__section">
+          <h2 className="adherent__titre">Le cabinet paie pour vous</h2>
+          {appel && appel.etat === "A_REGLER" ? (
+            <>
+              <p className="adherent__texte">
+                Vous avez confié au cabinet le paiement de cette obligation. Montant à lui remettre :{" "}
+                <strong>{montantFcfa(Number(appel.montant))}</strong>. Il paie l&rsquo;administration dès réception,
+                et vous lirez « Payée » avec sa quittance.
+              </p>
+              <ReglerUnePeriode
+                niu={dossier}
+                periode={appel.identifiant}
+                montant={montantFcfa(Number(appel.montant))}
+                telephone={null}
+                action={confierLesFonds}
+              />
+              <p className="adherent__mention">Vous pouvez aussi remettre ces fonds au guichet du cabinet.</p>
+            </>
+          ) : (
+            <p className="adherent__texte">
+              Vous avez confié au cabinet le paiement de cette obligation : il vous indique le montant à lui remettre
+              dès qu&rsquo;il est arrêté.
+            </p>
+          )}
+        </section>
+      )}
+
       {aRegler && (
         <section className="adherent__section">
-          <h2 className="adherent__titre">Vous avez réglé ?</h2>
+          <h2 className="adherent__titre">{mandatee ? "Vous avez réglé vous-même ?" : "Vous avez réglé ?"}</h2>
           <p className="adherent__texte">
             Le paiement en ligne n&rsquo;est pas encore ouvert. Réglez au guichet de votre centre des impôts
             (ou de la CNPS), puis envoyez ici la quittance : le cabinet la joint à votre dossier.

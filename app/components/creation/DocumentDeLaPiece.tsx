@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { DOCUMENT_DE_CREATION_INITIAL, type EtatDocumentDeCreation } from "@/app/lib/document-de-creation";
 import { declencherTelechargement } from "@/app/lib/telechargement-navigateur";
@@ -29,17 +29,26 @@ export function DocumentDeLaPiece({
   champs,
   libelle,
   lire,
+  ouvrirDesLeDebut = false,
 }: {
   /** Ce qui désigne le document pour l'action : `{ reference, code }` d'une pièce de création,
    *  `{ identifiant }` d'une pièce de la collecte (14 octobre 2026 : quittances et justificatifs). */
   champs: Record<string, string>;
   libelle: string;
   lire: (precedent: EtatDocumentDeCreation, donnees: FormData) => Promise<EtatDocumentDeCreation>;
+  /** Ouvre l'aperçu dès l'affichage : la lecture d'une facture se fait le document sous les yeux. */
+  ouvrirDesLeDebut?: boolean;
 }) {
   const [etat, demander, enCours] = useActionState(lire, DOCUMENT_DE_CREATION_INITIAL);
   const [intention, setIntention] = useState<"voir" | "enregistrer">("voir");
   // L'aperçu fermé l'est pour CE fichier : un nouvel « Aperçu » le rouvre.
   const [fermePour, setFermePour] = useState<string | null>(null);
+  const formulaire = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (ouvrirDesLeDebut) formulaire.current?.requestSubmit();
+    // Une fois, à l'affichage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // L'adresse locale du fichier affichable, dérivée du fichier reçu ; libérée quand il change.
   const adresse = useMemo(() => {
@@ -63,7 +72,7 @@ export function DocumentDeLaPiece({
   const typeMime = etat.fichier?.typeMime ?? "";
   return (
     <div className="document-piece">
-      <form action={demander} className="document-piece__gestes">
+      <form ref={formulaire} action={demander} className="document-piece__gestes">
         {Object.entries(champs).map(([nom, valeur]) => (
           <input key={nom} type="hidden" name={nom} value={valeur} />
         ))}

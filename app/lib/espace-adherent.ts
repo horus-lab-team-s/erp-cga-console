@@ -144,7 +144,8 @@ export function deMois(nom: string): string {
 // ── Mes échéances (pas 113, vue D) ────────────────────────────────────────────
 
 // PAYEE (14 octobre 2026) : la quittance est vérifiée par le cabinet.
-export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "PAYEE" | "A_VENIR" | "DEPOSEE";
+// FONDS_RECUS (14 octobre 2026) : sous mandat de paiement, le cabinet a reçu les fonds.
+export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "FONDS_RECUS" | "PAYEE" | "A_VENIR" | "DEPOSEE";
 
 export type EcheanceDeLAdherent = {
   code_obligation: string;
@@ -175,6 +176,8 @@ export type EcheanceDeLAdherent = {
     motif?: string | null;
     verifiee_le?: string | null;
   } | null;
+  /** Sous mandat de paiement : les fonds remis au cabinet pour cette échéance. */
+  fonds?: { montant: string; canal: string; recus_le: string } | null;
   autres_periodes_en_retard: number;
   effectif_a_confirmer: boolean;
 };

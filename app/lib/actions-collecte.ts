@@ -549,3 +549,36 @@ export async function lireLeDocumentDUnePiece(
     throw erreur;
   }
 }
+
+/**
+ * Le cabinet a payé l'administration avec les fonds de l'adhérent : il dépose la quittance au
+ * dossier, puis la porte sur l'appel de fonds (14 octobre 2026). L'échéance de l'adhérent passe
+ * à « Payée ».
+ *
+ * ⚠️ Ici, et non dans `actions-fonds.ts` : le dépôt passe par `deposerFichierEtPiece`, les mêmes
+ * contrôles que toute pièce, et cette fonction ne s'exporte pas (elle deviendrait une action
+ * serveur appelable de partout).
+ */
+export async function reverserAvecQuittance(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const appel = String(donnees.get("appel") ?? "");
+  donnees.set("type", "QUITTANCE_IMPOT");
+  try {
+    return await deposerFichierEtPiece(donnees, {
+      canal: "DEPOT_CABINET",
+      deposeLe: null,
+      pourLeCabinet: true,
+      ensuite: async (resultat) => {
+        await appeler(
+          `/souscription/fonds-de-tiers/${encodeURIComponent(dossier)}/appels/${encodeURIComponent(appel)}/reversement`,
+          { methode: "POST", authentifie: true, corps: { quittance: resultat.piece.identifiant } },
+        );
+        revalidatePath("/[locale]/obligations", "page");
+        return { echec: null, fait: `Quittance ${resultat.piece.identifiant} portée : l'échéance de l'adhérent est payée.` };
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}

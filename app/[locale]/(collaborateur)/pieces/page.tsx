@@ -176,6 +176,12 @@ export default async function BoiteReceptionPieces() {
                   {p.recue_le.slice(0, 10).split("-").reverse().join("/")}
                   {p.commentaire && <span style={{ color: "var(--ink-500)" }}> · « {p.commentaire} »</span>}
                 </p>
+                {/* 14 octobre 2026 : la facture se lit le document sous les yeux, et devient une écriture. */}
+                <p style={{ margin: "0 0 6px" }}>
+                  <Link href={`/pieces/facture/${encodeURIComponent(p.identifiant)}`} className="bouton-discret">
+                    Lire la facture et proposer l&rsquo;écriture →
+                  </Link>
+                </p>
                 <LectureDePiece
                   identifiant={p.identifiant}
                   nomFichier={p.nom_fichier}
@@ -213,6 +219,13 @@ export default async function BoiteReceptionPieces() {
                   )}{" "}
                   · {LIBELLES_ETAT[p.etat]}
                 </p>
+                {p.type === "FACTURE_ACHAT" && (
+                  <p style={{ margin: "0 0 6px" }}>
+                    <Link href={`/pieces/facture/${encodeURIComponent(p.identifiant)}`} className="bouton-discret">
+                      Lire la facture et proposer l&rsquo;écriture →
+                    </Link>
+                  </p>
+                )}
                 <ClasserLaPiece identifiant={p.identifiant} />
               </div>
             ))}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ConstatDeCaisse } from "@/app/components/caisse/ConstatDeCaisse";
+import { ConstatDeFonds } from "@/app/components/caisse/ConstatDeFonds";
 import { ConstatDHonoraires } from "@/app/components/caisse/ConstatDHonoraires";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
@@ -8,6 +9,7 @@ import { Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
 import { lireLaCaisse, type ReglementDeCaisse } from "@/app/lib/console-acquisition";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { lireLaCaisseDesFonds } from "@/app/lib/fonds";
 import { lireLaCaisseDesHonoraires } from "@/app/lib/honoraires";
 import { LIBELLES_CANAL, LIBELLES_ETAT } from "@/app/lib/honoraires-etats";
 import { exigerAcces } from "@/app/lib/session";
@@ -49,6 +51,8 @@ export default async function Caisse() {
     // ⚠️ Une lecture de commodité : sans elle, la caisse des propositions reste entière.
     lireLaCaisseDesHonoraires().catch(() => null),
   ]);
+  // 14 octobre 2026 : les fonds de tiers, à part. Ils ne s'additionnent à rien.
+  const fonds = await lireLaCaisseDesFonds().catch(() => null);
   const honorairesDus = (honoraires ?? []).filter((l) => l.etat !== "REGLEE");
   const honorairesRegles = (honoraires ?? []).filter((l) => l.etat === "REGLEE");
   const dus = lignes.filter((l) => l.etat === "A_ENCAISSER");
@@ -174,6 +178,39 @@ export default async function Caisse() {
             </ul>
           )}
         </Panneau>
+
+        {/* ⚠️ 14 octobre 2026 : les fonds qu'un adhérent remet pour payer l'administration (mandat
+            de paiement). Un panneau à part, sans total commun : cet argent n'est pas au cabinet. */}
+        {fonds !== null && fonds.length > 0 && (
+          <Panneau
+            titre="Fonds remis pour l'administration"
+            aide="TVA ou CNPS d'un adhérent qui a mandaté le cabinet pour payer. Ce ne sont pas des honoraires : le comptable les reverse à l'administration."
+          >
+            <ul className="caisse__file">
+              {fonds.map((a) => (
+                <li key={a.identifiant} className={a.etat === "A_REGLER" ? "caisse__ligne" : "caisse__ligne caisse__ligne--reglee"}>
+                  <div className="caisse__identite">
+                    <strong>{a.denomination}</strong>
+                    <span>
+                      {a.libelle} · {dateCourte(a.periode_debut)} au {dateCourte(a.periode_fin)}
+                    </span>
+                    <b className="caisse__montant">{montantFcfa(a.montant)}</b>
+                  </div>
+                  {a.etat === "A_REGLER" ? (
+                    <ConstatDeFonds niu={a.niu} appel={a.identifiant} montant={montantFcfa(a.montant)} />
+                  ) : (
+                    <p className="caisse__regle">
+                      <span className="caisse__pastille">Reçus</span>
+                      {a.canal === "MOBILE_MONEY" ? " par mobile money" : " au guichet"}
+                      {a.fonds_recus_le ? ` le ${dateCourte(a.fonds_recus_le.slice(0, 10))}` : ""}
+                      {a.etat === "REVERSE" ? " · reversés à l'administration" : " · à reverser"}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Panneau>
+        )}
       </div>
     </>
   );

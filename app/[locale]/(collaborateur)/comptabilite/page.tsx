@@ -10,6 +10,7 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
+import { LivresObligatoires } from "@/app/components/comptabilite/LivresObligatoires";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
 import { DetailDuCompte } from "@/app/components/comptabilite/DetailDuCompte";
@@ -171,6 +172,8 @@ export default async function Comptabilite({
         </div>
 
         <Sante sante={sante} />
+
+        <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
 
         <form method="get" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "end", padding: "10px 14px", background: "var(--surface)", border: "1px solid var(--line-200)", borderRadius: "var(--rayon)" }}>
           <input type="hidden" name="dossier" value={niu} />

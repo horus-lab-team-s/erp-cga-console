@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 
 import { demanderLeDebit } from "@/app/lib/actions-honoraires";
-import { DEBIT_INITIAL } from "@/app/lib/honoraires-etats";
+import { DEBIT_INITIAL, type EtatDebit } from "@/app/lib/honoraires-etats";
 
 /**
  * Régler une période d'honoraires par mobile money (14 octobre 2026).
@@ -23,13 +23,17 @@ export function ReglerUnePeriode({
   periode,
   montant,
   telephone,
+  action = demanderLeDebit,
 }: {
   niu: string;
+  /** Ce que le débit règle : le début d'une période d'honoraires, ou l'identifiant d'un appel de fonds. */
   periode: string;
   montant: string;
   telephone: string | null;
+  /** 14 octobre 2026 : la même demande sert aux fonds confiés au cabinet (`confierLesFonds`). */
+  action?: (precedent: EtatDebit, donnees: FormData) => Promise<EtatDebit>;
 }) {
-  const [etat, demander, enCours] = useActionState(demanderLeDebit, DEBIT_INITIAL);
+  const [etat, demander, enCours] = useActionState(action, DEBIT_INITIAL);
   const [ouvert, setOuvert] = useState(false);
   const router = useRouter();
 

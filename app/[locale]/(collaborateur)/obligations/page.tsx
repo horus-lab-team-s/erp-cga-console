@@ -1,3 +1,5 @@
+import { ArreterUnAppel, PorterLaQuittance } from "@/app/components/obligations/FondsConfies";
+import { lireLesFondsConfies } from "@/app/lib/fonds";
 import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
 import { JugerLaQuittance } from "@/app/components/obligations/JugerLaQuittance";
 import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
@@ -14,7 +16,7 @@ import {
 import { Montant, PastilleStatut, type Statut } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
-import { dateCourte, TIRET } from "@/app/lib/formats";
+import { montantFcfa, dateCourte, TIRET } from "@/app/lib/formats";
 import {
   lireCatalogueDesObligations,
   lireEcheancier,
@@ -168,6 +170,14 @@ export default async function Obligations({
   const aVenir = echeances.filter((e) => !e.en_retard && !e.obligation.deposee);
   // Pas 113 : les quittances envoyées par l'adhérent, à vérifier puis à joindre au constat. Lecture
   // facultative : sa panne ne masque pas l'échéancier.
+  // 14 octobre 2026 : ce que le cabinet paie pour l'adhérent, sous mandat de paiement. Lecture
+  // facultative, comme les preuves.
+  const fonds = await lireLesFondsConfies(niu).catch(() => null);
+  const sousMandat = fonds
+    ? echeances
+        .map((e) => e.obligation)
+        .filter((o) => fonds.obligations_mandatees.includes(o.code_obligation) && !o.deposee && o.periode_debut <= jour)
+    : [];
   const preuves = await lireMesEcheances(niu)
     .then((v) => v.echeances.filter((e) => e.etat === "PREUVE_ENVOYEE"))
     .catch(() => []);
@@ -307,6 +317,58 @@ export default async function Obligations({
                   </div>
                 </li>
               ))}
+            </ul>
+          </Panneau>
+        )}
+
+        {fonds && sousMandat.length > 0 && (
+          <Panneau
+            titre="Payées par le cabinet, sous mandat de paiement"
+            aide={`L'adhérent a confié au cabinet le paiement de : ${fonds.obligations_mandatees.join(", ")}. Arrêter le montant, attendre ses fonds (mobile money ou guichet), payer l'administration, porter la quittance. Ces fonds ne sont pas des honoraires.`}
+          >
+            <ul style={{ margin: 0, padding: "10px 16px", display: "flex", flexDirection: "column", gap: 12, font: "400 13px/1.5 var(--police-texte)" }}>
+              {sousMandat.map((o) => {
+                const appel = fonds.appels.find((a) => a.code_obligation === o.code_obligation && a.periode_debut === o.periode_debut);
+                return (
+                  <li key={`${o.code_obligation}-${o.periode_debut}`} className="fonds-sous-mandat">
+                    <strong>{o.libelle}</strong> · {dateCourte(o.periode_debut)} → {dateCourte(o.periode_fin)} · échéance{" "}
+                    {dateCourte(o.echeance)}
+                    <div style={{ marginTop: 6 }}>
+                      {!appel ? (
+                        detient(acces, "VERIFIER_UN_REGLEMENT") ? (
+                          <ArreterUnAppel
+                            niu={niu}
+                            codeObligation={o.code_obligation}
+                            libelle={o.libelle}
+                            periodeDebut={o.periode_debut}
+                            periodeFin={o.periode_fin}
+                            estime={o.montant_estime ? String(Math.round(Number(o.montant_estime))) : null}
+                          />
+                        ) : (
+                          <span style={{ color: "var(--ink-500)" }}>Montant pas encore arrêté.</span>
+                        )
+                      ) : appel.etat === "A_REGLER" ? (
+                        <span>
+                          {montantFcfa(Number(appel.montant))} appelés : en attente des fonds de l&rsquo;adhérent.
+                        </span>
+                      ) : appel.etat === "FONDS_RECUS" ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <span style={{ color: "var(--brand-magenta-600)", fontWeight: 600 }}>
+                            {montantFcfa(Number(appel.montant))} reçus le {dateCourte(appel.fonds_recus_le!.slice(0, 10))}
+                            {appel.canal === "MOBILE_MONEY" ? " par mobile money" : " au guichet"} : l&rsquo;administration est à
+                            payer.
+                          </span>
+                          {detient(acces, "VERIFIER_UN_REGLEMENT") && <PorterLaQuittance niu={niu} appel={appel.identifiant} />}
+                        </div>
+                      ) : (
+                        <span style={{ color: "var(--success)" }}>
+                          Payée le {dateCourte(appel.reverse_le!.slice(0, 10))}, quittance {appel.quittance}.
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </Panneau>
         )}

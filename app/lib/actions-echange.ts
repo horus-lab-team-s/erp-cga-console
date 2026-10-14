@@ -75,3 +75,28 @@ export async function reprendreUnFichier(_precedent: EtatReprise, donnees: FormD
     throw erreur;
   }
 }
+
+/**
+ * Un livre obligatoire, en PDF (14 octobre 2026). En octets, comme l'export : le
+ * navigateur reçoit le document tel que le serveur l'a mis en page.
+ */
+export async function editerUnLivre(_precedent: EtatExport, donnees: FormData): Promise<EtatExport> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  const livre = String(donnees.get("livre") ?? "");
+  const du = String(donnees.get("du") ?? "").trim();
+  const au = String(donnees.get("au") ?? "").trim();
+  if (!/^\d{4}$/.test(exercice) || !["journal", "grand-livre", "balance"].includes(livre)) {
+    return { echec: "Choisissez un livre et un exercice.", fichier: null };
+  }
+  const requete = new URLSearchParams({ exercice, ...(du ? { du } : {}), ...(au ? { au } : {}) });
+  try {
+    const f = await telecharger(
+      `/comptabilite/dossiers/${encodeURIComponent(dossier)}/livres/${livre}?${requete}`,
+    );
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
+    throw erreur;
+  }
+}
