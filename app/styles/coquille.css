@@ -3437,3 +3437,158 @@ a.adherent__quitter {
 .livres-obligatoires__echec {
   color: var(--danger);
 }
+
+/* ── La DSF de l'exercice : préparer, valider, déposer (14 octobre 2026) ───── */
+.dsf {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 16px;
+}
+
+.dsf__version {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-200);
+  border-left: 4px solid var(--brand-magenta-600);
+  border-radius: var(--rayon);
+}
+
+.dsf__version[data-etat="VALIDEE"] {
+  border-left-color: var(--brand-indigo-600, #3b2a6b);
+}
+
+.dsf__version[data-etat="DEPOSEE"] {
+  border-left-color: var(--success);
+}
+
+.dsf__etat {
+  margin: 0;
+  font: 500 14px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.dsf__faits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.dsf__faits dt {
+  font: 600 11.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.dsf__faits dd {
+  margin: 0;
+  font: 500 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.dsf__empreinte {
+  font-family: var(--police-mono, monospace);
+  font-size: 12px;
+}
+
+.dsf__geste {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dsf__depot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: end;
+  gap: 10px;
+}
+
+.dsf__depot .dsf__note,
+.dsf__depot .dsf__fichier,
+.dsf__depot .dsf__message {
+  grid-column: 1 / -1;
+}
+
+.dsf__depot label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.dsf__depot input {
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+
+.dsf__depot button {
+  justify-self: start;
+}
+
+.dsf__note {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.dsf__message {
+  margin: 0;
+  font: 500 13px/1.5 var(--police-texte);
+}
+
+.dsf__message[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.dsf__message[data-ton="fait"] {
+  color: var(--success);
+}
+
+/* ── Un PDF dessiné par pdf.js (14 octobre 2026) ──────────────────────────── */
+.apercu-pdf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.apercu-pdf__pages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 8px;
+  background: var(--ink-100, #ececf1);
+  border-radius: var(--rayon);
+}
+
+.apercu-pdf__page {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.apercu-pdf__note,
+.apercu-pdf__echec {
+  margin: 0;
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.apercu-pdf__echec {
+  color: var(--danger);
+}
+
+.apercu-pdf__secours {
+  width: 100%;
+  height: 80vh;
+  border: 0;
+}

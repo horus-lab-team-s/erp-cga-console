@@ -26,6 +26,7 @@ import { appeler, ErreurApi, telecharger } from "./api";
 import { lirePieces, type DemandePiece } from "./collecte";
 import type { EtatDocumentDeCreation } from "./document-de-creation";
 import type { EtatActe } from "./saisie";
+import { versUtc } from "./heure-douala";
 
 const CHEMINS = ["/[locale]/pieces/[reference]", "/[locale]/pieces/attendues"] as const;
 
@@ -575,6 +576,49 @@ export async function reverserAvecQuittance(_precedent: EtatActe, donnees: FormD
         );
         revalidatePath("/[locale]/obligations", "page");
         return { echec: null, fait: `Quittance ${resultat.piece.identifiant} portée : l'échéance de l'adhérent est payée.` };
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * La DSF est déposée sur le portail de la DGI : le réviseur verse l'accusé au dossier, puis
+ * le consigne sur la version validée (14 octobre 2026). L'accusé y est confronté à
+ * l'empreinte de la version, et l'obligation DSF passe à « déclarée » à l'échéancier.
+ *
+ * ⚠️ Ici, et non dans `actions-dsf.ts`, pour la même raison que `reverserAvecQuittance`.
+ */
+export async function constaterLeDepotDeLaDsf(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  const version = String(donnees.get("version") ?? "");
+  const numero = String(donnees.get("numero") ?? "").trim();
+  const deposeLe = String(donnees.get("depose_le") ?? "").trim();
+  if (!numero) return { echec: "Le numéro de l'accusé de la DGI est obligatoire.", fait: null };
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(deposeLe)) {
+    return { echec: "La date et l'heure du dépôt, telles que l'accusé les porte, sont obligatoires.", fait: null };
+  }
+  donnees.set("type", "AUTRE");
+  try {
+    return await deposerFichierEtPiece(donnees, {
+      canal: "DEPOT_CABINET",
+      deposeLe: null,
+      pourLeCabinet: true,
+      ensuite: async (resultat) => {
+        await appeler(
+          `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}/${encodeURIComponent(version)}/depot`,
+          {
+            methode: "POST",
+            authentifie: true,
+            corps: { numero, depose_le: versUtc(deposeLe), piece: resultat.piece.identifiant },
+          },
+        );
+        revalidatePath("/[locale]/cloture", "page");
+        revalidatePath("/[locale]/obligations", "page");
+        return { echec: null, fait: `Accusé ${numero} consigné : la DSF ${exercice} est déclarée à l'échéancier.` };
       },
     });
   } catch (erreur) {

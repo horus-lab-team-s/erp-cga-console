@@ -11,11 +11,14 @@ import {
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
 import { ClotureExercice } from "@/app/components/cloture/ClotureExercice";
+import { DeclarationDsf } from "@/app/components/cloture/DeclarationDsf";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
+import { lireLesVersionsDsf, type VersionDsf } from "@/app/lib/dsf";
 import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -53,7 +56,10 @@ export const dynamic = "force-dynamic";
  *
  * ⚠️ CE QUE CET ÉCRAN NE FAIT PAS, ET POURQUOI
  *
- * Il ne dépose pas la DSF : ce dépôt reste à construire.
+ * Il ne dépose pas la DSF lui-même : le portail de la DGI ne s'atteint pas d'ici. Depuis
+ * le 14 octobre 2026, il la PRÉPARE (version figée, empreinte), la fait VALIDER par un
+ * second regard, et CONSIGNE l'accusé du portail, confronté à l'empreinte. Voir
+ * `DeclarationDsf`.
  *
  * ⚠️ IL CLÔT, DEPUIS LE PAS 55, ET EN DERNIER
  *
@@ -112,6 +118,17 @@ export default async function ClotureEtDsf({
   // l'appel serait une lecture de dossier de plus au journal.
   const peutClore = detient(acces, "CLOTURER_EXERCICE");
   const clos = liasse && peutClore ? await exerciceDejaClos(niu, liasse.cloture) : null;
+
+  // La DSF de l'exercice, version par version (14 octobre 2026).
+  let versionsDsf: VersionDsf[] = [];
+  let erreurDsf: string | null = null;
+  if (liasse) {
+    try {
+      versionsDsf = await lireLesVersionsDsf(niu, exercice);
+    } catch (cause) {
+      erreurDsf = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
+    }
+  }
 
   return (
     <>
@@ -190,6 +207,29 @@ export default async function ClotureEtDsf({
                   {!clos && <ClotureExercice key={`${niu}-${exercice}`} dossier={niu} exercice={exercice} />}
                 </Panneau>
               )}
+              <Panneau
+                titre="Déclaration statistique et fiscale"
+                aide="Préparée sur l'exercice clos, validée par le réviseur, puis déposée sur le portail de la DGI et consignée ici avec son accusé."
+              >
+                {erreurDsf ? (
+                  <EtatErreur titre="Versions de la DSF indisponibles" detail={erreurDsf} />
+                ) : (
+                  <DeclarationDsf
+                    key={`${niu}-${exercice}`}
+                    dossier={niu}
+                    exercice={exercice}
+                    versions={versionsDsf}
+                    peutPreparer={detient(acces, "PREPARER_DSF")}
+                    peutValider={detient(acces, "REVISER_DOSSIER")}
+                    peutDeposer={detient(acces, "DEPOSER_DECLARATION")}
+                    porteDuSecondFacteur={
+                      acces.facteur_fort ? null : (
+                        <PorteSecondFacteur enrole={acces.second_facteur_enrole} geste="Consigner le dépôt de la DSF" />
+                      )
+                    }
+                  />
+                )}
+              </Panneau>
             </>
           )
         )}

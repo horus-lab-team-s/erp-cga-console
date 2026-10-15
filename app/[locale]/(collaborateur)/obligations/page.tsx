@@ -150,12 +150,13 @@ export default async function Obligations({
   const montantsEstimes = echeances.some((l) => l.obligation.montant_estime);
   const colonnes = montantsEstimes ? COLONNES_CHIFFREES : COLONNES;
 
-  // ⚠️ Un filtre d'affichage, pas une règle : voir `ConstatDepot.tsx`. La TVA est
-  // exclue parce qu'elle a son parcours, et le backend la refuserait ici.
+  // ⚠️ Un filtre d'affichage, pas une règle : voir `ConstatDepot.tsx`. La TVA et, depuis le
+  // 14 octobre 2026, la DSF sont exclues parce qu'elles ont leur parcours, et le backend les
+  // refuserait ici.
   const peutDeposer = detient(acces, "DEPOSER_DECLARATION");
   const aConstater = echeances
     .map((e) => e.obligation)
-    .filter((o) => o.code_obligation !== "TVA" && !o.deposee && o.periode_debut <= jour)
+    .filter((o) => !["TVA", "DSF"].includes(o.code_obligation) && !o.deposee && o.periode_debut <= jour)
     .map((o) => ({
       valeur: `${o.code_obligation}|${o.periode_debut}|${o.periode_fin}`,
       libelle: `${o.libelle} · ${dateCourte(o.periode_debut)} → ${dateCourte(o.periode_fin)} · échéance ${dateCourte(o.echeance)}`,
@@ -230,6 +231,7 @@ export default async function Obligations({
                   key={`${ligne.obligation.code_obligation}${ligne.obligation.periode_fin}`}
                   ligne={ligne}
                   niu={niu}
+                  exercice={exercice}
                   rang={rang}
                   colonnes={colonnes}
                   montantsEstimes={montantsEstimes}
@@ -376,7 +378,7 @@ export default async function Obligations({
         {peutDeposer && aConstater.length > 0 && (
           <Panneau
             titre="Constater un dépôt"
-            aide="Pour une obligation déposée hors de la plateforme : CNPS, retenues, IGS, DSF, patente. La TVA se dépose par son propre parcours, qui contrôle la déclaration."
+            aide="Pour une obligation déposée hors de la plateforme : CNPS, retenues, IGS, patente. La TVA et la DSF se déposent par leur propre parcours, qui contrôle la déclaration."
           >
             {acces.facteur_fort ? (
               <ConstatDepot dossier={niu} obligations={aConstater} />
@@ -447,12 +449,14 @@ const CATALOGUE: Colonne[] = [
 function Ligne({
   ligne,
   niu,
+  exercice,
   rang,
   colonnes,
   montantsEstimes,
 }: {
   ligne: LigneEcheance;
   niu: string;
+  exercice: string;
   rang: number;
   colonnes: Colonne[];
   montantsEstimes: boolean;
@@ -478,6 +482,11 @@ function Ligne({
             href={`/obligations/declarations?dossier=${niu}&debut=${o.periode_debut}&fin=${o.periode_fin}`}
             style={{ color: "var(--brand-indigo-700)" }}
           >
+            {o.libelle}
+          </Link>
+        ) : o.code_obligation === "DSF" ? (
+          // 14 octobre 2026 : la DSF a son parcours, préparée puis validée puis déposée.
+          <Link href={`/cloture?dossier=${niu}&exercice=${exercice}`} style={{ color: "var(--brand-indigo-700)" }}>
             {o.libelle}
           </Link>
         ) : (

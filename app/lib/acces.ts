@@ -66,6 +66,8 @@ export type Permission =
   | "DECIDER_SUR_DOSSIER"
   // Pas 102 : la revue d'un mois transmis, réviseur seul.
   | "REVISER_DOSSIER"
+  // 14 octobre 2026 : figer la liasse d'un exercice clos en une version de DSF (comptable, réviseur).
+  | "PREPARER_DSF"
   // Pas 111 : relancer un adhérent des pièces de son mois (comptable, chargé de clientèle, réviseur).
   | "RELANCER_PIECES"
   | "REPONDRE_AU_CABINET"

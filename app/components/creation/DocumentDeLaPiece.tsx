@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
+import { ApercuPdf } from "@/app/components/ApercuPdf";
+
 import { DOCUMENT_DE_CREATION_INITIAL, type EtatDocumentDeCreation } from "@/app/lib/document-de-creation";
 import { declencherTelechargement } from "@/app/lib/telechargement-navigateur";
 
@@ -94,11 +96,9 @@ export function DocumentDeLaPiece({
       {ouvert && (
         <figure className="document-piece__apercu" aria-label={`Aperçu : ${libelle}`}>
           {typeMime === "application/pdf" ? (
-            <object data={adresse} type="application/pdf" className="document-piece__pdf">
-              <p>
-                Le navigateur n&rsquo;affiche pas ce PDF ici. Utilisez « Télécharger ».
-              </p>
-            </object>
+            // 14 octobre 2026 : dessiné par pdf.js. `<object>` ne montrait rien : la politique
+            // de contenu interdit les greffons (`object-src 'none'`), à raison.
+            <ApercuPdf base64={etat.fichier!.base64} libelle={libelle} adresse={adresse} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- une adresse locale, que l'optimiseur d'images ne peut pas traiter
             <img src={adresse} alt={libelle} className="document-piece__image" />
