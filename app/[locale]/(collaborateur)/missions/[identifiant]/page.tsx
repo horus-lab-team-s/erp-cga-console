@@ -118,12 +118,12 @@ export default async function PageMission({ params }: { params: Promise<{ identi
             <Panneau titre="Les points" aide={`${mission.propositions.length} point${mission.propositions.length > 1 ? "s" : ""} · ${enAttente} à décider`}>
               <ul className="mission__points">
                 {mission.propositions.map((p) => (
-                  <PointAInstruire key={p.rang} mission={mission.identifiant} point={p} modifiable={ouverte} />
+                  <PointAInstruire key={p.rang} mission={mission.identifiant} type={mission.type} point={p} modifiable={ouverte} />
                 ))}
               </ul>
               {ouverte && (
                 <div className="mission__pied">
-                  <AjouterUnPoint mission={mission.identifiant} redaction={mission.type === "REDACTION_CONTRAT"} />
+                  <AjouterUnPoint mission={mission.identifiant} type={mission.type} />
                 </div>
               )}
             </Panneau>

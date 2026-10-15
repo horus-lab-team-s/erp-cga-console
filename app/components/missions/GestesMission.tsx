@@ -16,10 +16,11 @@ import {
 import {
   LIBELLES_DECISION,
   LIBELLES_GRAVITE,
-  LIBELLES_RUBRIQUE,
   LIBELLES_TYPE,
+  libelleDeRubrique,
+  rubriquesDuType,
   type Proposition,
-  type Rubrique,
+  type TypeMission,
 } from "@/app/lib/missions-etats";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
 import { useRouter } from "@/i18n/navigation";
@@ -176,15 +177,25 @@ export function CahierDeRedaction({
 }
 
 /** Un point : ce que l'agent (ou le juriste) propose, et la décision. */
-export function PointAInstruire({ mission, point, modifiable }: { mission: string; point: Proposition; modifiable: boolean }) {
+export function PointAInstruire({
+  mission,
+  type,
+  point,
+  modifiable,
+}: {
+  mission: string;
+  type: TypeMission;
+  point: Proposition;
+  modifiable: boolean;
+}) {
   const [etat, decider, enCours] = useActionState(deciderDUnPoint, ETAT_ACTE_INITIAL);
   const [geste, setGeste] = useState<"aucun" | "reformuler" | "ecarter">("aucun");
   return (
     <li className="mission__point" data-decision={point.decision} data-rubrique={point.rubrique}>
       <div className="mission__point-entete">
-        <span className="mission__rubrique">{LIBELLES_RUBRIQUE[point.rubrique]}</span>
+        <span className="mission__rubrique">{libelleDeRubrique(point.rubrique, type)}</span>
         {point.gravite && <span className="mission__gravite" data-gravite={point.gravite}>{LIBELLES_GRAVITE[point.gravite]}</span>}
-        <span className="mission__origine">{point.origine === "AGENT" ? "proposé par l'agent" : "ajouté par le juriste"}</span>
+        <span className="mission__origine">{point.origine === "AGENT" ? "proposé par l'agent" : "ajouté à la main"}</span>
         <span className="mission__decision">{LIBELLES_DECISION[point.decision]}</span>
       </div>
       <strong className="mission__titre">{point.titre}</strong>
@@ -231,9 +242,8 @@ export function PointAInstruire({ mission, point, modifiable }: { mission: strin
   );
 }
 
-const RUBRIQUES: Rubrique[] = ["RESUME", "PARTIES", "OBLIGATION", "CLAUSE_A_RISQUE", "MANQUE", "RECOMMANDATION"];
-
-export function AjouterUnPoint({ mission, redaction = false }: { mission: string; redaction?: boolean }) {
+export function AjouterUnPoint({ mission, type }: { mission: string; type: TypeMission }) {
+  const redaction = type === "REDACTION_CONTRAT";
   const [etat, ajouter, enCours] = useActionState(ajouterUnPoint, ETAT_ACTE_INITIAL);
   const [ouvert, setOuvert] = useState(false);
   if (!ouvert) {
@@ -249,15 +259,15 @@ export function AjouterUnPoint({ mission, redaction = false }: { mission: string
       <label>
         Rubrique
         <select name="rubrique" defaultValue={redaction ? "ARTICLE" : "CLAUSE_A_RISQUE"}>
-          {(redaction ? (["ARTICLE"] as Rubrique[]) : RUBRIQUES).map((r) => (
+          {rubriquesDuType(type).map((r) => (
             <option key={r} value={r}>
-              {LIBELLES_RUBRIQUE[r]}
+              {libelleDeRubrique(r, type)}
             </option>
           ))}
         </select>
       </label>
       <label>
-        Gravité (clauses à surveiller)
+        {type === "DSF_CIBLEE" ? "Gravité (points à surveiller)" : "Gravité (clauses à surveiller)"}
         <select name="gravite" defaultValue="">
           <option value="">Sans objet</option>
           <option value="FAIBLE">Faible</option>
@@ -274,7 +284,7 @@ export function AjouterUnPoint({ mission, redaction = false }: { mission: string
         <textarea name="texte" required rows={3} maxLength={4000} />
       </label>
       <label className="mission__large">
-        Extrait du contrat (facultatif)
+        {type === "DSF_CIBLEE" ? "Référence : poste de la liasse, compte (facultatif)" : "Extrait du contrat (facultatif)"}
         <textarea name="citation" rows={2} maxLength={2000} />
       </label>
       <div className="mission__large mission__boutons">
@@ -324,7 +334,7 @@ export function ValiderOuRenvoyer({ mission }: { mission: string }) {
         <input type="hidden" name="mission" value={mission} />
         <input name="motif" required minLength={5} placeholder="Ce qu'il faut reprendre" aria-label="Motif du renvoi" />
         <button type="submit" className="bouton-discret" disabled={enR}>
-          Renvoyer au juriste
+          Renvoyer à l&rsquo;instruction
         </button>
         <Message etat={etatR} />
       </form>

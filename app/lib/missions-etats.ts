@@ -71,6 +71,26 @@ export const LIBELLES_RUBRIQUE: Record<Rubrique, string> = {
   ARTICLE: "Article",
 };
 
+/**
+ * 15 octobre 2026 : une DSF ciblée affichait « Objet du contrat ». Le libellé d'une
+ * rubrique dépend du type de mission ; les autres types gardent ceux du contrat.
+ */
+const RUBRIQUES_DSF: Partial<Record<Rubrique, string>> = {
+  RESUME: "Synthèse",
+  CLAUSE_A_RISQUE: "Point à surveiller",
+};
+
+export function libelleDeRubrique(rubrique: Rubrique, type: TypeMission): string {
+  return (type === "DSF_CIBLEE" ? RUBRIQUES_DSF[rubrique] : undefined) ?? LIBELLES_RUBRIQUE[rubrique];
+}
+
+/** Les rubriques proposées à la saisie, selon le type. */
+export function rubriquesDuType(type: TypeMission): Rubrique[] {
+  if (type === "REDACTION_CONTRAT") return ["ARTICLE"];
+  if (type === "DSF_CIBLEE") return ["RESUME", "CLAUSE_A_RISQUE", "MANQUE", "RECOMMANDATION"];
+  return ["RESUME", "PARTIES", "OBLIGATION", "CLAUSE_A_RISQUE", "MANQUE", "RECOMMANDATION"];
+}
+
 export const LIBELLES_DECISION: Record<Decision, string> = {
   EN_ATTENTE: "À décider",
   RETENUE: "Retenue",

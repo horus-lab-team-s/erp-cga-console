@@ -4,6 +4,7 @@ import { startTransition, useState } from "react";
 
 import { enregistrerLaFacture, enregistrerLeBrouillon, lireAutomatiquement, proposerLEcriture } from "@/app/lib/actions-facture";
 import type { FactureSaisie, LigneSaisie, PropositionDeLaPiece, ValeurProposee } from "@/app/lib/facture-etats";
+import { montantFcfa } from "@/app/lib/formats";
 
 /**
  * Lire une facture, la confirmer, proposer son écriture (14 octobre 2026).
@@ -42,7 +43,6 @@ const VIDE: FactureSaisie = {
 };
 
 const entier = (t: string) => Number(String(t).replace(/\s/g, "")) || 0;
-const francs = (n: number) => `${n.toLocaleString("fr-FR").replace(/ | /g, " ")} FCFA`;
 
 export function LectureDeFacture({
   identifiant,
@@ -244,8 +244,8 @@ export function LectureDeFacture({
           </button>
           {lignesRenseignees && (
             <p className={ecartLignes ? "lecture__ecart" : "lecture__accord"}>
-              Somme des lignes : {francs(sommeLignes)}
-              {ecartLignes ? ` · ne fait pas le HT (${francs(ht)})` : " · égale au HT"}
+              Somme des lignes : {montantFcfa(sommeLignes)}
+              {ecartLignes ? ` · ne fait pas le HT (${montantFcfa(ht)})` : " · égale au HT"}
             </p>
           )}
         </fieldset>
@@ -264,7 +264,7 @@ export function LectureDeFacture({
             <input inputMode="numeric" value={facture.montant_ttc} onChange={(e) => changer("montant_ttc", e.target.value.replace(/[^\d]/g, ""))} required />
           </label>
         </div>
-        {ecartTotaux && <p className="lecture__ecart">HT + TVA = {francs(ht + tva)}, la facture annonce {francs(ttc)}.</p>}
+        {ecartTotaux && <p className="lecture__ecart">HT + TVA = {montantFcfa(ht + tva)}, la facture annonce {montantFcfa(ttc)}.</p>}
 
         <button type="submit" className="bouton-primaire" disabled={enCours !== null || ecartLignes || ecartTotaux}>
           {enCours === "enregistrement" ? "…" : enregistree ? "Facture enregistrée" : "Enregistrer la facture"}
@@ -314,8 +314,8 @@ export function LectureDeFacture({
                         {l.libelle}
                         {l.tiers ? ` · ${l.tiers}` : ""}
                       </td>
-                      <td className="tabulaire">{l.sens === "DEBIT" ? francs(entier(l.montant)) : ""}</td>
-                      <td className="tabulaire">{l.sens === "CREDIT" ? francs(entier(l.montant)) : ""}</td>
+                      <td className="tabulaire">{l.sens === "DEBIT" ? montantFcfa(entier(l.montant)) : ""}</td>
+                      <td className="tabulaire">{l.sens === "CREDIT" ? montantFcfa(entier(l.montant)) : ""}</td>
                     </tr>
                   ))}
                 </tbody>

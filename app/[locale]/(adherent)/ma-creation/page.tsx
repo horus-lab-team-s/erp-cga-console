@@ -240,7 +240,7 @@ function UneCreation({
           {/* 15 octobre 2026 : sous session, sans le lien du courriel qui expire. */}
           <ul className="creation__pieces">
             {documents.proformas.map((p) => (
-              <li key={`${p.numero}-${p.version}`} className="creation__piece">
+              <li key={`${p.numero}-${p.version}`} className="creation__piece" data-document="oui">
                 <span>
                   Proforma {p.numero}
                   {p.version > 1 ? `, version ${p.version}` : ""} · {montantFcfa(p.total)}
@@ -255,7 +255,7 @@ function UneCreation({
               </li>
             ))}
             {documents.reglee && (
-              <li className="creation__piece" data-recue="oui">
+              <li className="creation__piece" data-recue="oui" data-document="oui">
                 <span>
                   Règlement constaté{documents.reglee_le ? ` le ${dateCourte(documents.reglee_le.slice(0, 10))}` : ""}
                 </span>

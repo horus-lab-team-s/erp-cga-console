@@ -4,6 +4,7 @@ import Image from "next/image";
 import { startTransition, useState } from "react";
 
 import type { CompositionOfferte } from "@/app/lib/console-acquisition";
+import { montantFcfa } from "@/app/lib/formats";
 
 /**
  * L'aperçu de la proforma, que le responsable retouche avant d'émettre.
@@ -39,7 +40,6 @@ import type { CompositionOfferte } from "@/app/lib/console-acquisition";
 type Ligne = { libelle: string; montant: string };
 type Rubrique = { numero: string; intitule: string; lignes: Ligne[] };
 
-const francs = (valeur: number) => `${valeur.toLocaleString("fr-FR").replace(/ | /g, " ")} FCFA`;
 const entier = (texte: string) => Number(texte.replace(/\s/g, "")) || 0;
 
 function copier(composition: CompositionOfferte | undefined): Rubrique[] {
@@ -192,7 +192,7 @@ export function FormulaireDEmission({
                     <button type="button" className="feuille__ajouter" onClick={() => ajouter(r)}>
                       + Ajouter une ligne
                     </button>
-                    {rubrique.lignes.length > 1 && <strong>{francs(sousTotal)}</strong>}
+                    {rubrique.lignes.length > 1 && <strong>{montantFcfa(sousTotal)}</strong>}
                   </div>
                 </div>
               );
@@ -200,7 +200,7 @@ export function FormulaireDEmission({
 
             <div className="feuille__total">
               <span>TOTAL GENERAL</span>
-              <strong>{francs(total)}</strong>
+              <strong>{montantFcfa(total)}</strong>
             </div>
             <p className="feuille__suite">
               Suivent, sur la seconde page, les documents à fournir, les documents à recevoir, le délai d&rsquo;exécution et
@@ -209,9 +209,9 @@ export function FormulaireDEmission({
           </section>
 
           <p className="emission__prix" role="status">
-            Montant arrêté : <strong>{francs(total)}</strong>
+            Montant arrêté : <strong>{montantFcfa(total)}</strong>
             {retouchee
-              ? ` · détail retouché, le document du référentiel totalise ${francs(origine)}`
+              ? ` · détail retouché, le document du référentiel totalise ${montantFcfa(origine)}`
               : " · détail du référentiel, non retouché"}
           </p>
         </>

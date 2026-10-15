@@ -2840,6 +2840,20 @@ a.adherent__quitter {
   color: var(--ink-700);
 }
 
+/* 15 octobre 2026 : proforma et reçu, le libellé à gauche et le lien PDF à droite,
+   sur une ligne ; à la largeur d'un téléphone, le lien passe dessous. */
+.creation__piece[data-document="oui"] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  column-gap: 12px;
+}
+
+.creation__piece[data-document="oui"] a {
+  white-space: nowrap;
+}
+
 .creation__facultatif {
   color: var(--ink-500);
 }
@@ -3418,6 +3432,21 @@ a.adherent__quitter {
   flex: 1 1 320px;
   font: 400 12.5px/1.5 var(--police-texte);
   color: var(--ink-700);
+}
+
+/* 15 octobre 2026 : deux familles (livres PDF, balances auxiliaires Excel), une par
+   ligne : sur une seule rangée, le texte de l'une tombait à côté des boutons de l'autre. */
+.livres-obligatoires__groupe {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.livres-obligatoires__groupe + .livres-obligatoires__groupe {
+  padding-top: 8px;
+  border-top: 1px solid var(--line-100);
 }
 
 .livres-obligatoires__gestes {

@@ -54,16 +54,46 @@ export function LivresObligatoires({
       <input type="hidden" name="exercice" value={exercice} />
       <input type="hidden" name="du" value={du ?? ""} />
       <input type="hidden" name="au" value={au ?? ""} />
-      <p className="livres-obligatoires__intro">
-        <strong>Livres obligatoires</strong> · {periode} · écritures validées seules. La balance
-        cumule depuis l&rsquo;ouverture ; le grand livre porte le solde reporté.
-      </p>
-      <div className="livres-obligatoires__gestes">
-        {LIVRES.map((l) => (
-          <button key={l.code} type="submit" name="livre" value={l.code} className="bouton-discret" disabled={enCours}>
-            {l.libelle} (PDF)
+      <div className="livres-obligatoires__groupe">
+        <p className="livres-obligatoires__intro">
+          <strong>Livres obligatoires</strong> · {periode} · écritures validées seules. La balance cumule depuis
+          l&rsquo;ouverture ; le grand livre porte le solde reporté.
+        </p>
+        <div className="livres-obligatoires__gestes">
+          {LIVRES.map((l) => (
+            <button
+              key={l.code}
+              type="submit"
+              name="livre"
+              value={l.code}
+              className="bouton-discret"
+              disabled={enCours}
+            >
+              {l.libelle} (PDF)
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* 15 octobre 2026 : annexes de la DSF que la DGI demande en Excel. */}
+      <div className="livres-obligatoires__groupe">
+        <p className="livres-obligatoires__intro">
+          <strong>Balances auxiliaires</strong> · exercice entier, tiers par tiers, en Excel : annexes de la DSF. Pas
+          encore au modèle de la DGI, que le cabinet obtient à la télédéclaration.
+        </p>
+        <div className="livres-obligatoires__gestes">
+          <button type="submit" name="livre" value="auxiliaire-clients" className="bouton-discret" disabled={enCours}>
+            Balance auxiliaire clients (Excel)
           </button>
-        ))}
+          <button
+            type="submit"
+            name="livre"
+            value="auxiliaire-fournisseurs"
+            className="bouton-discret"
+            disabled={enCours}
+          >
+            Balance auxiliaire fournisseurs (Excel)
+          </button>
+        </div>
       </div>
       {etat.fichier && (
         <p role="status" className="livres-obligatoires__fait">

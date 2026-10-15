@@ -1,4 +1,4 @@
-import { ErreurApi, telecharger } from "@/app/lib/api";
+import { servirUnPdf } from "@/app/lib/pdf-en-onglet";
 
 /**
  * L'aperçu PDF d'une version de la DSF, ouvert dans son propre onglet (14 octobre 2026).
@@ -13,26 +13,15 @@ import { ErreurApi, telecharger } from "@/app/lib/api";
  */
 export async function GET(
   _requete: Request,
-  { params }: { params: Promise<{ dossier: string; exercice: string; version: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{ dossier: string; exercice: string; version: string }>;
+  },
 ) {
   const { dossier, exercice, version } = await params;
   if (!/^\d+$/.test(version)) return new Response("Version invalide.", { status: 400 });
-  try {
-    const f = await telecharger(
-      `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}/${version}/document`,
-    );
-    return new Response(Buffer.from(f.octets), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${f.nom}"`,
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-      },
-    });
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) {
-      return new Response(erreur.message, { status: erreur.statut ?? 502, headers: { "Content-Type": "text/plain; charset=utf-8" } });
-    }
-    throw erreur;
-  }
+  return servirUnPdf(
+    `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}/${version}/document`,
+  );
 }

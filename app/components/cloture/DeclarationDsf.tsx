@@ -7,13 +7,13 @@ import { preparerLaDsf, validerLaDsf } from "@/app/lib/actions-dsf";
 import { LIBELLES_ETAT_DSF, type VersionDsf } from "@/app/lib/dsf-etats";
 import { depuisUtc } from "@/app/lib/heure-douala";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { montantFcfa } from "@/app/lib/formats";
 
 /** Un horodatage UTC du backend, lu à l'heure de Douala : « 14/10/2026 11:05 ». */
 const fr = (utc: string) => {
   const [jour, heure] = depuisUtc(utc).split("T");
   return `${jour.split("-").reverse().join("/")} ${heure.slice(0, 5)}`;
 };
-const francs = (t: string) => `${Number(t).toLocaleString("fr-FR").replace(/ /g, " ")} FCFA`;
 
 function Message({ etat }: { etat: { echec: string | null; fait: string | null } }) {
   if (etat.echec)
@@ -51,6 +51,7 @@ export function DeclarationDsf({
   peutPreparer,
   peutValider,
   peutDeposer,
+  compte,
   porteDuSecondFacteur,
 }: {
   dossier: string;
@@ -59,6 +60,8 @@ export function DeclarationDsf({
   peutPreparer: boolean;
   peutValider: boolean;
   peutDeposer: boolean;
+  /** Le compte connecté : celui qui a préparé une version ne se voit pas offrir de la valider. */
+  compte: string;
   /** Rendue par la page quand la session n'est pas renforcée : sinon `null`. */
   porteDuSecondFacteur: React.ReactNode;
 }) {
@@ -80,7 +83,7 @@ export function DeclarationDsf({
           <dl className="dsf__faits">
             <div>
               <dt>Résultat fiscal</dt>
-              <dd>{francs(courante.resultat_fiscal)}</dd>
+              <dd>{montantFcfa(courante.resultat_fiscal)}</dd>
             </div>
             <div>
               <dt>Préparée</dt>
@@ -119,7 +122,15 @@ export function DeclarationDsf({
             </a>
           </p>
 
-          {courante.etat === "PREPAREE" && peutValider && (
+          {/* 15 octobre 2026 : le bouton s'offrait à celle qui avait préparé, et le serveur la
+              refusait ensuite. On lui dit plutôt qui doit agir. */}
+          {courante.etat === "PREPAREE" && peutValider && courante.preparee_par === compte && (
+            <p className="dsf__note">
+              Vous avez préparé cette version : un autre réviseur la relit et la valide.
+            </p>
+          )}
+
+          {courante.etat === "PREPAREE" && peutValider && courante.preparee_par !== compte && (
             <form action={valider} className="dsf__geste">
               <input type="hidden" name="dossier" value={dossier} />
               <input type="hidden" name="exercice" value={exercice} />

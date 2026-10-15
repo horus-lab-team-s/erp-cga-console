@@ -86,14 +86,18 @@ export async function editerUnLivre(_precedent: EtatExport, donnees: FormData): 
   const livre = String(donnees.get("livre") ?? "");
   const du = String(donnees.get("du") ?? "").trim();
   const au = String(donnees.get("au") ?? "").trim();
-  if (!/^\d{4}$/.test(exercice) || !["journal", "grand-livre", "balance"].includes(livre)) {
+  // 15 octobre 2026 : les balances auxiliaires, annexes Excel de la DSF, sur l'exercice
+  // entier (un solde de tiers se lit à la clôture, pas sur une période).
+  const auxiliaire = { "auxiliaire-clients": "clients", "auxiliaire-fournisseurs": "fournisseurs" }[livre];
+  if (!/^\d{4}$/.test(exercice) || !(auxiliaire || ["journal", "grand-livre", "balance"].includes(livre))) {
     return { echec: "Choisissez un livre et un exercice.", fichier: null };
   }
   const requete = new URLSearchParams({ exercice, ...(du ? { du } : {}), ...(au ? { au } : {}) });
+  const chemin = auxiliaire
+    ? `/comptabilite/dossiers/${encodeURIComponent(dossier)}/balances-auxiliaires/${auxiliaire}/excel?${new URLSearchParams({ exercice })}`
+    : `/comptabilite/dossiers/${encodeURIComponent(dossier)}/livres/${livre}?${requete}`;
   try {
-    const f = await telecharger(
-      `/comptabilite/dossiers/${encodeURIComponent(dossier)}/livres/${livre}?${requete}`,
-    );
+    const f = await telecharger(chemin);
     return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };

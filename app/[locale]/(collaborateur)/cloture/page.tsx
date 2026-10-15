@@ -222,6 +222,7 @@ export default async function ClotureEtDsf({
                     peutPreparer={detient(acces, "PREPARER_DSF")}
                     peutValider={detient(acces, "REVISER_DOSSIER")}
                     peutDeposer={detient(acces, "DEPOSER_DECLARATION")}
+                    compte={acces.compte}
                     porteDuSecondFacteur={
                       acces.facteur_fort ? null : (
                         <PorteSecondFacteur enrole={acces.second_facteur_enrole} geste="Consigner le dépôt de la DSF" />

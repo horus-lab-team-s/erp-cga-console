@@ -10,6 +10,7 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
+import { BalanceAuxiliaire } from "@/app/components/comptabilite/BalanceAuxiliaire";
 import { LivresObligatoires } from "@/app/components/comptabilite/LivresObligatoires";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
@@ -18,6 +19,7 @@ import { ErreurApi } from "@/app/lib/api";
 import {
   exerciceCourant,
   lireBalance,
+  lireBalanceAuxiliaire,
   lireGrandLivre,
   lireJournaux,
   lirePlanComptable,
@@ -86,6 +88,7 @@ export default async function Comptabilite({
     q?: string;
     compte?: string;
     lettrage?: string;
+    auxiliaire?: string;
   }>;
 }) {
   const acces = await exigerAcces();
@@ -145,10 +148,14 @@ export default async function Comptabilite({
     }
   }
   const auPlan = compte ? plan.find((c) => c.numero === compte) : undefined;
+  // 15 octobre 2026 : la balance auxiliaire demandée, à l'écran. Toujours sur l'exercice
+  // entier : un solde de tiers se lit à la clôture, pas sur une période.
+  const auxiliaire = brut.auxiliaire === "clients" || brut.auxiliaire === "fournisseurs" ? brut.auxiliaire : null;
+  const lignesAuxiliaires = auxiliaire ? await lireBalanceAuxiliaire(niu, auxiliaire, exercice) : null;
   // Les liens gardent les filtres : ouvrir un compte ne doit pas faire perdre la période.
   const lien = (autres: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const valeurs = { dossier: niu, exercice, du: filtres.du, au: filtres.au, journal: filtres.journal, q: brut.q, compte: compte ?? undefined, lettrage: lettrage === "TOUTES" ? undefined : lettrage, ...autres };
+    const valeurs = { dossier: niu, exercice, du: filtres.du, au: filtres.au, journal: filtres.journal, q: brut.q, compte: compte ?? undefined, lettrage: lettrage === "TOUTES" ? undefined : lettrage, auxiliaire: auxiliaire ?? undefined, ...autres };
     for (const [cle, valeur] of Object.entries(valeurs)) if (valeur) p.set(cle, valeur);
     return `/comptabilite?${p}`;
   };
@@ -174,6 +181,21 @@ export default async function Comptabilite({
         <Sante sante={sante} />
 
         <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
+
+        {auxiliaire && lignesAuxiliaires ? (
+          <BalanceAuxiliaire
+            nature={auxiliaire}
+            lignes={lignesAuxiliaires}
+            autre={lien({ auxiliaire: auxiliaire === "clients" ? "fournisseurs" : "clients" })}
+            fermer={lien({ auxiliaire: undefined })}
+          />
+        ) : (
+          <p style={{ margin: 0, font: "400 12.5px/1.5 var(--police-texte)", color: "var(--ink-700)" }}>
+            Balances auxiliaires à l&rsquo;écran :{" "}
+            <Link href={lien({ auxiliaire: "clients" })}>clients</Link> ·{" "}
+            <Link href={lien({ auxiliaire: "fournisseurs" })}>fournisseurs</Link>
+          </p>
+        )}
 
         <form method="get" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "end", padding: "10px 14px", background: "var(--surface)", border: "1px solid var(--line-200)", borderRadius: "var(--rayon)" }}>
           <input type="hidden" name="dossier" value={niu} />
