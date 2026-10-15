@@ -68,6 +68,8 @@ export type Permission =
   | "REVISER_DOSSIER"
   // 14 octobre 2026 : figer la liasse d'un exercice clos en une version de DSF (comptable, réviseur).
   | "PREPARER_DSF"
+  | "RENSEIGNER_FICHE_DSF"
+  | "VALIDER_FICHE_DSF"
   // 15 octobre 2026 : instruire une mission de prestation ponctuelle, la valider (un autre).
   | "TRAITER_MISSION"
   | "VALIDER_MISSION"

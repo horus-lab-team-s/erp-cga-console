@@ -8,8 +8,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { appeler, ErreurApi } from "./api";
+import { appeler, ErreurApi, telecharger } from "./api";
 import type { EtatActe } from "./saisie";
+import type { EtatExport } from "./saisie-echange";
 
 const chemin = (dossier: string, exercice: string) =>
   `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}`;
@@ -43,6 +44,23 @@ export async function validerLaDsf(_precedent: EtatActe, donnees: FormData): Pro
     return { echec: null, fait: `Version ${version} validée : elle peut partir sur le portail de la DGI.` };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Le modèle Excel officiel de la DGI, bilan et compte de résultat remplis (15 octobre 2026).
+ *
+ * ⚠️ Le nom du fichier est celui du modèle : le portail refuse un fichier renommé.
+ */
+export async function telechargerLeFormatDgi(_precedent: EtatExport, donnees: FormData): Promise<EtatExport> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  try {
+    const f = await telecharger(`${chemin(dossier, exercice)}/format-dgi/fichier`);
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
     throw erreur;
   }
 }

@@ -95,6 +95,21 @@ export function LivresObligatoires({
           </button>
         </div>
       </div>
+      {/* 15 octobre 2026 : les modèles officiels de la DGI, publics sur impots.cm. */}
+      <div className="livres-obligatoires__groupe">
+        <p className="livres-obligatoires__intro">
+          <strong>Déclarations par tiers de la DGI</strong> · les modèles officiels remplis, HT et TVA séparés, à
+          téléverser tels quels : le portail refuse un fichier renommé.
+        </p>
+        <div className="livres-obligatoires__gestes">
+          <button type="submit" name="livre" value="dgi-fournisseurs" className="bouton-discret" disabled={enCours}>
+            Achats par fournisseur (MODELE FOURNISSEURS)
+          </button>
+          <button type="submit" name="livre" value="dgi-tiers" className="bouton-discret" disabled={enCours}>
+            Sommes versées aux tiers (MODELE TIERS)
+          </button>
+        </div>
+      </div>
       {etat.fichier && (
         <p role="status" className="livres-obligatoires__fait">
           {etat.fichier.nom} téléchargé.

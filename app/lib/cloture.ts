@@ -7,6 +7,9 @@
  */
 
 import { appeler } from "@/app/lib/api";
+import type { NatureActivite } from "@/app/lib/nature-activite";
+
+export { LIBELLES_NATURE, type NatureActivite } from "@/app/lib/nature-activite";
 
 export type LigneLiasse = {
   poste: string;
@@ -55,6 +58,10 @@ export type Liasse = {
   cloture: string;
   systeme: "NORMAL" | "MINIMAL";
   systeme_non_valide: boolean;
+  /** 15 octobre 2026 : la nature d'activité qui fixe le seuil du système ; `null` : non renseignée. */
+  nature_activite?: NatureActivite | null;
+  /** Au réel quel que soit le chiffre d'affaires (CGI art. 93 quater (2) b), s'il y a lieu. */
+  reel_d_office?: string | null;
   lignes: LigneLiasse[];
   comptes_non_couverts: string[];
   controles: ControleCoherence[];

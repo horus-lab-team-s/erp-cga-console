@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
 import { SignalerUnChangement } from "@/app/components/adherent/SignalerUnChangement";
+import { FicheDsf } from "@/app/components/FicheDsf";
 import { detient } from "@/app/lib/acces";
 import { lireMonEntreprise, type MonEntreprise } from "@/app/lib/espace-adherent";
+import { lireLaFicheDsf } from "@/app/lib/fiche-dsf";
+import type { VueDeLaFiche } from "@/app/lib/fiche-dsf-etats";
 import { dateCourte } from "@/app/lib/formats";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { exigerAcces } from "@/app/lib/session";
@@ -45,6 +48,7 @@ export default async function PageMonEntreprise() {
     );
   }
   const fiche = await lireMonEntreprise(principal).catch(() => null);
+  const ficheDsf = await lireLaFicheDsf(principal).catch(() => null);
   return (
     <main className="adherent">
       <header className="adherent__entete">
@@ -61,7 +65,10 @@ export default async function PageMonEntreprise() {
           </p>
         </section>
       ) : (
-        <Fiche fiche={fiche} peutSignaler={detient(acces, "SIGNALER_UN_CHANGEMENT")} />
+        <>
+          <Fiche fiche={fiche} peutSignaler={detient(acces, "SIGNALER_UN_CHANGEMENT")} />
+          {ficheDsf && <SectionFicheDsf dossier={fiche.niu} vue={ficheDsf} peutRenseigner={detient(acces, "RENSEIGNER_FICHE_DSF")} />}
+        </>
       )}
       <OngletsAdherent actif="entreprise" />
     </main>
@@ -163,6 +170,24 @@ function Fiche({ fiche, peutSignaler }: { fiche: MonEntreprise; peutSignaler: bo
         </section>
       )}
     </>
+  );
+}
+
+/**
+ * 15 octobre 2026 : ce que la déclaration annuelle (DSF) demande sur l'entreprise et que le
+ * cabinet ne peut pas deviner. Le client la renseigne, le cabinet la valide.
+ */
+function SectionFicheDsf({ dossier, vue, peutRenseigner }: { dossier: string; vue: VueDeLaFiche; peutRenseigner: boolean }) {
+  return (
+    <section className="adherent__section" id="fiche-dsf">
+      <h2 className="adherent__titre">Fiche de votre déclaration annuelle (DSF)</h2>
+      <p className="adherent__texte">
+        La déclaration statistique et fiscale demande des informations sur votre entreprise que le cabinet ne connaît pas
+        toujours : coordonnées, banque, signataire, codes d&rsquo;activité. Renseignez-les une fois, le cabinet les relit et
+        les reprend chaque année.
+      </p>
+      <FicheDsf dossier={dossier} vue={vue} peutRenseigner={peutRenseigner} peutValider={false} cote="client" />
+    </section>
   );
 }
 

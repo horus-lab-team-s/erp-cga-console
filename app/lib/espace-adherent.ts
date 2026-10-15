@@ -159,6 +159,8 @@ export type EcheanceDeLAdherent = {
   /** Jours de retard ou restants, toujours positif ; 0 pour une preuve envoyée ou un dépôt. */
   jours: number;
   montant_estime: string | null;
+  /** 15 octobre 2026 : d'où vient l'estimation (l'IGS réduit de moitié par l'adhésion au centre…). */
+  explication_estimation?: string | null;
   montant_constate: string | null;
   declaree_le: string | null;
   de_quoi_s_agit_il: string | null;

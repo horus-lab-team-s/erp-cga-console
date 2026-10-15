@@ -155,6 +155,7 @@ function ListeDesEcheances({ vue, fonds }: { vue: VueDesEcheances; fonds: MesFon
                 </span>
               )}
               {e.montant_estime && <span className="tabulaire">{montantFcfa(Number(e.montant_estime))} (estimé)</span>}
+              {e.explication_estimation && <span className="echeance__explication">{e.explication_estimation}</span>}
               {e.etat === "DEPOSEE" && e.montant_constate && (
                 <span className="tabulaire">{montantFcfa(Number(e.montant_constate))}</span>
               )}

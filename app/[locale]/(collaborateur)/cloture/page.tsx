@@ -12,13 +12,15 @@ import {
 import { Montant } from "@/app/components/Montant";
 import { ClotureExercice } from "@/app/components/cloture/ClotureExercice";
 import { DeclarationDsf } from "@/app/components/cloture/DeclarationDsf";
+import { DsfFormatDgi } from "@/app/components/cloture/DsfFormatDgi";
+import { NatureDActivite } from "@/app/components/cloture/NatureDActivite";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
-import { lireLesVersionsDsf, type VersionDsf } from "@/app/lib/dsf";
+import { lireLeFormatDgi, lireLesVersionsDsf, type FormatDgi, type VersionDsf } from "@/app/lib/dsf";
 import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -122,9 +124,12 @@ export default async function ClotureEtDsf({
   // La DSF de l'exercice, version par version (14 octobre 2026).
   let versionsDsf: VersionDsf[] = [];
   let erreurDsf: string | null = null;
+  let formatDgi: FormatDgi | null = null;
   if (liasse) {
     try {
       versionsDsf = await lireLesVersionsDsf(niu, exercice);
+      // 15 octobre 2026 : le format DGI, modèle Normal seulement ; une panne ici ne cache pas la DSF.
+      formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
     } catch (cause) {
       erreurDsf = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
     }
@@ -155,6 +160,12 @@ export default async function ClotureEtDsf({
         ) : (
           liasse && (
             <>
+              <NatureDActivite
+                dossier={niu}
+                nature={liasse.nature_activite}
+                reelDOffice={liasse.reel_d_office}
+                modifiable={detient(acces, "INSCRIRE_STATUT")}
+              />
               <Controles liasse={liasse} />
               <TableauDePassage liasse={liasse} />
               {ORDRE_SENS.map((sens) => {
@@ -230,6 +241,7 @@ export default async function ClotureEtDsf({
                     }
                   />
                 )}
+                {formatDgi && <DsfFormatDgi dossier={niu} exercice={exercice} etat={formatDgi} />}
               </Panneau>
             </>
           )
@@ -307,7 +319,7 @@ function Controles({ liasse }: { liasse: Liasse }) {
               color: "var(--ink-500)",
             }}
           >
-            ⚠️ Classement en {LIBELLES_SYSTEME[liasse.systeme]} fondé sur un seuil non validé
+            ⚠️ Classement en {LIBELLES_SYSTEME[liasse.systeme]} par défaut : régime fiscal du dossier inconnu
           </span>
         )}
       </div>

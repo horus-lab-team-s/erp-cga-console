@@ -263,3 +263,33 @@ export async function renvoyerUnLienDAcces(_precedent: EtatActe, donnees: FormDa
     throw erreur;
   }
 }
+
+/**
+ * Fixer la nature d'activité du dossier (15 octobre 2026). Elle fixe le seuil du régime du
+ * réel (CGI art. 93 quater) : elle se justifie, comme un changement de régime.
+ */
+export async function fixerLaNatureDActivite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "").trim();
+  const nature = String(donnees.get("nature") ?? "");
+  const justification = String(donnees.get("justification") ?? "").trim();
+  const reelDOffice = String(donnees.get("reel_d_office") ?? "") || null;
+  if (!["COMMERCIALE", "LIBERALE"].includes(nature)) return { echec: "Choisissez une nature.", fait: null };
+  if (justification.length < 30) {
+    return {
+      echec: "La justification compte au moins trente caractères : elle nomme la pièce (statuts, RCCM) et part au journal.",
+      fait: null,
+    };
+  }
+  try {
+    await appeler(`/portefeuille/entreprises/${encodeURIComponent(dossier)}/nature-activite`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { nature, justification, reel_d_office: reelDOffice },
+    });
+    revalidatePath("/[locale]/cloture", "page");
+    return { echec: null, fait: "Nature d'activité enregistrée : la revue des régimes en tient compte." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}

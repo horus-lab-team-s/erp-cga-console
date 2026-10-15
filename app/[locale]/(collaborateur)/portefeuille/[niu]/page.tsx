@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AccesDesAdherents } from "@/app/components/portefeuille/AccesDesAdherents";
+import { FicheDsf } from "@/app/components/FicheDsf";
 import { FixerLeContrat } from "@/app/components/portefeuille/ContratDHonoraires";
 import { notFound } from "next/navigation";
 
@@ -18,6 +19,7 @@ import {
   type FicheEntreprise,
 } from "@/app/lib/fiche-dossier";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { lireLaFicheDsf } from "@/app/lib/fiche-dsf";
 import { lireLesHonoraires } from "@/app/lib/honoraires";
 import { LIBELLES_PERIODICITE } from "@/app/lib/honoraires-etats";
 import { LIBELLES_NIVEAU, lireDecisionsDuDossier, type DecisionLue } from "@/app/lib/pilotage";
@@ -132,6 +134,8 @@ export default async function FicheDuDossier({
   const acces_adherents = detient(acces, "RELANCER_ADHERENT") ? await lirePanneau(() => lireLesAccesAdherents(niu)) : null;
   // 14 octobre 2026 : le contrat d'honoraires et ce qui reste dû.
   const honoraires = acces.interne ? await lirePanneau(() => lireLesHonoraires(niu)) : null;
+  // 15 octobre 2026 : la fiche signalétique de la DSF, que le client renseigne et que le cabinet valide.
+  const ficheDsf = acces.interne ? await lirePanneau(() => lireLaFicheDsf(niu)) : null;
   const siennes = "valeur" in anomalies ? anomalies.valeur.filter((a) => a.niu_entreprise === niu) : [];
 
   return (
@@ -225,6 +229,27 @@ export default async function FicheDuDossier({
         {decisions && <DecisionsDeDirection decisions={decisions} niu={niu} voitLeRisque={detient(acces, "LIRE_PILOTAGE")} />}
 
         <Historique fiche={f} />
+
+        {ficheDsf && (
+          <Panneau
+            titre="Fiche signalétique de la DSF"
+            aide="Fiches R1 à R3 du modèle de la DGI : le client la renseigne dans son espace, le cabinet la valide."
+          >
+            {"echec" in ficheDsf ? (
+              <EtatErreur titre="La fiche ne se lit pas" detail={ficheDsf.echec} />
+            ) : (
+              <div style={{ padding: "12px 16px" }}>
+                <FicheDsf
+                  dossier={niu}
+                  vue={ficheDsf.valeur}
+                  peutRenseigner={detient(acces, "RENSEIGNER_FICHE_DSF")}
+                  peutValider={detient(acces, "VALIDER_FICHE_DSF")}
+                  cote="cabinet"
+                />
+              </div>
+            )}
+          </Panneau>
+        )}
 
         <Panneau titre="Exercices" aide="Bornes incluses. Un exercice clos n'accepte plus aucune écriture.">
           {f.exercices.length === 0 ? (

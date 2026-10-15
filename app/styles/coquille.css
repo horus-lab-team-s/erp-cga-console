@@ -3784,3 +3784,183 @@ a.adherent__quitter {
 .mission__message[data-ton="fait"] {
   color: var(--success);
 }
+
+/* 15 octobre 2026 : la DSF au format DGI, sous les versions de la DSF. */
+.dsf__format-dgi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-100);
+}
+
+.dsf__obstacles,
+.dsf__avertissements {
+  margin: 0;
+  padding-left: 18px;
+  font: 400 12.5px/1.5 var(--police-texte);
+}
+
+.dsf__obstacles {
+  color: var(--danger);
+}
+
+.dsf__avertissements {
+  color: var(--ink-700);
+}
+
+.dsf__format-dgi .bouton-discret {
+  align-self: flex-start;
+}
+
+/* 15 octobre 2026 : la nature d'activité, qui fixe le système de la DSF. */
+.nature-activite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.nature-activite__formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-basis: 100%;
+}
+
+.nature-activite__formulaire input {
+  flex: 1 1 320px;
+}
+
+/* 15 octobre 2026 : d'où vient l'estimation, sous le montant (l'IGS réduit par l'adhésion). */
+.echeance__explication {
+  flex-basis: 100%;
+  font: 400 12px/1.45 var(--police-texte);
+  color: var(--success);
+}
+
+/* 15 octobre 2026 : la fiche signalétique de la DSF (fiches R1 à R3), client et cabinet. */
+.fiche-dsf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font: 400 14px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+.fiche-dsf__etat[data-etat="VALIDEE"] strong {
+  color: var(--success);
+}
+.fiche-dsf__etat[data-etat="SOUMISE"] strong {
+  color: var(--warning);
+}
+.fiche-dsf__renvoi,
+.fiche-dsf__manquants {
+  padding: 10px 12px;
+  border-radius: var(--rayon, 8px);
+  background: var(--surface-2);
+  border: 1px solid var(--line-200);
+}
+.fiche-dsf__manquants ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.fiche-dsf__formulaire,
+.fiche-dsf__reponse {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fiche-dsf fieldset {
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  padding: 12px;
+  margin: 0;
+  min-width: 0;
+}
+.fiche-dsf legend {
+  font: 600 13px/1.4 var(--police-texte);
+  padding: 0 4px;
+}
+.fiche-dsf__grille,
+.fiche-dsf__ligne {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+.fiche-dsf__ligne {
+  margin-top: 8px;
+}
+.fiche-dsf label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 13px/1.4 var(--police-texte);
+  min-width: 0;
+}
+.fiche-dsf input,
+.fiche-dsf select {
+  min-height: 40px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+  min-width: 0;
+}
+.fiche-dsf small,
+.fiche-dsf__aide {
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+  margin: 0;
+}
+.fiche-dsf button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  background: var(--surface);
+  color: var(--ink-900);
+  font: 500 14px/1.2 var(--police-texte);
+  cursor: pointer;
+  align-self: flex-start;
+}
+.fiche-dsf .fiche-dsf__envoyer {
+  background: var(--ink-900);
+  color: var(--surface);
+  border-color: var(--ink-900);
+}
+.fiche-dsf__ajouter {
+  margin-top: 8px;
+}
+.fiche-dsf__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.fiche-dsf__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+.fiche-dsf__retour[data-ton="fait"] {
+  color: var(--success);
+}
+.fiche-dsf__resume {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+.fiche-dsf__resume dt {
+  font: 500 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.fiche-dsf__resume dd {
+  margin: 0;
+}
+.fiche-dsf__renvoyer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
