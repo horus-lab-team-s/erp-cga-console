@@ -51,6 +51,8 @@ export type Bulletin = {
   net_a_payer: string;
   cout_employeur: string;
   repose_sur_des_valeurs_non_validees: boolean;
+  /** 15 octobre 2026 : ce que le bulletin signale sans le refuser (salaire sous le SMIG). */
+  alertes: string[];
 };
 
 export type GroupeRisque = "A" | "B" | "C";

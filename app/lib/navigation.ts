@@ -268,6 +268,17 @@ export const NAVIGATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 15 octobre 2026 : ce qui suit la vente d'une prestation ponctuelle (analyse et
+    // rédaction de contrats, DSF ciblée). L'agent propose, le juriste décide.
+    libelle: "Prestations ponctuelles",
+    href: "/missions",
+    icone: "pieces",
+    permission: "TRAITER_MISSION",
+    // Le second regard doit lire ce qu'il valide.
+    ouAussi: ["VALIDER_MISSION"],
+    construit: true,
+  },
+  {
     libelle: "Pilotage",
     href: "/pilotage",
     icone: "pilotage",

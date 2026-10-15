@@ -129,7 +129,14 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
               {e.reglement && (
                 <span className="honoraires__regle">
                   Réglée le {dateCourte(e.reglement.constate_le.slice(0, 10))} {LIBELLES_CANAL[e.reglement.canal]}
-                  <span className="honoraires__reference"> · {e.reglement.reference_externe}</span>
+                  <span className="honoraires__reference"> · {e.reglement.reference_externe}</span>{" "}
+                  <a
+                    href={`/api/honoraires/${encodeURIComponent(e.niu)}/${encodeURIComponent(e.reglement.identifiant)}`}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Reçu (PDF)
+                  </a>
                 </span>
               )}
             </li>

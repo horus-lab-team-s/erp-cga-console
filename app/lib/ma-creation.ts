@@ -44,3 +44,30 @@ export type SuiviDeMaCreation = {
 export async function lireMesCreations(): Promise<SuiviDeMaCreation[]> {
   return appeler<SuiviDeMaCreation[]>("/creations/mes-creations", { authentifie: true });
 }
+
+/**
+ * Sa proforma et son reçu, sous session (15 octobre 2026) : `GET /mes-documents/creation`.
+ *
+ * Sans cela, la proforma n'était lisible que par le lien signé du courriel, qui expire,
+ * et rien n'attestait ce qu'elle avait réglé. Le dossier est le dossier commercial :
+ * celui de la création s'appelle `CRE-<dossier>`.
+ */
+export type ProformaDeLaCliente = {
+  numero: string;
+  version: number;
+  etat: "TRANSMISE" | "ACCEPTEE";
+  total: string;
+  emise_le: string;
+};
+
+export type MesDocumentsDeCreation = {
+  dossier: string;
+  denomination: string | null;
+  proformas: ProformaDeLaCliente[];
+  reglee: boolean;
+  reglee_le: string | null;
+};
+
+export async function lireMesDocumentsDeCreation(): Promise<MesDocumentsDeCreation[]> {
+  return appeler<MesDocumentsDeCreation[]>("/mes-documents/creation", { authentifie: true });
+}

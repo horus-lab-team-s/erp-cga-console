@@ -169,17 +169,17 @@ export default async function SocialEtPaie({
             {declaration?.repose_sur_des_valeurs_non_validees && (
               <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
                 <span style={{ display: "block" }}>
+                  {/* Réécrit le 15 octobre 2026 : les taux CNPS, CFC et FNE sont validés, et
+                      chaque valeur cite désormais son article du CGI 2026. */}
                   <strong style={{ display: "inline", fontWeight: 600 }}>
-                    Aucun taux de paie n&rsquo;a encore été validé sur le texte.
+                    Certaines valeurs de cette paie attendent la validation du fiscaliste.
                   </strong>{" "}
-                  Cotisations CNPS, barème d&rsquo;impôt sur le revenu, forfaits
-                  d&rsquo;avantages en nature : toutes ces valeurs portent le statut{" "}
-                  <code>A_VALIDER</code> et proviennent de sources secondaires.
+                  Chacune est relue dans l&rsquo;édition officielle 2026 du Code général des
+                  impôts et ses annexes, avec son article au référentiel ; les lignes
+                  concernées portent « à valider par le fiscaliste ».
                 </span>
                 <span style={{ display: "block" }}>
-                  Aucun bulletin produit ici n&rsquo;est opposable, et la taxe de
-                  développement local est <strong>indicative</strong> : son barème est à
-                  montant fixe par palier, modélisé faute de mieux en pourcentage.
+                  Tant qu&rsquo;une ligne l&rsquo;indique, le bulletin n&rsquo;est pas opposable.
                 </span>
               </div>
             )}
@@ -250,6 +250,17 @@ export default async function SocialEtPaie({
                     </select>
                   </label>
                   <button type="submit" className="bouton-discret">Recalculer</button>
+                  {bulletin && (
+                    // 15 octobre 2026 : le bulletin se remet au salarié, du même calcul que l'écran.
+                    <a
+                      className="bouton-discret"
+                      href={`/api/bulletins/${encodeURIComponent(niu)}/${annee}/${mois}/${encodeURIComponent(parametres.bulletin!)}?groupe_risque=${groupe}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Imprimer le bulletin (PDF) ↗
+                    </a>
+                  )}
                   <span style={{ font: "400 12px/1.5 var(--police-texte)", color: "var(--warning, #9a6700)" }}>
                     À confirmer sur la notification CNPS du dossier : il n&rsquo;est pas encore enregistré au dossier.
                   </span>
@@ -336,7 +347,7 @@ function DetailBulletin({ bulletin }: { bulletin: Bulletin }) {
       <span>
         {l.libelle}
         {l.taux ? ` · ${l.taux} %` : ""}
-        {l.non_valide && <span style={{ color: "var(--warning, #9a6700)" }}> · taux à valider</span>}
+        {l.non_valide && <span style={{ color: "var(--warning, #9a6700)" }}> · à valider par le fiscaliste</span>}
       </span>
       <span style={{ fontVariantNumeric: "tabular-nums" }}>
         <Montant valeur={Number(l.montant)} />
@@ -346,6 +357,11 @@ function DetailBulletin({ bulletin }: { bulletin: Bulletin }) {
   const liste: React.CSSProperties = { listStyle: "none", margin: "4px 0 10px", padding: 0, font: "400 13px/1.7 var(--police-texte)" };
   return (
     <div style={{ padding: "6px 16px 14px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+      {bulletin.alertes.map((a) => (
+        <p key={a} role="alert" style={{ gridColumn: "1 / -1", margin: 0, padding: "8px 12px", borderRadius: "var(--rayon)", background: "var(--warning-100, #fff4d6)", font: "500 13px/1.5 var(--police-texte)" }}>
+          {a}
+        </p>
+      ))}
       <div>
         <strong style={{ font: "600 13px/1.4 var(--police-texte)" }}>Rémunération</strong>
         <ul style={liste}>

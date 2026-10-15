@@ -3592,3 +3592,166 @@ a.adherent__quitter {
   height: 80vh;
   border: 0;
 }
+
+/* ── Une alerte du bulletin : salaire sous le SMIG (15 octobre 2026) ──────── */
+.adherent__alerte {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--rayon);
+  background: var(--warning-100, #fff4d6);
+  color: var(--ink-900);
+  font: 500 13.5px/1.5 var(--police-texte);
+}
+
+/* ── Les missions des prestations ponctuelles (15 octobre 2026) ───────────── */
+.mission__ouverture,
+.mission__ajout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 14px;
+  padding: 12px 16px;
+}
+.mission__ouverture label,
+.mission__ajout label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+.mission__ouverture input,
+.mission__ouverture select,
+.mission__ajout input,
+.mission__ajout select,
+.mission__ajout textarea,
+.mission__gestes textarea,
+.mission__gestes input,
+.mission__renvoi input {
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  font: 400 13px/1.4 var(--police-texte);
+}
+.mission__large {
+  grid-column: 1 / -1;
+}
+.mission__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 12px;
+}
+.mission__liste li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-100);
+  font: 400 13px/1.5 var(--police-texte);
+}
+.mission__etat {
+  font-weight: 600;
+  color: var(--brand-magenta-600);
+}
+.mission__liste li[data-etat="LIVREE"] .mission__etat {
+  color: var(--success);
+}
+.mission__agent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mission__points {
+  list-style: none;
+  margin: 0;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mission__point {
+  padding: 10px 12px;
+  border: 1px solid var(--line-200);
+  border-left: 4px solid var(--brand-magenta-600);
+  border-radius: var(--rayon);
+}
+.mission__point[data-decision="RETENUE"],
+.mission__point[data-decision="MODIFIEE"] {
+  border-left-color: var(--success);
+}
+.mission__point[data-decision="ECARTEE"] {
+  border-left-color: var(--line-200);
+  opacity: 0.7;
+}
+.mission__point-entete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font: 600 11px/1.6 var(--police-texte);
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.mission__gravite[data-gravite="ELEVEE"] {
+  color: var(--danger);
+}
+.mission__decision {
+  margin-left: auto;
+  color: var(--ink-900);
+}
+.mission__titre {
+  display: block;
+  margin: 4px 0 2px;
+  font: 600 14px/1.4 var(--police-texte);
+}
+.mission__texte {
+  margin: 0;
+  font: 400 13.5px/1.55 var(--police-texte);
+}
+.mission__citation {
+  margin: 6px 0 0;
+  padding: 4px 10px;
+  border-left: 2px solid var(--line-200);
+  font: italic 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+.mission__gestes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.mission__boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mission__pied {
+  padding: 0 14px 12px;
+}
+.mission__second-regard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.mission__renvoi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mission__note {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+.mission__message {
+  margin: 0;
+  font: 500 13px/1.5 var(--police-texte);
+}
+.mission__message[data-ton="echec"] {
+  color: var(--danger);
+}
+.mission__message[data-ton="fait"] {
+  color: var(--success);
+}

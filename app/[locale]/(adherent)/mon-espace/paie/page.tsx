@@ -271,6 +271,11 @@ function FicheBulletin({ bulletin }: { bulletin: Bulletin }) {
 
   return (
     <>
+      {bulletin.alertes.map((a) => (
+        <p key={a} role="alert" className="adherent__alerte">
+          {a}
+        </p>
+      ))}
       <section className="adherent__section">
         <h2 className="adherent__titre">Ce qui est versé au salarié</h2>
         <dl className="paie-chiffres">
