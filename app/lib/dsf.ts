@@ -1,6 +1,7 @@
 import { appeler } from "./api";
 import type { PiecesDeLaDsf } from "./pieces-dsf-etats";
 import type { VersionDsf } from "./dsf-etats";
+import type { DeclarationParTiers } from "./tiers-dsf-etats";
 
 export type { EtatDsf, VersionDsf } from "./dsf-etats";
 export { LIBELLES_ETAT_DSF } from "./dsf-etats";
@@ -27,6 +28,14 @@ export type FormatDgi = {
 export async function lireLeFormatDgi(niu: string, exercice: string): Promise<FormatDgi> {
   return appeler<FormatDgi>(
     `/cloture/dossiers/${encodeURIComponent(niu)}/dsf/${encodeURIComponent(exercice)}/format-dgi`,
+    { authentifie: true },
+  );
+}
+
+/** Les fournisseurs de l'exercice, comme le modèle de la DGI les déclare (16 octobre 2026). */
+export function lireLesFournisseursDeclares(niu: string, exercice: string) {
+  return appeler<DeclarationParTiers>(
+    `/comptabilite/dossiers/${encodeURIComponent(niu)}/declarations-par-tiers/fournisseurs?exercice=${encodeURIComponent(exercice)}`,
     { authentifie: true },
   );
 }

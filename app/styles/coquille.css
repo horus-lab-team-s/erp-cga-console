@@ -4057,3 +4057,36 @@ a.adherent__quitter {
   color: var(--danger);
   font-size: 12.5px;
 }
+/* Les fiches des fournisseurs déclarés (16 octobre 2026) : même liste que les pièces. */
+.tiers-dsf__formulaire {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 12px;
+  margin: 8px 0 0 2.2em;
+}
+.tiers-dsf__formulaire label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.tiers-dsf__formulaire .tiers-dsf__case {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.tiers-dsf__formulaire .pieces-dsf__gestes {
+  grid-column: 1 / -1;
+  margin-left: 0;
+}
+.tiers-dsf__formulaire input:not([type="checkbox"]) {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+  min-width: 0;
+}

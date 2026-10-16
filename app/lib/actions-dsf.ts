@@ -154,3 +154,33 @@ export async function telechargerUnePieceDsf(_precedent: EtatExport, donnees: Fo
     throw erreur;
   }
 }
+
+/**
+ * Compléter la fiche d'un fournisseur au registre du dossier (16 octobre 2026) : sigle,
+ * téléphone, ville, pays s'il est étranger. Chaque export des modèles de la DGI la reprend.
+ */
+export async function renseignerUnTiers(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const code = String(donnees.get("code") ?? "");
+  const texte = (nom: string) => String(donnees.get(nom) ?? "").trim() || null;
+  const denomination = texte("denomination");
+  if (!denomination) return { echec: "La raison sociale est obligatoire.", fait: null };
+  const etranger = donnees.get("etranger") === "on";
+  return agirSurUnePiece(
+    () =>
+      appeler(`/portefeuille/entreprises/${encodeURIComponent(dossier)}/tiers/${encodeURIComponent(code)}`, {
+        methode: "PUT",
+        authentifie: true,
+        corps: {
+          denomination,
+          niu: texte("niu"),
+          sigle: texte("sigle"),
+          telephone: texte("telephone"),
+          ville: texte("ville"),
+          etranger,
+          pays: etranger ? texte("pays") : null,
+        },
+      }),
+    `Fiche de ${denomination} enregistrée : les modèles de la DGI la reprennent.`,
+  );
+}

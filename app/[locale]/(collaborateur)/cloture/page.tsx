@@ -14,6 +14,7 @@ import { ClotureExercice } from "@/app/components/cloture/ClotureExercice";
 import { DeclarationDsf } from "@/app/components/cloture/DeclarationDsf";
 import { DsfFormatDgi } from "@/app/components/cloture/DsfFormatDgi";
 import { PiecesDsf } from "@/app/components/cloture/PiecesDsf";
+import { TiersDeLaDsf } from "@/app/components/cloture/TiersDeLaDsf";
 import { NatureDActivite } from "@/app/components/cloture/NatureDActivite";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
@@ -21,8 +22,16 @@ import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
-import { lireLeFormatDgi, lireLesPiecesDsf, lireLesVersionsDsf, type FormatDgi, type VersionDsf } from "@/app/lib/dsf";
+import {
+  lireLeFormatDgi,
+  lireLesFournisseursDeclares,
+  lireLesPiecesDsf,
+  lireLesVersionsDsf,
+  type FormatDgi,
+  type VersionDsf,
+} from "@/app/lib/dsf";
 import type { PiecesDeLaDsf } from "@/app/lib/pieces-dsf-etats";
+import type { DeclarationParTiers } from "@/app/lib/tiers-dsf-etats";
 import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -129,6 +138,7 @@ export default async function ClotureEtDsf({
   let erreurDsf: string | null = null;
   let formatDgi: FormatDgi | null = null;
   let piecesDsf: PiecesDeLaDsf | null = null;
+  let fournisseurs: DeclarationParTiers | null = null;
   if (liasse) {
     try {
       versionsDsf = await lireLesVersionsDsf(niu, exercice);
@@ -136,6 +146,8 @@ export default async function ClotureEtDsf({
       formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
       // 15 octobre 2026 : les pièces à joindre, Normal ou SMT ; une panne ne cache pas la DSF.
       piecesDsf = await lireLesPiecesDsf(niu, exercice).catch(() => null);
+      // 16 octobre 2026 : les fiches des fournisseurs que les modèles de la DGI déclarent.
+      fournisseurs = await lireLesFournisseursDeclares(niu, exercice).catch(() => null);
     } catch (cause) {
       erreurDsf = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
     }
@@ -254,6 +266,13 @@ export default async function ClotureEtDsf({
                     exercice={exercice}
                     etat={piecesDsf}
                     peutPreparer={detient(acces, "PREPARER_DSF")}
+                  />
+                )}
+                {fournisseurs && (
+                  <TiersDeLaDsf
+                    dossier={niu}
+                    declaration={fournisseurs}
+                    peutSaisir={detient(acces, "SAISIR_ECRITURE")}
                   />
                 )}
               </Panneau>
