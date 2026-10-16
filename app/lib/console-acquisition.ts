@@ -303,18 +303,6 @@ export type ProformaEmise = {
   transmise_le?: string | null;
 };
 
-export type ProformaConsultee = {
-  numero: string;
-  version: number;
-  service: string;
-  etat: "EMISE" | "TRANSMISE" | "ACCEPTEE" | "REMPLACEE" | "ANNULEE";
-  montant: string;
-  lignes: { libelle: string; montant: string }[];
-  debours: { libelle: string; montant: string }[];
-  expire_le: string;
-  acceptee: boolean;
-};
-
 /** L'état des canaux de contact (pas 90) : ceux que le centre exploite, et pourquoi les autres ne le sont pas. */
 export type EtatDesCanaux = {
   actifs: string[];

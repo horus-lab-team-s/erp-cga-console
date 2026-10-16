@@ -44,7 +44,7 @@ import { revalidatePath } from "next/cache";
 import { appeler, ErreurApi } from "./api";
 import type { EtatActe } from "./saisie";
 import { DEMARCHES, type DemandeSoumise, type ResultatDemande } from "./acquisition";
-import type { ProformaConsultee, ProformaEmise, Proposition } from "./console-acquisition";
+import type { ProformaEmise, Proposition } from "./console-acquisition";
 
 type AccuseDeDemande = {
   recue: boolean;
@@ -251,7 +251,6 @@ export async function chiffrerLeDossier(
   }
 }
 
-
 // ══ La proforma (pas 67) ═════════════════════════════════════════════════════
 
 export type EtatEmission = {
@@ -413,52 +412,6 @@ export async function transmettreLaProforma(_precedent: EtatActe, donnees: FormD
     throw erreur;
   }
 }
-
-// ══ Côté client, sans compte (pas 67) ════════════════════════════════════════
-
-export type LienPresente = { numero: string; version: string; expire_le: string; sceau: string };
-
-/** Lit la proforma par le lien signé. Publique : le sceau est l'authentification. */
-export async function consulterLaProforma(lien: LienPresente): Promise<ProformaConsultee | { echec: string }> {
-  const p = new URLSearchParams({ version: lien.version, expire_le: lien.expire_le, sceau: lien.sceau });
-  try {
-    return await appeler<ProformaConsultee>(
-      `/acquisition/proformas/${encodeURIComponent(lien.numero)}/consultation?${p}`,
-    );
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message };
-    throw erreur;
-  }
-}
-
-/**
- * Le client accepte. **Vaut engagement** : l'identité déclarée et la case cochée
- * sont exigées ici avant l'envoi, et le backend fige le montant, la date et l'origine.
- */
-export async function accepterLaProforma(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
-  const numero = String(donnees.get("numero") ?? "").trim();
-  const identite = String(donnees.get("identite_declaree") ?? "").trim();
-  if (identite.length < 2) return { echec: "Indiquez votre nom et votre qualité.", fait: null };
-  if (donnees.get("engagement") !== "oui") {
-    return { echec: "Cochez la case pour confirmer votre accord.", fait: null };
-  }
-  try {
-    await appeler(`/acquisition/proformas/${encodeURIComponent(numero)}/acceptation`, {
-      methode: "POST",
-      corps: {
-        version: Number(donnees.get("version")),
-        expire_le: String(donnees.get("expire_le") ?? ""),
-        sceau: String(donnees.get("sceau") ?? ""),
-        identite_declaree: identite,
-      },
-    });
-    return { echec: null, fait: "Votre accord est enregistré. Le cabinet revient vers vous pour le règlement." };
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
-    throw erreur;
-  }
-}
-
 
 // ══ Le règlement (pas 68) ════════════════════════════════════════════════════
 

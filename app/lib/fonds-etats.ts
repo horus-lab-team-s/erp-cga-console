@@ -30,9 +30,3 @@ export type MesFondsConfies = {
   obligations_mandatees: string[];
   appels: AppelDeFonds[];
 };
-
-export const LIBELLES_ETAT_FONDS: Record<EtatAppelDeFonds, string> = {
-  A_REGLER: "Fonds à remettre",
-  FONDS_RECUS: "Fonds reçus, administration à payer",
-  REVERSE: "Payée par le cabinet",
-};
