@@ -15,6 +15,7 @@ import {
 } from "@/app/lib/honoraires-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = {
   title: "Mes honoraires · CGA Broad Range Consulting Group",
@@ -128,7 +129,7 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
               <Periode echeance={e} periodicite={contrat.periodicite} />
               {e.reglement && (
                 <span className="honoraires__regle">
-                  Réglée le {dateCourte(e.reglement.constate_le.slice(0, 10))} {LIBELLES_CANAL[e.reglement.canal]}
+                  Réglée le {dateCourte(jourDuFait(e.reglement.constate_le))} {LIBELLES_CANAL[e.reglement.canal]}
                   <span className="honoraires__reference"> · {e.reglement.reference_externe}</span>{" "}
                   <a
                     href={`/api/honoraires/${encodeURIComponent(e.niu)}/${encodeURIComponent(e.reglement.identifiant)}`}

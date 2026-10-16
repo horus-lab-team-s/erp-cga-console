@@ -18,6 +18,7 @@ import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { lireTarifs, type EtatDesTarifs, type LigneDeTarif, type TarifFixe } from "@/app/lib/souscription";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Tarifs de l'offre · Plateforme CGA" };
 
@@ -177,7 +178,7 @@ function LigneDecision({ d, rang, lignes }: { d: TarifFixe; rang: number; lignes
   const ligne = lignes.find((l) => l.service === d.service && l.formule === d.formule);
   return (
     <LigneTableau colonnes={DECISIONS} ton={rang % 2 ? "alterne" : "normal"} hauteur="auto">
-      <Cellule tabulaire>{dateCourte(d.fixe_le.slice(0, 10))}</Cellule>
+      <Cellule tabulaire>{dateCourte(jourDuFait(d.fixe_le))}</Cellule>
       <Cellule lignes={2}>{ligne ? intitule(ligne) : `${d.service}${d.formule ? ` · ${d.formule}` : ""}`}</Cellule>
       <Cellule aDroite tabulaire>
         {montantFcfa(d.montant)}

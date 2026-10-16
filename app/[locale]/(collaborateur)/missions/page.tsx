@@ -11,6 +11,7 @@ import { lireMissions, type Mission } from "@/app/lib/missions";
 import { LIBELLES_ETAT, LIBELLES_TYPE } from "@/app/lib/missions-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Prestations ponctuelles · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -64,7 +65,7 @@ export default async function Missions() {
                     {m.etat === "OUVERTE" && aDecider(m) > 0 ? ` · ${aDecider(m)} à décider` : ""}
                   </span>
                   <span className="mission__note">
-                    {m.identifiant} · ouverte le {dateCourte(m.ouverte_le.slice(0, 10))}
+                    {m.identifiant} · ouverte le {dateCourte(jourDuFait(m.ouverte_le))}
                   </span>
                 </li>
               ))}

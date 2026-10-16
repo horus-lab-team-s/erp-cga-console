@@ -24,6 +24,7 @@ import {
 import { dateCourte } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Demandes entrantes · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -122,7 +123,7 @@ export default async function ConsoleAcquisition() {
               {rappels.map((r, rang) => (
                 <LigneTableau key={r.identifiant} colonnes={COLONNES_RAPPELS} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule titre={r.dossier}>{r.motif}</Cellule>
-                  <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(r.cree_le.slice(0, 10))}</Cellule>
+                  <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(jourDuFait(r.cree_le))}</Cellule>
                   <Cellule>{peutQualifier ? <RappelFait identifiant={r.identifiant} /> : null}</Cellule>
                 </LigneTableau>
               ))}
@@ -146,7 +147,7 @@ export default async function ConsoleAcquisition() {
                   <Cellule aDroite tabulaire>
                     {duree(d.immobile_depuis_heures)} · délai {duree(d.delai_heures)}
                   </Cellule>
-                  <Cellule couleur="var(--ink-500)">{d.signale_le ? dateCourte(d.signale_le.slice(0, 10)) : "pas encore"}</Cellule>
+                  <Cellule couleur="var(--ink-500)">{d.signale_le ? dateCourte(jourDuFait(d.signale_le)) : "pas encore"}</Cellule>
                 </LigneTableau>
               ))}
             </>
@@ -176,7 +177,7 @@ export default async function ConsoleAcquisition() {
                   <Cellule>
                     {LIBELLES_ETAT[d.etat]}
                     <span style={{ display: "block", font: "400 11.5px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
-                      depuis le {dateCourte(d.depuis_le.slice(0, 10))}
+                      depuis le {dateCourte(jourDuFait(d.depuis_le))}
                     </span>
                   </Cellule>
                   <Cellule couleur={d.responsable ? undefined : "var(--ink-500)"}>
@@ -230,7 +231,7 @@ export default async function ConsoleAcquisition() {
                   </Cellule>
                   <Cellule couleur="var(--ink-500)">{d.service_souhaite}</Cellule>
                   <Cellule couleur="var(--ink-500)">
-                    payé depuis le {dateCourte(d.depuis_le.slice(0, 10))}
+                    payé depuis le {dateCourte(jourDuFait(d.depuis_le))}
                   </Cellule>
                 </LigneTableau>
               ))}

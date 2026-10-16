@@ -13,6 +13,7 @@ import { Montant } from "@/app/components/Montant";
 import { ClotureExercice } from "@/app/components/cloture/ClotureExercice";
 import { DeclarationDsf } from "@/app/components/cloture/DeclarationDsf";
 import { DsfFormatDgi } from "@/app/components/cloture/DsfFormatDgi";
+import { PiecesDsf } from "@/app/components/cloture/PiecesDsf";
 import { NatureDActivite } from "@/app/components/cloture/NatureDActivite";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
@@ -20,7 +21,8 @@ import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
-import { lireLeFormatDgi, lireLesVersionsDsf, type FormatDgi, type VersionDsf } from "@/app/lib/dsf";
+import { lireLeFormatDgi, lireLesPiecesDsf, lireLesVersionsDsf, type FormatDgi, type VersionDsf } from "@/app/lib/dsf";
+import type { PiecesDeLaDsf } from "@/app/lib/pieces-dsf-etats";
 import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -32,6 +34,7 @@ import {
   exerciceDejaClos,
   lireLiasse,
   lirePlanDeLaLiasse,
+  type ImpotEstime,
   type Liasse,
   type SystemeDsf,
 } from "@/app/lib/cloture";
@@ -125,11 +128,14 @@ export default async function ClotureEtDsf({
   let versionsDsf: VersionDsf[] = [];
   let erreurDsf: string | null = null;
   let formatDgi: FormatDgi | null = null;
+  let piecesDsf: PiecesDeLaDsf | null = null;
   if (liasse) {
     try {
       versionsDsf = await lireLesVersionsDsf(niu, exercice);
       // 15 octobre 2026 : le format DGI, modèle Normal seulement ; une panne ici ne cache pas la DSF.
       formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
+      // 15 octobre 2026 : les pièces à joindre, Normal ou SMT ; une panne ne cache pas la DSF.
+      piecesDsf = await lireLesPiecesDsf(niu, exercice).catch(() => null);
     } catch (cause) {
       erreurDsf = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
     }
@@ -242,6 +248,14 @@ export default async function ClotureEtDsf({
                   />
                 )}
                 {formatDgi && <DsfFormatDgi dossier={niu} exercice={exercice} etat={formatDgi} />}
+                {piecesDsf && (
+                  <PiecesDsf
+                    dossier={niu}
+                    exercice={exercice}
+                    etat={piecesDsf}
+                    peutPreparer={detient(acces, "PREPARER_DSF")}
+                  />
+                )}
               </Panneau>
             </>
           )
@@ -393,6 +407,7 @@ function TableauDePassage({ liasse }: { liasse: Liasse }) {
       )}
       <Ligne libelle="Résultat fiscal" montant={liasse.resultat_fiscal} fort surligne />
       <DroitCga liasse={liasse} />
+      {liasse.impot && <ImpotDeLExercice impot={liasse.impot} />}
       {Number(liasse.tva_rejetee_a_verifier) > 0 && (
         <div
           style={{
@@ -454,6 +469,52 @@ function DroitCga({ liasse }: { liasse: Liasse }) {
     >
       <strong style={{ color: couleur }}>{intitule}</strong> : {detail}
     </div>
+  );
+}
+
+/**
+ * L'impôt sur les sociétés estimé (15 octobre 2026) : 30 % du résultat fiscal, jamais moins
+ * que le minimum de perception sur le chiffre d'affaires (CGI art. 17, 22, 23), centimes
+ * additionnels compris. Ce qui fixe l'impôt dû se lit, et ce qui n'est pas estimé se dit.
+ */
+function ImpotDeLExercice({ impot }: { impot: ImpotEstime }) {
+  const note = {
+    padding: "10px 16px",
+    font: "400 12.5px/1.5 var(--police-texte)",
+    color: "var(--ink-500)",
+    borderTop: "1px solid var(--line-100)",
+  } as const;
+  if (!impot.estime || impot.impot_du === null) {
+    return (
+      <div style={note}>
+        <strong style={{ color: "var(--ink-700)" }}>Impôt non estimé</strong> : {impot.motif}
+      </div>
+    );
+  }
+  return (
+    <>
+      <Ligne
+        libelle="IS au taux, centimes additionnels compris"
+        montant={impot.is_au_taux ?? "0"}
+        nonValide={impot.non_valide}
+      />
+      <Ligne
+        libelle={`Minimum de perception, sur ${Number(impot.base_du_minimum ?? 0).toLocaleString("fr-FR")} FCFA de chiffre d'affaires`}
+        montant={impot.minimum_de_perception ?? "0"}
+        nonValide={impot.non_valide}
+      />
+      <Ligne libelle="Impôt sur les sociétés dû, estimé" montant={impot.impot_du} fort surligne />
+      <div style={note}>
+        <strong style={{ color: "var(--ink-700)" }}>
+          {impot.retenu === "MINIMUM"
+            ? "Le minimum de perception s’applique"
+            : impot.retenu === "AUCUN"
+              ? "Aucun impôt dû : ni bénéfice ni chiffre d’affaires sur l’exercice"
+              : "L’IS au taux s’applique"}
+        </strong>{" "}
+        : {impot.motif}
+      </div>
+    </>
   );
 }
 

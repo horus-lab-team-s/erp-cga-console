@@ -11,6 +11,8 @@ import {
   type FicheSignaletique,
   type VueDeLaFiche,
 } from "@/app/lib/fiche-dsf-etats";
+import { dateCourte } from "@/app/lib/formats";
+import { jourDuFait } from "@/app/lib/heure-douala";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
 
 /**
@@ -42,8 +44,8 @@ export function FicheDsf({
     <div className="fiche-dsf">
       <p className="fiche-dsf__etat" data-etat={f.etat}>
         <strong>{LIBELLES_ETAT_FICHE[f.etat]}</strong>
-        {f.etat === "VALIDEE" && f.validee_le && ` le ${new Date(f.validee_le).toLocaleDateString("fr-FR")}`}
-        {f.etat === "SOUMISE" && f.soumise_le && ` le ${new Date(f.soumise_le).toLocaleDateString("fr-FR")}`}
+        {f.etat === "VALIDEE" && f.validee_le && ` le ${dateCourte(jourDuFait(f.validee_le))}`}
+        {f.etat === "SOUMISE" && f.soumise_le && ` le ${dateCourte(jourDuFait(f.soumise_le))}`}
       </p>
       {f.motif_du_renvoi && f.etat === "BROUILLON" && (
         <p className="fiche-dsf__renvoi" role="note">

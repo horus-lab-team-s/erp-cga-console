@@ -1,4 +1,5 @@
 import { appeler } from "./api";
+import type { PiecesDeLaDsf } from "./pieces-dsf-etats";
 import type { VersionDsf } from "./dsf-etats";
 
 export type { EtatDsf, VersionDsf } from "./dsf-etats";
@@ -26,6 +27,14 @@ export type FormatDgi = {
 export async function lireLeFormatDgi(niu: string, exercice: string): Promise<FormatDgi> {
   return appeler<FormatDgi>(
     `/cloture/dossiers/${encodeURIComponent(niu)}/dsf/${encodeURIComponent(exercice)}/format-dgi`,
+    { authentifie: true },
+  );
+}
+
+/** Les pièces à joindre à la DSF selon le guide de la DGI, et ce qui manque (15 octobre 2026). */
+export function lireLesPiecesDsf(niu: string, exercice: string) {
+  return appeler<PiecesDeLaDsf>(
+    `/cloture/dossiers/${encodeURIComponent(niu)}/dsf/${encodeURIComponent(exercice)}/pieces-jointes`,
     { authentifie: true },
   );
 }

@@ -14,6 +14,7 @@ import { lireLaCaisseDesHonoraires } from "@/app/lib/honoraires";
 import { LIBELLES_CANAL, LIBELLES_ETAT } from "@/app/lib/honoraires-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Caisse" };
 
@@ -124,7 +125,7 @@ export default async function Caisse() {
                   <Identite ligne={ligne} />
                   <p className="caisse__regle">
                     <span className="caisse__pastille">Encaissé</span>
-                    {ligne.payee_le ? ` le ${dateCourte(ligne.payee_le.slice(0, 10))}` : ""}
+                    {ligne.payee_le ? ` le ${dateCourte(jourDuFait(ligne.payee_le))}` : ""}
                   </p>
                 </li>
               ))}
@@ -171,7 +172,7 @@ export default async function Caisse() {
                   <p className="caisse__regle">
                     <span className="caisse__pastille">Réglé</span>
                     {l.canal ? ` ${LIBELLES_CANAL[l.canal]}` : ""}
-                    {l.constate_le ? ` le ${dateCourte(l.constate_le.slice(0, 10))}` : ""}
+                    {l.constate_le ? ` le ${dateCourte(jourDuFait(l.constate_le))}` : ""}
                   </p>
                 </li>
               ))}
@@ -202,7 +203,7 @@ export default async function Caisse() {
                     <p className="caisse__regle">
                       <span className="caisse__pastille">Reçus</span>
                       {a.canal === "MOBILE_MONEY" ? " par mobile money" : " au guichet"}
-                      {a.fonds_recus_le ? ` le ${dateCourte(a.fonds_recus_le.slice(0, 10))}` : ""}
+                      {a.fonds_recus_le ? ` le ${dateCourte(jourDuFait(a.fonds_recus_le))}` : ""}
                       {a.etat === "REVERSE" ? " · reversés à l'administration" : " · à reverser"}
                     </p>
                   )}

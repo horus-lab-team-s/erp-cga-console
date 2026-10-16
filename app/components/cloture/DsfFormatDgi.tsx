@@ -29,8 +29,8 @@ export function DsfFormatDgi({ dossier, exercice, etat }: { dossier: string; exe
       <p className="dsf__note">
         <strong>Format DGI</strong> · le modèle Excel officiel de la DSF Normal, bilan et compte de résultat remplis aux
         codes REF{etat.avec_exercice_precedent ? ", avec la colonne N-1" : ""}. Il se téléverse tel quel sur le portail,
-        sous son nom : <span className="tabulaire">{etat.nom_du_fichier}</span>. Les fiches R1 à R3 et les notes se
-        complètent sur le portail.
+        sous son nom : <span className="tabulaire">{etat.nom_du_fichier}</span>. Les fiches R1 à R3 reprennent la fiche
+        signalétique validée ; les notes se complètent sur le portail.
       </p>
       {etat.pret ? (
         <p className="dsf__note">

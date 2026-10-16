@@ -84,6 +84,19 @@ export type Liasse = {
   droit_cga: DroitAuxAvantagesCGA;
   /** Le droit est ouvert, et l'abattement ne figure pourtant pas : pourquoi. */
   abattement_cga_ecarte: string | null;
+  /** 15 octobre 2026 : l'IS estimé, minimum de perception compris (CGI art. 17, 22, 23). */
+  impot?: ImpotEstime | null;
+};
+
+export type ImpotEstime = {
+  estime: boolean;
+  motif: string;
+  is_au_taux: string | null;
+  minimum_de_perception: string | null;
+  impot_du: string | null;
+  retenu: "MINIMUM" | "TAUX" | "AUCUN" | null;
+  base_du_minimum: string | null;
+  non_valide: boolean;
 };
 
 export async function lireLiasse(entreprise: string, exercice: string): Promise<Liasse> {

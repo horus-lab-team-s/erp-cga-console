@@ -29,6 +29,7 @@ import { detient } from "@/app/lib/acces";
 import { montantFcfa } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 /**
  * E02 · Détail d'une pièce et rapport de conformité — fiche au § 8.2.
@@ -448,7 +449,7 @@ function PanneauDesEcarts({
             <span style={{ color: "var(--ink-500)", fontWeight: 400 }}> · {ecart.identifiant}</span>
           </p>
           <p style={petit}>
-            Proposé par {ecart.propose_par} le {ecart.propose_le.slice(0, 10).split("-").reverse().join("/")} : « {ecart.motif} »
+            Proposé par {ecart.propose_par} le {jourDuFait(ecart.propose_le).split("-").reverse().join("/")} : « {ecart.motif} »
           </p>
           {ecart.tranche_par && (
             <p style={petit}>

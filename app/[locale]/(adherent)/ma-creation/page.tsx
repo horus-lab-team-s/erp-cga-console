@@ -17,6 +17,7 @@ import {
 } from "@/app/lib/ma-creation";
 import { exigerAcces } from "@/app/lib/session";
 import { Link, redirect } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = {
   title: "Ma création · CGA Broad Range Consulting Group",
@@ -246,7 +247,7 @@ function UneCreation({
                   {p.version > 1 ? `, version ${p.version}` : ""} · {montantFcfa(p.total)}
                   <span className="creation__facultatif">
                     {" "}
-                    · {p.etat === "ACCEPTEE" ? "acceptée" : `émise le ${dateCourte(p.emise_le.slice(0, 10))}`}
+                    · {p.etat === "ACCEPTEE" ? "acceptée" : `émise le ${dateCourte(jourDuFait(p.emise_le))}`}
                   </span>
                 </span>
                 <a href={`/api/ma-creation/proforma/${encodeURIComponent(p.numero)}`} target="_blank" rel="noopener">
@@ -257,7 +258,7 @@ function UneCreation({
             {documents.reglee && (
               <li className="creation__piece" data-recue="oui" data-document="oui">
                 <span>
-                  Règlement constaté{documents.reglee_le ? ` le ${dateCourte(documents.reglee_le.slice(0, 10))}` : ""}
+                  Règlement constaté{documents.reglee_le ? ` le ${dateCourte(jourDuFait(documents.reglee_le))}` : ""}
                 </span>
                 <a href={`/api/ma-creation/recu/${encodeURIComponent(documents.dossier)}`} target="_blank" rel="noopener">
                   Reçu (PDF)

@@ -16,6 +16,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { ClasserLaPiece, ImportAuCabinet, LectureDePiece } from "@/app/components/collecte/GestesDuCabinet";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Pièces justificatives · Plateforme CGA" };
 
@@ -153,7 +154,7 @@ export default async function BoiteReceptionPieces() {
               {enAttente.map((e) => (
                 <li key={e.identifiant}>
                   <Link href={`/pieces/${e.reference_document}`}>{e.reference_document}</Link> · {e.code_regle} ({e.severite}) · proposé par{" "}
-                  {e.propose_par} le {e.propose_le.slice(0, 10).split("-").reverse().join("/")}
+                  {e.propose_par} le {jourDuFait(e.propose_le).split("-").reverse().join("/")}
                 </li>
               ))}
             </ul>
@@ -173,7 +174,7 @@ export default async function BoiteReceptionPieces() {
               <div key={p.identifiant} style={{ borderTop: "1px solid var(--line-100)", padding: "8px 0" }}>
                 <p style={{ margin: "0 0 4px", font: "400 12.5px/1.5 var(--police-texte)" }}>
                   <strong>{p.identifiant}</strong> · {p.entreprise} · reçue par {LIBELLES_CANAL[p.canal]} le{" "}
-                  {p.recue_le.slice(0, 10).split("-").reverse().join("/")}
+                  {jourDuFait(p.recue_le).split("-").reverse().join("/")}
                   {p.commentaire && <span style={{ color: "var(--ink-500)" }}> · « {p.commentaire} »</span>}
                 </p>
                 {/* 14 octobre 2026 : la facture se lit le document sous les yeux, et devient une écriture. */}
@@ -285,7 +286,7 @@ function construireLignes(
       reference: piece.reference_document,
       adherent: noms.get(piece.entreprise) ?? reponse?.facture.destinataire.denomination ?? piece.entreprise,
       fournisseur: piece.emetteur ?? TIRET,
-      date: piece.date_document ?? piece.recue_le.slice(0, 10),
+      date: piece.date_document ?? jourDuFait(piece.recue_le),
       // Le backend rend un nombre ; la ligne garde la chaîne que `montantFcfa` formate.
       ttc: piece.montant_ttc === null ? null : String(piece.montant_ttc),
       canal: LIBELLES_CANAL[piece.canal],

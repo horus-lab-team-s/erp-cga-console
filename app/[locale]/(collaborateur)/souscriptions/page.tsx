@@ -25,6 +25,7 @@ import {
   type ServiceASuspendre,
   type Souscription,
 } from "@/app/lib/souscription";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Souscriptions en ligne · Plateforme CGA" };
 
@@ -218,7 +219,7 @@ function LigneAOuvrir({ s, rang, administre }: { s: Souscription; rang: number; 
       </Cellule>
       <Cellule>{s.libelle}</Cellule>
       <Cellule tabulaire couleur="var(--ink-500)">
-        {s.payee_le ? dateCourte(s.payee_le.slice(0, 10)) : TIRET}
+        {s.payee_le ? dateCourte(jourDuFait(s.payee_le)) : TIRET}
       </Cellule>
       <Cellule aDroite tabulaire>
         {montantFcfa(s.montant)}
@@ -251,7 +252,7 @@ function LigneSuspension({ x, rang }: { x: ServiceASuspendre; rang: number }) {
     <LigneTableau colonnes={SUSPENSIONS} ton={rang % 2 ? "alterne" : "normal"} hauteur="auto">
       <Cellule gras titre={x.niu ?? ""}>{x.courriel}</Cellule>
       <Cellule aDroite tabulaire>{montantFcfa(x.montant_du)}</Cellule>
-      <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(x.depuis_le.slice(0, 10))}</Cellule>
+      <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(jourDuFait(x.depuis_le))}</Cellule>
       <span style={{ minWidth: 0, paddingBlock: 6, font: "400 12px/1.5 var(--police-texte)" }}>{x.consigne}</span>
     </LigneTableau>
   );

@@ -3964,3 +3964,96 @@ a.adherent__quitter {
   flex-direction: column;
   gap: 8px;
 }
+
+/* 15 octobre 2026 : les pièces à joindre à la DSF. */
+.pieces-dsf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pieces-dsf__complet {
+  color: var(--success);
+  font-weight: 600;
+}
+.pieces-dsf__manque {
+  color: var(--warning);
+  font-weight: 600;
+}
+.pieces-dsf__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pieces-dsf__piece {
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  padding: 8px 12px;
+  font: 400 13.5px/1.45 var(--police-texte);
+  color: var(--ink-900);
+}
+.pieces-dsf__piece[data-etat="A_FOURNIR"] {
+  border-left: 3px solid var(--warning);
+}
+.pieces-dsf__piece[data-etat="JOINTE"],
+.pieces-dsf__piece[data-etat="PRODUITE"] {
+  border-left: 3px solid var(--success);
+}
+.pieces-dsf__entete {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pieces-dsf__numero {
+  min-width: 1.6em;
+  color: var(--ink-500);
+}
+.pieces-dsf__libelle {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.pieces-dsf__libelle small {
+  color: var(--ink-500);
+}
+.pieces-dsf__etat {
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.pieces-dsf__piece[data-etat="A_FOURNIR"] .pieces-dsf__etat {
+  color: var(--warning);
+}
+.pieces-dsf__detail {
+  margin: 4px 0 0 2.2em;
+  color: var(--ink-500);
+  font-size: 12.5px;
+}
+.pieces-dsf__gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0 2.2em;
+}
+.pieces-dsf__verser {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.pieces-dsf__verser input[name="motif"] {
+  min-width: 260px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 13px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+}
+.pieces-dsf__echec {
+  margin: 4px 0 0 2.2em;
+  color: var(--danger);
+  font-size: 12.5px;
+}

@@ -6,6 +6,7 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
+import { jourADouala, jourDuFait } from "@/app/lib/heure-douala";
 import { lireTarifs } from "@/app/lib/souscription";
 import { Link } from "@/i18n/navigation";
 import {
@@ -149,8 +150,8 @@ export default async function FicheDossierCommercial({
         <div className="page-travail__titre">
           <h1>{d.nom}</h1>
           <p>
-            {d.service_souhaite} · {LIBELLES_ETAT[fiche.etat]} depuis le {dateCourte(fiche.depuis_le.slice(0, 10))} ·
-            déposée le {dateCourte(d.deposee_le.slice(0, 10))}
+            {d.service_souhaite} · {LIBELLES_ETAT[fiche.etat]} depuis le {dateCourte(jourDuFait(fiche.depuis_le))} ·
+            déposée le {dateCourte(jourDuFait(d.deposee_le))}
             {/* ⚠️ Le NOM, et non « C-007 » : la liste d'où l'on vient l'affiche déjà. */}
             {fiche.responsable_nom ? ` · suivi par ${fiche.responsable_nom}` : ""}
           </p>
@@ -306,7 +307,7 @@ export default async function FicheDossierCommercial({
             aide={ouvreUnEspace ? "Encaissé. L'état réel de l'espace est dit ci-dessous." : "Encaissé. Ce que le règlement a ouvert est dit ci-dessous."}
           >
             <p style={{ margin: 0, padding: "12px 16px 4px", font: "400 13px/1.5 var(--police-texte)" }}>
-              Payé{fiche.payee_le ? ` le ${dateCourte(fiche.payee_le.slice(0, 10))}` : ""}
+              Payé{fiche.payee_le ? ` le ${dateCourte(jourDuFait(fiche.payee_le))}` : ""}
               {ouvreUnEspace && fiche.slug_retenu ? ` · espace « ${fiche.slug_retenu} »` : ""}.
             </p>
             <EtatDeLOuverture ouverture={ouverture} />
@@ -399,7 +400,8 @@ async function lireQualificationSiPossible(reference: string) {
  */
 async function lirePrixArreteSiPossible(service: string): Promise<string | null> {
   try {
-    const etat = await lireTarifs(new Date().toISOString().slice(0, 10));
+    // 16 octobre 2026 : le jour à Douala, pas le jour UTC (entre minuit et une heure, la veille).
+    const etat = await lireTarifs(jourADouala());
     const ligne = etat.lignes.find((l) => l.service === service && l.statut === "FIXE");
     return ligne?.montant ?? null;
   } catch (echec: unknown) {

@@ -33,6 +33,7 @@ import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 import { lireMesEcheances } from "@/app/lib/espace-adherent";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = { title: "Obligations · Plateforme CGA" };
 
@@ -356,7 +357,7 @@ export default async function Obligations({
                       ) : appel.etat === "FONDS_RECUS" ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                           <span style={{ color: "var(--brand-magenta-600)", fontWeight: 600 }}>
-                            {montantFcfa(Number(appel.montant))} reçus le {dateCourte(appel.fonds_recus_le!.slice(0, 10))}
+                            {montantFcfa(Number(appel.montant))} reçus le {dateCourte(jourDuFait(appel.fonds_recus_le!))}
                             {appel.canal === "MOBILE_MONEY" ? " par mobile money" : " au guichet"} : l&rsquo;administration est à
                             payer.
                           </span>
@@ -364,7 +365,7 @@ export default async function Obligations({
                         </div>
                       ) : (
                         <span style={{ color: "var(--success)" }}>
-                          Payée le {dateCourte(appel.reverse_le!.slice(0, 10))}, quittance {appel.quittance}.
+                          Payée le {dateCourte(jourDuFait(appel.reverse_le!))}, quittance {appel.quittance}.
                         </span>
                       )}
                     </div>
