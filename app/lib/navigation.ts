@@ -111,6 +111,8 @@ export const ICONES: Record<string, string> = {
   // Une carte de paiement : les souscriptions réglées en ligne (pas 83).
   souscriptions: "M3 6h18v12H3zM3 10h18M7 15h4",
   // Une étiquette de prix : les tarifs fixés par la direction.
+  // Une mallette : les offres de poste du cabinet (16 octobre 2026).
+  offres: "M4 8h16v11H4zM9 8V5h6v3M4 13h16",
   tarifs: "M3 12V4h8l10 10-8 8zM7.5 8.5h.01",
   // Un pouls : l'état de la plateforme (pas 84).
   exploitation: "M3 12h4l2-5 4 10 2-5h6",
@@ -334,6 +336,15 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     href: "/tarifs",
     icone: "tarifs",
     permission: "FIXER_LES_TARIFS",
+    construit: true,
+  },
+  {
+    // 16 octobre 2026 : les offres de poste du cabinet, publiées sur le site ; les
+    // qualifications se rédigent au mini-éditeur, le candidat les lit avant de postuler.
+    libelle: "Offres de poste",
+    href: "/offres-de-poste",
+    icone: "offres",
+    permission: "EDITER_VITRINE",
     construit: true,
   },
   {
