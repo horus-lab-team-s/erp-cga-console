@@ -60,21 +60,30 @@ export type GroupeRisque = "A" | "B" | "C";
 /**
  * Le bulletin d'un salarié pour un mois, calculé.
  *
- * ⚠️ Le groupe de risque professionnel est notifié par la CNPS au dossier ; il n'est pas
- * encore porté par le dossier (Q25). L'écran le demande et dit qu'il est supposé.
+ * 16 octobre 2026 : le groupe de risque professionnel notifié par la CNPS est porté par le
+ * dossier, et le backend l'applique. `groupe` ne sert qu'à simuler un autre groupe.
  */
 export async function lireBulletin(
   entreprise: string,
   annee: number,
   mois: number,
   matricule: string,
-  groupe: GroupeRisque,
+  groupe?: GroupeRisque,
 ): Promise<Bulletin> {
   return appeler<Bulletin>(
     `/social/dossiers/${encodeURIComponent(entreprise)}/bulletins/${annee}/${mois}/${encodeURIComponent(matricule)}` +
-      `?groupe_risque=${groupe}`,
+      (groupe ? `?groupe_risque=${groupe}` : ""),
     { authentifie: true },
   );
+}
+
+/** Le groupe de risque notifié par la CNPS, tel qu'enregistré au dossier (16 octobre 2026). */
+export type GroupeDuDossier = { groupe: GroupeRisque | null; notifie_le: string | null };
+
+export function lireGroupeDeRisque(entreprise: string): Promise<GroupeDuDossier> {
+  return appeler<GroupeDuDossier>(`/social/dossiers/${encodeURIComponent(entreprise)}/groupe-risque`, {
+    authentifie: true,
+  });
 }
 
 export type Declaration = {
@@ -91,6 +100,9 @@ export type Declaration = {
   repose_sur_des_valeurs_non_validees: boolean;
   mouvements: { salarie: string; sens: string; survenu_le: string }[];
   bulletins: Bulletin[];
+  groupe_risque: GroupeRisque;
+  /** Vrai si le groupe n'est pas au dossier : A est supposé. */
+  groupe_risque_suppose: boolean;
 };
 
 export async function lirePersonnel(

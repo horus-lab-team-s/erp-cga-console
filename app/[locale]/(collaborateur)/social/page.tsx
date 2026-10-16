@@ -21,6 +21,7 @@ import {
   LIBELLES_MOIS,
   lireBulletin,
   lireDeclaration,
+  lireGroupeDeRisque,
   lirePersonnel,
   moisDePaieParDefaut,
   type Bulletin,
@@ -29,6 +30,7 @@ import {
   type LigneSalarie,
 } from "@/app/lib/social";
 import { ContratDuSalarie, EmbaucheSalarie } from "@/app/components/social/GestesPersonnel";
+import { GroupeDeRisque } from "@/app/components/social/GroupeDeRisque";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = { title: "Social et paie · Plateforme CGA" };
@@ -66,9 +68,9 @@ export const dynamic = "force-dynamic";
  * ⚠️ LES GESTES DU FICHIER DU PERSONNEL (pas 89)
  *
  * Embaucher, ouvrir un contrat, le clore : réservés à `SAISIR_ECRITURE`. Le bulletin d'un
- * salarié s'ouvre par `?bulletin=matricule`, avec le groupe de risque professionnel
- * **demandé** : il est notifié par la CNPS au dossier, qui ne le porte pas encore (Q25), et
- * un groupe faux coûte le triple ou le tiers de la cotisation accidents du travail.
+ * salarié s'ouvre par `?bulletin=matricule`. Le groupe de risque professionnel notifié par
+ * la CNPS est porté par le dossier depuis le 16 octobre 2026 et s'applique d'office ;
+ * `?groupe=` ne fait que simuler un autre groupe.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -129,7 +131,10 @@ export default async function SocialEtPaie({
   }
 
   const saisit = detient(acces, "SAISIR_ECRITURE");
-  const groupe: GroupeRisque = parametres.groupe === "B" || parametres.groupe === "C" ? parametres.groupe : "A";
+  // Une simulation seulement : sans elle, le backend applique le groupe du dossier.
+  const groupe: GroupeRisque | undefined =
+    parametres.groupe === "A" || parametres.groupe === "B" || parametres.groupe === "C" ? parametres.groupe : undefined;
+  const groupeDuDossier = await lireGroupeDeRisque(niu).catch(() => null);
   let bulletin: Bulletin | null = null;
   let refusBulletin: string | null = null;
   if (parametres.bulletin && !erreur) {
@@ -182,6 +187,10 @@ export default async function SocialEtPaie({
                   Tant qu&rsquo;une ligne l&rsquo;indique, le bulletin n&rsquo;est pas opposable.
                 </span>
               </div>
+            )}
+
+            {groupeDuDossier && (
+              <GroupeDeRisque dossier={niu} etat={groupeDuDossier} peutEnregistrer={saisit} aujourdhui={jour} />
             )}
 
             {declaration && <SyntheseVersement declaration={declaration} />}
@@ -242,8 +251,9 @@ export default async function SocialEtPaie({
                   <input type="hidden" name="mois" value={mois} />
                   <input type="hidden" name="bulletin" value={parametres.bulletin} />
                   <label style={{ font: "600 12px/1.4 var(--police-texte)" }}>
-                    Groupe de risque CNPS{" "}
-                    <select name="groupe" defaultValue={groupe}>
+                    Simuler un groupe CNPS{" "}
+                    <select name="groupe" defaultValue={groupe ?? ""}>
+                      <option value="">celui du dossier</option>
                       <option value="A">A</option>
                       <option value="B">B</option>
                       <option value="C">C</option>
@@ -254,16 +264,18 @@ export default async function SocialEtPaie({
                     // 15 octobre 2026 : le bulletin se remet au salarié, du même calcul que l'écran.
                     <a
                       className="bouton-discret"
-                      href={`/api/bulletins/${encodeURIComponent(niu)}/${annee}/${mois}/${encodeURIComponent(parametres.bulletin!)}?groupe_risque=${groupe}`}
+                      href={`/api/bulletins/${encodeURIComponent(niu)}/${annee}/${mois}/${encodeURIComponent(parametres.bulletin!)}${groupe ? `?groupe_risque=${groupe}` : ""}`}
                       target="_blank"
                       rel="noopener"
                     >
                       Imprimer le bulletin (PDF) ↗
                     </a>
                   )}
-                  <span style={{ font: "400 12px/1.5 var(--police-texte)", color: "var(--warning, #9a6700)" }}>
-                    À confirmer sur la notification CNPS du dossier : il n&rsquo;est pas encore enregistré au dossier.
-                  </span>
+                  {groupe && (
+                    <span style={{ font: "400 12px/1.5 var(--police-texte)", color: "var(--warning, #9a6700)" }}>
+                      Simulation du groupe {groupe} : le bulletin réel applique le groupe du dossier.
+                    </span>
+                  )}
                 </form>
                 {refusBulletin ? (
                   <EtatErreur titre="Pas de bulletin" detail={refusBulletin} />

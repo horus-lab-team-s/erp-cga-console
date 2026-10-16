@@ -4090,3 +4090,56 @@ a.adherent__quitter {
   color: var(--ink-900);
   min-width: 0;
 }
+/* Le groupe de risque professionnel notifié par la CNPS (16 octobre 2026). */
+.groupe-risque {
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--success);
+  border-radius: var(--rayon, 8px);
+  padding: 10px 14px;
+  margin: 0 0 12px;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+  background: var(--surface);
+}
+.groupe-risque--suppose {
+  border-left-color: var(--warning);
+}
+.groupe-risque__etat {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+.groupe-risque__formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  margin-top: 8px;
+}
+.groupe-risque__formulaire label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.groupe-risque__formulaire select,
+.groupe-risque__formulaire input {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+}
+.groupe-risque__retour {
+  margin: 6px 0 0;
+  color: var(--success);
+}
+.groupe-risque__echec {
+  margin: 6px 0 0;
+  color: var(--danger, #b42318);
+}

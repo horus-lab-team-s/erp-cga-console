@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
+import { GroupeDeRisque } from "@/app/components/social/GroupeDeRisque";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import {
   LIBELLES_MOIS,
   lireDeclaration,
+  lireGroupeDeRisque,
   lirePersonnel,
   moisDePaieParDefaut,
   type Bulletin,
@@ -92,9 +94,10 @@ export default async function MaPaie({
   // ⚠️ Les deux lectures sont tolérantes et séparées. Une entreprise qui vient
   // d'ouvrir sa paie a un personnel et aucune déclaration : faire tomber l'écran
   // entier sur ce cas lui dirait que son espace est en panne.
-  const [personnel, declaration] = await Promise.all([
+  const [personnel, declaration, groupeDuDossier] = await Promise.all([
     lirePersonnel(principal, jour).catch(() => null),
     lireDeclaration(principal, annee, mois, jour).catch(() => null),
+    lireGroupeDeRisque(principal).catch(() => null),
   ]);
 
   const periode = `${LIBELLES_MOIS[mois - 1]} ${annee}`;
@@ -119,6 +122,11 @@ export default async function MaPaie({
           bulletins sont calculés avec des valeurs que le cabinet doit confirmer : ils ne sont pas
           opposables en l&rsquo;état.
         </div>
+      )}
+
+      {/* 16 octobre 2026 : c'est l'employeur qui reçoit la notification de la CNPS. */}
+      {groupeDuDossier && (!bulletin || groupeDuDossier.groupe === null) && (
+        <GroupeDeRisque dossier={principal} etat={groupeDuDossier} peutEnregistrer aujourdhui={jour} />
       )}
 
       {bulletin ? (
