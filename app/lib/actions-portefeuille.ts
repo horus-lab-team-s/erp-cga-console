@@ -293,3 +293,44 @@ export async function fixerLaNatureDActivite(_precedent: EtatActe, donnees: Form
     throw erreur;
   }
 }
+
+/**
+ * Inscrire au portefeuille l'entreprise d'un dossier commercial payé (16 octobre 2026). Le
+ * backend vérifie le paiement, l'unicité du NIU et la cohérence des dates.
+ */
+export async function inscrireAuPortefeuille(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const champ = (nom: string) => String(donnees.get(nom) ?? "").trim() || null;
+  const reference = champ("reference");
+  const justification = champ("justification") ?? "";
+  if (!reference) return { echec: "Dossier commercial introuvable.", fait: null };
+  if (justification.length < 30) {
+    return { echec: "Dites quelles pièces vous avez vues (30 caractères au moins) : cela part au journal.", fait: null };
+  }
+  const groupe = champ("groupe_risque_cnps");
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/inscription`, {
+      methode: "POST",
+      authentifie: true,
+      corps: {
+        niu: champ("niu"),
+        denomination: champ("denomination"),
+        forme_juridique: champ("forme_juridique"),
+        date_creation: champ("date_creation"),
+        regime: champ("regime"),
+        centre: champ("centre"),
+        cloture_exercice_en_cours: champ("cloture_exercice_en_cours"),
+        rccm: champ("rccm"),
+        telephone: champ("telephone"),
+        numero_cnps_employeur: champ("numero_cnps_employeur"),
+        groupe_risque_cnps: groupe,
+        groupe_risque_notifie_le: groupe ? champ("groupe_risque_notifie_le") : null,
+        justification,
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath(CHEMIN_PORTEFEUILLE, "page");
+  return { echec: null, fait: `Inscrite au portefeuille sous le NIU ${champ("niu")}. Admettez-la au Centre si elle adhère.` };
+}

@@ -10,8 +10,9 @@ import {
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Admission, Resiliation } from "@/app/components/portefeuille/GestesDAdhesion";
+import { InscriptionsEnAttente } from "@/app/components/portefeuille/InscriptionsEnAttente";
 import { dateCourte, TIRET } from "@/app/lib/formats";
-import { aujourdhui, lireDossiers, type Dossier } from "@/app/lib/portefeuille";
+import { aujourdhui, lireDossiers, lireInscriptionsEnAttente, type Dossier } from "@/app/lib/portefeuille";
 import { lireAnomaliesDuPortefeuille, type AnomalieIdentifiant } from "@/app/lib/fiche-dossier";
 import { ErreurApi } from "@/app/lib/api";
 import { Link } from "@/i18n/navigation";
@@ -80,6 +81,8 @@ export default async function Portefeuille() {
     anomalies = erreur.message;
   }
   const peutInscrire = detient(acces, "INSCRIRE_STATUT");
+  // 16 octobre 2026 : les entreprises payées à inscrire ; une panne ne cache pas la liste.
+  const enAttente = peutInscrire ? await lireInscriptionsEnAttente().catch(() => []) : [];
 
   return (
     <>
@@ -107,6 +110,15 @@ export default async function Portefeuille() {
           </div>
         ) : (
           anomalies.length > 0 && <IdentifiantsDouteux anomalies={anomalies} />
+        )}
+
+        {enAttente.length > 0 && (
+          <Panneau
+            titre={`${enAttente.length} entreprise${enAttente.length > 1 ? "s" : ""} payée${enAttente.length > 1 ? "s" : ""} à inscrire`}
+            aide="Le dossier commercial préremplit ce qu'il sait ; vérifiez l'identité fiscale sur pièces."
+          >
+            <InscriptionsEnAttente attente={enAttente} finDAnnee={`${jour.slice(0, 4)}-12-31`} />
+          </Panneau>
         )}
 
         <Panneau

@@ -4143,3 +4143,76 @@ a.adherent__quitter {
   margin: 6px 0 0;
   color: var(--danger, #b42318);
 }
+/* Les entreprises payées à inscrire au portefeuille (16 octobre 2026). */
+.inscriptions {
+  list-style: none;
+  margin: 0;
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inscriptions__ligne {
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--rayon, 8px);
+  padding: 10px 14px;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+.inscriptions__ligne[data-etat="faite"] {
+  border-left-color: var(--success);
+}
+.inscriptions__entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.inscriptions__entete small {
+  color: var(--ink-500);
+}
+.inscriptions__formulaire {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+.inscriptions__formulaire label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+  min-width: 0;
+}
+.inscriptions__formulaire input,
+.inscriptions__formulaire select,
+.inscriptions__formulaire textarea {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.4 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+  min-width: 0;
+}
+.inscriptions__large,
+.inscriptions__gestes,
+.inscriptions__echec {
+  grid-column: 1 / -1;
+}
+.inscriptions__gestes {
+  display: flex;
+  gap: 8px;
+}
+.inscriptions__retour {
+  margin: 0;
+  color: var(--success);
+}
+.inscriptions__echec {
+  margin: 0;
+  color: var(--danger, #b42318);
+}
