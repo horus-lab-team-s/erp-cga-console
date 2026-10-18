@@ -121,7 +121,11 @@ export async function connexion(
   // ⚠️ La responsable de caisse arrive sur sa caisse (14 octobre 2026). Son rôle ne
   // porte que la permission d'encaisser : le tableau de bord, qui lit les dossiers,
   // lui afficherait un écran réservé à sa première seconde dans le produit.
-  const seulementLaCaisse = acces.permissions.length === 1 && acces.permissions[0] === "ENCAISSER";
+  // ⚠️ 18 octobre 2026 : « elle encaisse et ne lit aucun dossier », et non plus « sa seule
+  // permission est d'encaisser ». La caisse a reçu la vue des versements par axe
+  // (`VOIR_VERSEMENTS_*`) : la règle ne la reconnaissait plus, et elle retombait sur le
+  // tableau de bord fermé à son rôle.
+  const seulementLaCaisse = detient(acces, "ENCAISSER") && !detient(acces, "LIRE_DOSSIER");
   // ⚠️ La cliente d'une création arrive sur SA création (14 octobre 2026). Elle n'a pas encore
   // d'entreprise au portefeuille : l'espace adhérent lui afficherait « aucune entreprise ». Le
   // jour où sa société est immatriculée, son compte reçoit `LIRE_DOSSIER` et elle arrive chez elle.
