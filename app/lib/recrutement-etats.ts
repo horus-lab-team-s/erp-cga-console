@@ -21,6 +21,8 @@ export type OffreDePoste = {
   creee_le: string;
   publiee_le: string | null;
   close_le: string | null;
+  /** 18 octobre 2026 : l'image de l'offre, si elle en a une. */
+  image_empreinte?: string | null;
 };
 
 export type OffreDuCabinet = { offre: OffreDePoste; candidatures: number };
@@ -34,7 +36,24 @@ export type Candidature = {
   message: string;
   cv_nom: string;
   recue_le: string;
+  // 18 octobre 2026 (point 25) : l'état, les décisions et les réponses.
+  etat: EtatCandidature;
+  decisions: { etat: EtatCandidature; par: string; le: string; note: string | null }[];
+  reponses: { objet: string; corps: string; source: string; par: string; le: string; envoyee: boolean }[];
 };
+
+export type EtatCandidature = "RECUE" | "PRESELECTIONNEE" | "ENTRETIEN" | "RETENUE" | "NON_RETENUE";
+
+export const LIBELLES_ETAT_CANDIDATURE: Record<EtatCandidature, string> = {
+  RECUE: "Reçue",
+  PRESELECTIONNEE: "Présélectionnée",
+  ENTRETIEN: "Entretien",
+  RETENUE: "Retenue",
+  NON_RETENUE: "Non retenue",
+};
+
+/** La réponse proposée : le texte type du cabinet, ou celui de l'agent, à relire. */
+export type ReponseProposee = { objet: string; corps: string; source: "MODELE" | "AGENT"; courriel: string | null };
 
 export const LIBELLES_CONTRAT: Record<TypeDeContrat, string> = {
   CDI: "CDI",

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { ConstatDeCaisse } from "@/app/components/caisse/ConstatDeCaisse";
 import { ConstatDeFonds } from "@/app/components/caisse/ConstatDeFonds";
 import { ConstatDHonoraires } from "@/app/components/caisse/ConstatDHonoraires";
+import { JournalDeCaisse, NonRattaches } from "@/app/components/caisse/JournalDeCaisse";
+import { lireLeJournalDeCaisse, lireLesNonRattaches } from "@/app/lib/journal-de-caisse";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Panneau } from "@/app/components/Tableau";
@@ -41,19 +43,30 @@ export const metadata: Metadata = { title: "Caisse" };
  * ce qu'elle a fait, et ce que les autres chemins ont fait pour elle.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export default async function Caisse() {
+export default async function Caisse({ searchParams }: { searchParams: Promise<{ du?: string; au?: string }> }) {
   const acces = await exigerAcces();
-  if (!detient(acces, "ENCAISSER")) {
+  // 18 octobre 2026 : la direction lit le journal par axe, pour le suivi financier global.
+  const encaisse = detient(acces, "ENCAISSER");
+  if (!encaisse && !detient(acces, "LIRE_PILOTAGE")) {
     return <EcranReserve titre="Caisse" permission="ENCAISSER" acces={acces} />;
   }
+  const { du, au } = await searchParams;
+  const date = (valeur?: string) => (valeur && /^\d{4}-\d{2}-\d{2}$/.test(valeur) ? valeur : undefined);
+  const journal = await lireLeJournalDeCaisse(date(du), date(au)).catch(() => null);
+  const nonRattaches = encaisse ? await lireLesNonRattaches().catch(() => null) : null;
+  // ⚠️ La matrice peut retirer une famille de versements à la caisse : son panneau ne se
+  // demande même pas, et le serveur le refuserait.
+  const voitCommerce = encaisse && detient(acces, "VOIR_VERSEMENTS_COMMERCE");
+  const voitHonoraires = encaisse && detient(acces, "VOIR_VERSEMENTS_HONORAIRES");
+  const voitFonds = encaisse && detient(acces, "VOIR_VERSEMENTS_FONDS_DE_TIERS");
 
   const [lignes, honoraires] = await Promise.all([
-    lireLaCaisse(),
+    voitCommerce ? lireLaCaisse() : Promise.resolve([] as ReglementDeCaisse[]),
     // ⚠️ Une lecture de commodité : sans elle, la caisse des propositions reste entière.
-    lireLaCaisseDesHonoraires().catch(() => null),
+    voitHonoraires ? lireLaCaisseDesHonoraires().catch(() => null) : Promise.resolve(null),
   ]);
   // 14 octobre 2026 : les fonds de tiers, à part. Ils ne s'additionnent à rien.
-  const fonds = await lireLaCaisseDesFonds().catch(() => null);
+  const fonds = voitFonds ? await lireLaCaisseDesFonds().catch(() => null) : null;
   const honorairesDus = (honoraires ?? []).filter((l) => l.etat !== "REGLEE");
   const honorairesRegles = (honoraires ?? []).filter((l) => l.etat === "REGLEE");
   const dus = lignes.filter((l) => l.etat === "A_ENCAISSER");
@@ -67,12 +80,37 @@ export default async function Caisse() {
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Caisse</h1>
-          <p>
-            {dus.length} règlement{dus.length > 1 ? "s" : ""} à constater · {regles.length} encaissé
-            {regles.length > 1 ? "s" : ""}
-          </p>
+          {voitCommerce && (
+            <p>
+              {dus.length} règlement{dus.length > 1 ? "s" : ""} à constater · {regles.length} encaissé
+              {regles.length > 1 ? "s" : ""}
+            </p>
+          )}
         </div>
 
+        {/* 18 octobre 2026 : le journal de tout ce qui a été encaissé, par axe. */}
+        <Panneau
+          titre="Journal de caisse et totaux par axe"
+          aide="Ce qui a été encaissé sur la période, tous canaux. Les versements Tara se rapprochent seuls ; ceux du guichet sont constatés sur leur objet, donc dans leur axe."
+        >
+          {journal === null ? (
+            <p className="caisse__vide">Le journal ne se lit pas pour l&rsquo;instant.</p>
+          ) : (
+            <JournalDeCaisse journal={journal} />
+          )}
+        </Panneau>
+
+        {nonRattaches !== null && (
+          <Panneau
+            titre="Paiements Tara non rattachés"
+            aide="Des notifications de l'opérateur qu'aucun paiement attendu n'explique. À traiter à la main : appeler le numéro, retrouver ce qui est réglé, le constater au guichet sous la référence de l'opérateur."
+          >
+            <NonRattaches notifications={nonRattaches} />
+          </Panneau>
+        )}
+
+        {voitCommerce && (
+          <>
         <dl className="caisse__chiffres">
           <div>
             <dt>À encaisser</dt>
@@ -133,8 +171,12 @@ export default async function Caisse() {
           )}
         </Panneau>
 
+          </>
+        )}
+
         {/* ⚠️ 14 octobre 2026 : les honoraires des adhérents. Le retard en tête ; un
             règlement par mobile money arrive ici seul, déjà « Réglé ». */}
+        {voitHonoraires && (
         <Panneau
           titre="Honoraires des adhérents"
           aide="Ce qui est exigible, le retard d'abord, puis ce qui a été réglé depuis un mois, au guichet ou par mobile money."
@@ -179,6 +221,7 @@ export default async function Caisse() {
             </ul>
           )}
         </Panneau>
+        )}
 
         {/* ⚠️ 14 octobre 2026 : les fonds qu'un adhérent remet pour payer l'administration (mandat
             de paiement). Un panneau à part, sans total commun : cet argent n'est pas au cabinet. */}

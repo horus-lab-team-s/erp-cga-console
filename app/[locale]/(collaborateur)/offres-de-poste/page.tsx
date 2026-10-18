@@ -18,7 +18,9 @@ export const metadata: Metadata = { title: "Offres de poste · Plateforme CGA" }
  */
 export default async function PageOffresDePoste() {
   const acces = await exigerAcces();
-  if (!detient(acces, "EDITER_VITRINE")) {
+  // 18 octobre 2026 (point 25) : qui recrute rédige aussi les offres ; seul lui lit les CV.
+  const recrute = detient(acces, "GERER_RECRUTEMENT");
+  if (!detient(acces, "EDITER_VITRINE") && !recrute) {
     return <EcranReserve titre="Offres de poste" permission="EDITER_VITRINE" acces={acces} />;
   }
   let offres: OffreDuCabinet[] = [];
@@ -28,7 +30,7 @@ export default async function PageOffresDePoste() {
     offres = await lireLesOffresDuCabinet();
     await Promise.all(
       offres
-        .filter((o) => o.candidatures > 0)
+        .filter((o) => recrute && o.candidatures > 0)
         .map(async (o) => {
           candidatures[o.offre.identifiant] = await lireLesCandidatures(o.offre.identifiant);
         }),

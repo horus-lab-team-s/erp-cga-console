@@ -193,6 +193,15 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
               </li>
             ))}
           </ul>
+          {/* 18 octobre 2026 : un document reçu par WhatsApp que la liste n'a pas prévu. */}
+          {!clos && (
+            <details style={{ padding: "8px 16px", borderTop: "1px solid var(--line-100)" }}>
+              <summary style={{ ...texte, color: "var(--brand-indigo-700)", cursor: "pointer" }}>Ajouter une pièce hors liste</summary>
+              <div style={{ marginTop: 8 }}>
+                <RecevoirPiece reference={dossier.reference} code="AUTRE" libelle="pièce hors liste" horsListe />
+              </div>
+            </details>
+          )}
         </Panneau>
 
         <Panneau titre="Identifiants délivrés">

@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useState } from "react";
 
-import { jugerLaQuittance } from "@/app/lib/actions-obligations";
+import { enregistrerLEcritureDePaiement, jugerLaQuittance } from "@/app/lib/actions-obligations";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 
 /**
@@ -24,12 +24,18 @@ export function JugerLaQuittance({
 }) {
   const [etat, juger, enCours] = useActionState(jugerLaQuittance, ETAT_ACTE_INITIAL);
   const [refuser, setRefuser] = useState(false);
+  const [montant, setMontant] = useState("");
 
   if (etat.fait) {
     return (
-      <p role="status" style={{ margin: 0, color: "var(--success)", font: "500 12.5px/1.4 var(--police-texte)" }}>
-        {etat.fait}
-      </p>
+      <>
+        <p role="status" style={{ margin: 0, color: "var(--success)", font: "500 12.5px/1.4 var(--police-texte)" }}>
+          {etat.fait}
+        </p>
+        {!refuser && (
+          <EcritureDePaiement dossier={dossier} codeObligation={codeObligation} periodeDebut={periodeDebut} piece={piece} montant={montant} />
+        )}
+      </>
     );
   }
 
@@ -62,6 +68,17 @@ export function JugerLaQuittance({
         </>
       ) : (
         <>
+          {/* 18 octobre 2026 (point 7) : le montant de la quittance sert son écriture. */}
+          <label className="juger-quittance__motif">
+            Montant de la quittance (facultatif)
+            <input
+              name="montant_quittance"
+              inputMode="numeric"
+              value={montant}
+              onChange={(e) => setMontant(e.target.value.replace(/[^\d]/g, ""))}
+              placeholder="ex. 84000"
+            />
+          </label>
           <button type="submit" name="verdict" value="VALIDEE" className="bouton-primaire" disabled={enCours}>
             {enCours ? "…" : "Valider : payée"}
           </button>
@@ -70,6 +87,65 @@ export function JugerLaQuittance({
           </button>
         </>
       )}
+      {etat.echec && (
+        <p role="alert" className="juger-quittance__echec">
+          {etat.echec}
+        </p>
+      )}
+    </form>
+  );
+}
+
+/**
+ * Proposer l'écriture de paiement d'une quittance validée (18 octobre 2026, point 7) : la
+ * trésorerie se choisit, le brouillon se valide ensuite sur l'écran de saisie.
+ */
+function EcritureDePaiement({
+  dossier,
+  codeObligation,
+  periodeDebut,
+  piece,
+  montant,
+}: {
+  dossier: string;
+  codeObligation: string;
+  periodeDebut: string;
+  piece: string;
+  montant: string;
+}) {
+  const [etat, enregistrer, enCours] = useActionState(enregistrerLEcritureDePaiement, ETAT_ACTE_INITIAL);
+  if (etat.fait) {
+    return (
+      <p role="status" style={{ margin: 0, color: "var(--success)", font: "500 12.5px/1.4 var(--police-texte)" }}>
+        {etat.fait}
+      </p>
+    );
+  }
+  return (
+    <form action={enregistrer} className="juger-quittance">
+      <input type="hidden" name="dossier" value={dossier} />
+      <input type="hidden" name="code_obligation" value={codeObligation} />
+      <input type="hidden" name="periode_debut" value={periodeDebut} />
+      <input type="hidden" name="piece" value={piece} />
+      {montant ? (
+        <input type="hidden" name="montant" value={montant} />
+      ) : (
+        <label className="juger-quittance__motif">
+          Montant payé
+          <input name="montant" inputMode="numeric" required />
+        </label>
+      )}
+      <label className="juger-quittance__motif">
+        Payé par
+        <select name="compte_tresorerie" defaultValue="521">
+          <option value="521">la banque (521)</option>
+          <option value="5231">le mobile money (5231)</option>
+          <option value="571">la caisse (571)</option>
+        </select>
+      </label>
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : "Proposer l'écriture de paiement"}
+      </button>
       {etat.echec && (
         <p role="alert" className="juger-quittance__echec">
           {etat.echec}

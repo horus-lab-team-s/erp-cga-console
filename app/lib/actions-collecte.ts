@@ -332,26 +332,6 @@ export async function recevoirUnePieceAuCabinet(_precedent: EtatActe, donnees: F
   }
 }
 
-/** Le document d'une pièce, en base64 : les octets passent intacts jusqu'au navigateur (pas 88). */
-export type EtatDocument = { echec: string | null; fichier: { nom: string; typeMime: string; base64: string } | null };
-
-/**
- * Récupérer le document scanné d'une pièce (pas 88).
- *
- * ⚠️ Le backend le rend en pièce jointe, avec `nosniff` : un fichier déposé de l'extérieur
- * ne doit jamais s'ouvrir dans la page du cabinet. L'écran le télécharge, il ne l'insère pas.
- */
-export async function recupererLeDocument(_precedent: EtatDocument, donnees: FormData): Promise<EtatDocument> {
-  const identifiant = String(donnees.get("identifiant") ?? "");
-  try {
-    const f = await telecharger(`/collecte/pieces/${encodeURIComponent(identifiant)}/fichier`);
-    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
-    throw erreur;
-  }
-}
-
 /**
  * Envoyer la relance des pièces cochées (pas 111). La sélection, le modèle et les canaux partent ;
  * le message, lui, est rendu par le backend, le même qu'à l'aperçu.

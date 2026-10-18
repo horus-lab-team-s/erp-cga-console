@@ -12,6 +12,8 @@ import { LIBELLES_ETAT_PIECE, type PieceLue, type PiecesDeLaDsf } from "@/app/li
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { ETAT_EXPORT_INITIAL } from "@/app/lib/saisie-echange";
 import { declencherTelechargement } from "@/app/lib/telechargement-navigateur";
+import { ChampFichier } from "@/app/components/ChampFichier";
+import { DocumentDeLaPiece as ApercuDuDocument } from "@/app/components/creation/DocumentDeLaPiece";
 
 /**
  * Les pièces à joindre à la DSF (15 octobre 2026), selon le tableau de correspondance du guide
@@ -90,9 +92,17 @@ function Piece({
         <span className="pieces-dsf__etat">{LIBELLES_ETAT_PIECE[piece.etat]}</span>
       </div>
       {piece.etat === "JOINTE" && piece.nom_du_fichier && <p className="pieces-dsf__detail">{piece.nom_du_fichier}</p>}
+      {/* 18 octobre 2026 : une pièce versée se relit avant de partir dans la liasse. */}
+      {piece.etat === "JOINTE" && (
+        <ApercuDuDocument
+          champs={{ dossier, exercice, numero: String(piece.numero) }}
+          libelle={piece.nom_du_fichier ?? piece.libelle}
+          lire={telechargerUnePieceDsf}
+        />
+      )}
       {piece.etat === "NEANT" && piece.motif && <p className="pieces-dsf__detail">« {piece.motif} »</p>}
       <div className="pieces-dsf__gestes">
-        {(piece.etat === "PRODUITE" || piece.etat === "JOINTE") && (
+        {piece.etat === "PRODUITE" && (
           <form action={telecharger}>
             {caches}
             <input type="hidden" name="produite" value={piece.produite ?? ""} />
@@ -105,7 +115,7 @@ function Piece({
           <>
             <form action={verser} className="pieces-dsf__verser">
               {caches}
-              <input type="file" name="fichier" accept="application/pdf,image/jpeg,image/png,image/tiff" required />
+              <ChampFichier name="fichier" accept="application/pdf,image/jpeg,image/png,image/tiff" required />
               <button type="submit" className="bouton-discret" disabled={enVersement}>
                 {enVersement ? "Envoi…" : "Verser"}
               </button>

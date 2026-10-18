@@ -12,6 +12,7 @@ import {
   type DepotEnAttente,
 } from "@/app/lib/file-hors-ligne";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 /**
  * E07 · Déposer un justificatif, et E08 · la file hors ligne, depuis l'espace adhérent.
@@ -157,6 +158,8 @@ export function DepotDePiece({ dossier }: { dossier: string }) {
     const transfert = new DataTransfer();
     transfert.items.add(photo);
     champFichier.current.files = transfert.files;
+    // Pour que l'aperçu avant envoi montre la photo prise (18 octobre 2026).
+    champFichier.current.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   return (
@@ -165,7 +168,7 @@ export function DepotDePiece({ dossier }: { dossier: string }) {
         <input type="hidden" name="dossier" value={dossier} />
         <label className="adherent__depot-fichier">
           <span>Le document</span>
-          <input ref={champFichier} type="file" name="fichier" accept="image/jpeg,image/png,image/tiff,application/pdf" />
+          <ChampFichier ref={champFichier} name="fichier" accept="image/jpeg,image/png,image/tiff,application/pdf" />
           <small>Photo ou PDF, 20 Mo au plus.</small>
         </label>
         <label className="adherent__depot-photo">

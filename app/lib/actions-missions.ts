@@ -85,6 +85,16 @@ export async function ecrireLeCahier(_p: EtatActe, donnees: FormData): Promise<E
   );
 }
 
+/** Partir d'un modèle : le canevas du cahier (s'il est vide), et les articles types à décider. */
+export async function partirDUnModele(_p: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const id = String(donnees.get("mission") ?? "");
+  const modele = String(donnees.get("modele") ?? "");
+  if (!modele) return { echec: "Choisissez un modèle.", fait: null };
+  return geste(id, "Articles types versés : décidez de chacun, et remplacez chaque [À COMPLÉTER].", () =>
+    appeler(`${chemin(id)}/modele`, { methode: "POST", authentifie: true, corps: { modele } }),
+  );
+}
+
 export async function redigerLeContrat(_p: EtatActe, donnees: FormData): Promise<EtatActe> {
   const id = String(donnees.get("mission") ?? "");
   try {
@@ -162,4 +172,25 @@ export async function lireLeDocumentDeLaMission(
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
     throw erreur;
   }
+}
+
+/** 18 octobre 2026 (point 22) : confier la mission à un autre collaborateur, motif à l'appui. */
+export async function reaffecterLaMission(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const identifiant = String(donnees.get("identifiant") ?? "");
+  const responsable = String(donnees.get("responsable") ?? "");
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (!responsable) return { echec: "Choisissez le collaborateur.", fait: null };
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  try {
+    await appeler(`${chemin(identifiant)}/reaffectation`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { responsable, motif },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath("/[locale]/missions/[identifiant]", "page");
+  return { echec: null, fait: "Mission confiée. Le nouveau responsable la retrouve dans sa liste." };
 }

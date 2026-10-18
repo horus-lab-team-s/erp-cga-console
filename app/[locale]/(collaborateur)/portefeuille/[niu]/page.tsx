@@ -2,12 +2,21 @@ import type { Metadata } from "next";
 import { AccesDesAdherents } from "@/app/components/portefeuille/AccesDesAdherents";
 import { FicheDsf } from "@/app/components/FicheDsf";
 import { FixerLeContrat } from "@/app/components/portefeuille/ContratDHonoraires";
+import {
+  AccorderLeMandat,
+  AccorderUneGrace,
+  LeverUneGrace,
+  RetirerLeMandat,
+  ReviserLeTarif,
+} from "@/app/components/portefeuille/GestesDeReglement";
+import { PastilleDeSituation } from "@/app/components/portefeuille/PastilleDeSituation";
+import { lireLesFondsConfies } from "@/app/lib/fonds";
 import { notFound } from "next/navigation";
 
 import { Cellule, EnteteTableau, EtatErreur, EtatVide, LigneTableau, Panneau, type Colonne } from "@/app/components/Tableau";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
-import { LIBELLES_ROLE, detient } from "@/app/lib/acces";
+import { libelleRole, detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import {
   lireAccesAuDossier,
@@ -20,7 +29,7 @@ import {
 } from "@/app/lib/fiche-dossier";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { lireLaFicheDsf } from "@/app/lib/fiche-dsf";
-import { lireLesHonoraires } from "@/app/lib/honoraires";
+import { lireLesGraces, lireLesHonoraires } from "@/app/lib/honoraires";
 import { LIBELLES_PERIODICITE } from "@/app/lib/honoraires-etats";
 import { LIBELLES_NIVEAU, lireDecisionsDuDossier, type DecisionLue } from "@/app/lib/pilotage";
 import { aujourdhui, lireLesAccesAdherents } from "@/app/lib/portefeuille";
@@ -134,6 +143,13 @@ export default async function FicheDuDossier({
   const acces_adherents = detient(acces, "RELANCER_ADHERENT") ? await lirePanneau(() => lireLesAccesAdherents(niu)) : null;
   // 14 octobre 2026 : le contrat d'honoraires et ce qui reste dû.
   const honoraires = acces.interne ? await lirePanneau(() => lireLesHonoraires(niu)) : null;
+  // 18 octobre 2026 : les faveurs du super administrateur (grâces, mandat de paiement).
+  const faveurs = detient(acces, "ACCORDER_FAVEURS")
+    ? {
+        graces: await lirePanneau(() => lireLesGraces(niu)),
+        fonds: await lirePanneau(() => lireLesFondsConfies(niu)),
+      }
+    : null;
   // 15 octobre 2026 : la fiche signalétique de la DSF, que le client renseigne et que le cabinet valide.
   const ficheDsf = acces.interne ? await lirePanneau(() => lireLaFicheDsf(niu)) : null;
   const siennes = "valeur" in anomalies ? anomalies.valeur.filter((a) => a.niu_entreprise === niu) : [];
@@ -329,8 +345,80 @@ export default async function FicheDuDossier({
                   Aucun contrat d&rsquo;honoraires : l&rsquo;adhérent ne voit rien à régler dans son espace.
                 </p>
               )}
+              {/* 18 octobre 2026 : en règle ou non, et ce que cela change pour le cabinet. */}
+              {!("echec" in honoraires) && honoraires.valeur.situation && honoraires.valeur.contrat && (
+                <p className="situation-dossier">
+                  <PastilleDeSituation situation={honoraires.valeur.situation} />
+                  {honoraires.valeur.situation.etat === "BLOQUE" &&
+                    " Le traitement du dossier est suspendu : saisie, validation, déclarations et DSF sont refusées jusqu'au règlement ou à une grâce."}
+                  {honoraires.valeur.situation.etat === "EN_RETARD" &&
+                    honoraires.valeur.situation.bloque_le &&
+                    ` Le traitement s'arrêtera le ${dateCourte(honoraires.valeur.situation.bloque_le)} sans règlement.`}
+                  {honoraires.valeur.situation.etat === "SOUS_GRACE" &&
+                    honoraires.valeur.situation.grace &&
+                    ` Traité par grâce jusqu'au ${dateCourte(honoraires.valeur.situation.grace.jusqu_au)}.`}
+                </p>
+              )}
+              {!("echec" in honoraires) && (honoraires.valeur.contrat?.revisions?.length ?? 0) > 0 && (
+                <ul className="revisions-tarif">
+                  {honoraires.valeur.contrat!.revisions!.map((r) => (
+                    <li key={r.a_partir_du}>
+                      {montantFcfa(r.montant)} à partir du {dateCourte(r.a_partir_du)} · « {r.motif} »
+                    </li>
+                  ))}
+                </ul>
+              )}
               {detient(acces, "FIXER_LES_TARIFS") && !("echec" in honoraires) && (
                 <FixerLeContrat niu={niu} actuel={honoraires.valeur.contrat} />
+              )}
+              {detient(acces, "FIXER_LES_TARIFS") && !("echec" in honoraires) && honoraires.valeur.contrat && (
+                <ReviserLeTarif niu={niu} aujourdhui={jour} />
+              )}
+            </div>
+          </Panneau>
+        )}
+
+        {faveurs && (
+          <Panneau
+            titre="Faveurs"
+            aide="Des écarts à la règle commune, accordés à cet adhérent par le super administrateur. Chacun reste au journal d'audit avec son motif."
+          >
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <h3 className="faveurs__titre">Grâce de règlement</h3>
+              {"echec" in faveurs.graces ? (
+                <EtatErreur titre="Les grâces ne se lisent pas" detail={faveurs.graces.echec} />
+              ) : (
+                <>
+                  {faveurs.graces.valeur.graces.length === 0 ? (
+                    <p className="faveurs__vide">Aucune grâce accordée.</p>
+                  ) : (
+                    <ul className="faveurs__liste">
+                      {faveurs.graces.valeur.graces.map((g) => (
+                        <li key={g.identifiant}>
+                          Jusqu&rsquo;au {dateCourte(g.jusqu_au)} · « {g.motif} »
+                          {g.levee_le ? ` · levée le ${dateCourte(g.levee_le.slice(0, 10))}` : ""}
+                          {!g.levee_le && <LeverUneGrace niu={niu} grace={g.identifiant} />}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {faveurs.graces.valeur.situation.etat !== "SANS_CONTRAT" && <AccorderUneGrace niu={niu} aujourdhui={jour} />}
+                </>
+              )}
+              <h3 className="faveurs__titre">« Le cabinet paie pour moi »</h3>
+              {"echec" in faveurs.fonds ? (
+                <EtatErreur titre="Le mandat ne se lit pas" detail={faveurs.fonds.echec} />
+              ) : faveurs.fonds.valeur.obligations_mandatees.length > 0 ? (
+                <>
+                  <p className="faveurs__vide">Mandat en cours : {faveurs.fonds.valeur.obligations_mandatees.join(", ")}.</p>
+                  <RetirerLeMandat niu={niu} aujourdhui={jour} />
+                  <AccorderLeMandat niu={niu} aujourdhui={jour} />
+                </>
+              ) : (
+                <>
+                  <p className="faveurs__vide">Aucun mandat : l&rsquo;adhérent paie lui-même l&rsquo;administration et envoie sa quittance.</p>
+                  <AccorderLeMandat niu={niu} aujourdhui={jour} />
+                </>
               )}
             </div>
           </Panneau>
@@ -347,7 +435,7 @@ export default async function FicheDuDossier({
                 .map((h, rang) => (
                   <LigneTableau key={h.identifiant} colonnes={ACCES} ton={rang % 2 ? "alterne" : "normal"}>
                     <Cellule tabulaire gras>{h.compte}</Cellule>
-                    <Cellule>{LIBELLES_ROLE[h.role] ?? h.role}</Cellule>
+                    <Cellule>{libelleRole(h.role)}</Cellule>
                     <Cellule couleur="var(--ink-500)">{h.transverse ? "tout le cabinet" : "ce dossier"}</Cellule>
                     <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(h.debut)}</Cellule>
                     <Cellule couleur="var(--ink-500)" titre={h.precision ?? ""}>

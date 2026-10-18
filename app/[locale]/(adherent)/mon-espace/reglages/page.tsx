@@ -8,6 +8,8 @@ import { lireMesRappels } from "@/app/lib/espace-adherent";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { MonAccordDeLecture } from "@/app/components/collecte/GestesLectureAuDepot";
+import { lireMonAccordDeLecture } from "@/app/lib/lecture-au-depot";
 
 export const metadata: Metadata = {
   title: "Réglages · CGA Broad Range Consulting Group",
@@ -38,6 +40,8 @@ export default async function Reglages() {
   const { principal } = await monEntrepriseChoisie(acces);
   const rappels =
     principal && detient(acces, "REGLER_SES_RAPPELS") ? await lireMesRappels(principal).catch(() => null) : null;
+  // 18 octobre 2026 (point 13) : proposé seulement si le cabinet a activé la lecture au dépôt.
+  const accord = principal ? await lireMonAccordDeLecture(principal).catch(() => null) : null;
   return (
     <main className="adherent">
       <header className="adherent__entete">
@@ -55,6 +59,13 @@ export default async function Reglages() {
           <p className="adherent__vide">Vos rappels ne sont pas disponibles pour l&rsquo;instant.</p>
         )}
       </section>
+
+      {principal && accord?.proposee && (
+        <section className="adherent__section">
+          <h2 className="adherent__titre">Lecture automatique de mes pièces</h2>
+          <MonAccordDeLecture niu={principal} accord={accord} />
+        </section>
+      )}
 
       <section className="adherent__section">
         <h2 className="adherent__titre">Aide et questions</h2>

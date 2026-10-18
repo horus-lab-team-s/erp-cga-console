@@ -1,19 +1,28 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 
+import { ChampFichier } from "@/app/components/ChampFichier";
 import {
   cloreUneOffre,
+  deciderUneCandidature,
   enregistrerUneOffre,
+  envoyerLaReponse,
+  joindreUneImage,
+  proposerUneReponse,
   publierUneOffre,
+  retirerLImage,
   telechargerUnCv,
 } from "@/app/lib/actions-recrutement";
 import { dateCourte } from "@/app/lib/formats";
 import { jourDuFait } from "@/app/lib/heure-douala";
 import {
   LIBELLES_CONTRAT,
+  LIBELLES_ETAT_CANDIDATURE,
   LIBELLES_ETAT_OFFRE,
   type Candidature,
+  type EtatCandidature,
+  type ReponseProposee,
   type OffreDePoste,
   type OffreDuCabinet,
 } from "@/app/lib/recrutement-etats";
@@ -105,6 +114,7 @@ function Offre({ offre: { offre, candidatures: nombre }, candidatures }: { offre
         </p>
       )}
       {edition && <FormulaireOffre offre={offre} onFermer={() => setEdition(false)} />}
+      {edition && <ImageDeLOffre offre={offre} />}
       {lesCandidatures && (
         <ul className="offres__candidatures">
           {candidatures.map((c) => (
@@ -125,6 +135,9 @@ function CandidatureRecue({ candidature: c }: { candidature: Candidature }) {
     <li>
       <div className="offres__entete">
         <span>
+          <span className="offres__etat-candidature" data-etat={c.etat}>
+            {LIBELLES_ETAT_CANDIDATURE[c.etat]}
+          </span>{" "}
           <strong>{c.nom}</strong>
           <small>
             {" "}
@@ -141,7 +154,154 @@ function CandidatureRecue({ candidature: c }: { candidature: Candidature }) {
       </div>
       {c.message && <p className="offres__message">« {c.message} »</p>}
       {export_.echec && <p role="alert">{export_.echec}</p>}
+      <TraiterLaCandidature candidature={c} />
     </li>
+  );
+}
+
+/**
+ * Décider, puis répondre (18 octobre 2026, point 25). La réponse part du texte type de la
+ * décision, ou d'une proposition de l'agent ; elle se relit et se corrige ici, et c'est ce
+ * texte relu qui part. Les réponses déjà envoyées restent sous la candidature.
+ */
+function TraiterLaCandidature({ candidature: c }: { candidature: Candidature }) {
+  const [decision, decider, enDecision] = useActionState(deciderUneCandidature, ETAT_ACTE_INITIAL);
+  const [envoi, envoyer, enEnvoi] = useActionState(envoyerLaReponse, ETAT_ACTE_INITIAL);
+  const [proposee, setProposee] = useState<ReponseProposee | null>(null);
+  const [echec, setEchec] = useState<string | null>(null);
+  const [enPreparation, setEnPreparation] = useState(false);
+
+  function preparer(agent: boolean) {
+    setEnPreparation(true);
+    setEchec(null);
+    startTransition(async () => {
+      const r = await proposerUneReponse(c.identifiant, agent);
+      setEnPreparation(false);
+      if (r.ok) setProposee(r.valeur);
+      else setEchec(r.echec);
+    });
+  }
+
+  return (
+    <div className="offres__traitement">
+      <form action={decider} className="offres__decision">
+        <input type="hidden" name="candidature" value={c.identifiant} />
+        <label>
+          Décision
+          <select name="decision" defaultValue="">
+            <option value="" disabled>
+              Choisir
+            </option>
+            {(Object.keys(LIBELLES_ETAT_CANDIDATURE) as EtatCandidature[])
+              .filter((e) => e !== c.etat && e !== "RECUE")
+              .map((e) => (
+                <option key={e} value={e}>
+                  {LIBELLES_ETAT_CANDIDATURE[e]}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label>
+          Note (gardée au dossier, et donnée à l&rsquo;agent)
+          <input name="note" maxLength={1000} placeholder="Points forts, motif…" />
+        </label>
+        <button type="submit" className="bouton-discret" disabled={enDecision}>
+          {enDecision ? "…" : "Enregistrer la décision"}
+        </button>
+        {decision.echec && <p role="alert" className="offres__echec">{decision.echec}</p>}
+        {decision.fait && <p role="status" className="offres__fait">{decision.fait}</p>}
+      </form>
+
+      <div className="offres__gestes">
+        <button type="button" className="bouton-discret" disabled={enPreparation} onClick={() => preparer(false)}>
+          Préparer la réponse ({LIBELLES_ETAT_CANDIDATURE[c.etat].toLowerCase()})
+        </button>
+        <button type="button" className="bouton-discret" disabled={enPreparation} onClick={() => preparer(true)}>
+          Proposer avec l&rsquo;agent
+        </button>
+      </div>
+      {echec && <p role="alert" className="offres__echec">{echec}</p>}
+
+      {proposee && !envoi.fait && (
+        <form action={envoyer} className="offres__reponse" key={`${proposee.source}-${proposee.objet}`}>
+          <input type="hidden" name="candidature" value={c.identifiant} />
+          <input type="hidden" name="source" value={proposee.source} />
+          <input type="hidden" name="courriel" value={proposee.courriel ?? ""} />
+          <p className="offres__message">
+            {proposee.source === "AGENT"
+              ? "Proposée par l'agent : relisez-la, elle partira telle que vous la laissez."
+              : "Texte type du cabinet : complétez ce qui est entre crochets avant l'envoi."}
+            {proposee.courriel ? ` Destinataire : ${proposee.courriel}.` : " Pas d'adresse : la réponse sera gardée, à dire au téléphone."}
+          </p>
+          <label>
+            Objet
+            <input name="objet" defaultValue={proposee.objet} required minLength={3} maxLength={200} />
+          </label>
+          <label>
+            Message
+            <textarea name="corps" defaultValue={proposee.corps} required minLength={20} maxLength={5000} rows={12} />
+          </label>
+          <button type="submit" className="bouton-primaire" disabled={enEnvoi}>
+            {enEnvoi ? "…" : proposee.courriel ? "Envoyer au candidat" : "Garder la réponse"}
+          </button>
+          {envoi.echec && <p role="alert" className="offres__echec">{envoi.echec}</p>}
+        </form>
+      )}
+      {envoi.fait && <p role="status" className="offres__fait">{envoi.fait}</p>}
+
+      {c.reponses.length > 0 && (
+        <details className="offres__historique">
+          <summary>
+            {c.reponses.length} réponse{c.reponses.length > 1 ? "s" : ""} déjà faite{c.reponses.length > 1 ? "s" : ""}
+          </summary>
+          <ul>
+            {c.reponses.map((r) => (
+              <li key={r.le}>
+                {dateCourte(jourDuFait(r.le))} · {r.objet} · {r.envoyee ? "envoyée" : "à dire au téléphone"}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
+/** L'image de l'offre (18 octobre 2026, point 25) : JPEG ou PNG, 2 Mo au plus, aperçue avant l'envoi. */
+function ImageDeLOffre({ offre }: { offre: OffreDePoste }) {
+  const [jointe, joindre, enEnvoi] = useActionState(joindreUneImage, ETAT_ACTE_INITIAL);
+  const [retrait, retirer, enRetrait] = useActionState(retirerLImage, ETAT_ACTE_INITIAL);
+  const retour = [jointe, retrait].find((e) => e.echec || e.fait);
+  return (
+    <div className="offres__image">
+      {offre.image_empreinte && (
+        // eslint-disable-next-line @next/next/no-img-element -- servie par le proxy du cabinet, hors de l'optimiseur
+        <img src={`/api/offres/${encodeURIComponent(offre.identifiant)}/image?v=${offre.image_empreinte.slice(0, 8)}`} alt={`Image de l'offre ${offre.intitule}`} />
+      )}
+      <form action={joindre} className="offres__decision">
+        <input type="hidden" name="identifiant" value={offre.identifiant} />
+        <label>
+          {offre.image_empreinte ? "Remplacer l'image" : "Joindre une image (JPEG ou PNG, 2 Mo au plus)"}
+          <ChampFichier name="image" accept="image/jpeg,image/png" required />
+        </label>
+        <button type="submit" className="bouton-discret" disabled={enEnvoi}>
+          {enEnvoi ? "…" : "Enregistrer l'image"}
+        </button>
+      </form>
+      {offre.image_empreinte && (
+        <form action={retirer}>
+          <input type="hidden" name="identifiant" value={offre.identifiant} />
+          <button type="submit" className="bouton-discret" disabled={enRetrait}>
+            Retirer l&rsquo;image
+          </button>
+        </form>
+      )}
+      {retour && (
+        <p role={retour.echec ? "alert" : "status"} className={retour.echec ? "offres__echec" : "offres__fait"}>
+          {retour.echec ?? retour.fait}
+        </p>
+      )}
+    </div>
   );
 }
 

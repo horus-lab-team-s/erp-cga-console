@@ -257,3 +257,11 @@ export function lireBalanceAuxiliaire(niu: string, nature: NatureAuxiliaire, exe
     authentifie,
   );
 }
+
+/** 18 octobre 2026 (point 15) : les soldes dont le sens contredit la nature du compte. */
+export function lireLesSoldesARegarder(niu: string, exercice: string) {
+  return appeler<{ soldes: import("./soldes-a-regarder-etats").SoldeARegarder[] }>(
+    `/comptabilite/dossiers/${encodeURIComponent(niu)}/balance/soldes-a-regarder?${new URLSearchParams({ exercice })}`,
+    authentifie,
+  );
+}

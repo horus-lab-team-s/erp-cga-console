@@ -161,3 +161,14 @@ export const LIBELLES_MOIS = [
   "novembre",
   "décembre",
 ];
+
+/** 18 octobre 2026 : la proposition de la paie et, s'il existe, l'arrêté du mois. */
+export async function lireLesChargesDuMois(
+  entreprise: string,
+  annee: number,
+  mois: number,
+): Promise<import("./arrete-des-charges-etats").ChargesDuMois> {
+  return appeler(`/social/dossiers/${encodeURIComponent(entreprise)}/declaration/${annee}/${mois}/arrete`, {
+    authentifie: true,
+  });
+}

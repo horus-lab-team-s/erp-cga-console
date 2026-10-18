@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache";
 import { appeler, ErreurApi, telecharger } from "./api";
 import type { EtatActe } from "./saisie";
 import type { EtatExport } from "./saisie-echange";
+import type { ReponseProposee } from "./recrutement-etats";
 
 const CHEMIN = "/[locale]/offres-de-poste";
 
@@ -76,4 +77,82 @@ export async function telechargerUnCv(_precedent: EtatExport, donnees: FormData)
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
     throw erreur;
   }
+}
+
+/** 18 octobre 2026 (point 25) : joindre une image à l'offre (JPEG ou PNG, 2 Mo au plus). */
+export async function joindreUneImage(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const identifiant = String(donnees.get("identifiant") ?? "");
+  const image = donnees.get("image");
+  if (!(image instanceof File) || image.size === 0) return { echec: "Choisissez une image.", fait: null };
+  const envoi = new FormData();
+  envoi.append("image", image);
+  return agir(
+    () =>
+      appeler(`/vitrine/cabinet/offres/${encodeURIComponent(identifiant)}/image`, {
+        methode: "PUT",
+        authentifie: true,
+        formulaire: envoi,
+      }),
+    "Image jointe : elle s'affiche sur le site avec l'offre.",
+  );
+}
+
+export async function retirerLImage(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const identifiant = String(donnees.get("identifiant") ?? "");
+  return agir(
+    () => appeler(`/vitrine/cabinet/offres/${encodeURIComponent(identifiant)}/image`, { methode: "DELETE", authentifie: true }),
+    "Image retirée.",
+  );
+}
+
+export async function deciderUneCandidature(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const candidature = String(donnees.get("candidature") ?? "");
+  const decision = String(donnees.get("decision") ?? "");
+  const note = String(donnees.get("note") ?? "").trim();
+  return agir(
+    () =>
+      appeler(`/vitrine/cabinet/candidatures/${encodeURIComponent(candidature)}/decision`, {
+        methode: "POST",
+        authentifie: true,
+        corps: { decision, ...(note ? { note } : {}) },
+      }),
+    "Décision enregistrée. Préparez la réponse au candidat.",
+  );
+}
+
+/** La réponse proposée : le texte type, ou celui de l'agent si on le demande. */
+export async function proposerUneReponse(
+  candidature: string,
+  agent: boolean,
+): Promise<{ ok: true; valeur: ReponseProposee } | { ok: false; echec: string }> {
+  try {
+    const valeur = await appeler<ReponseProposee>(
+      `/vitrine/cabinet/candidatures/${encodeURIComponent(candidature)}/reponse-proposee?agent=${agent}`,
+      { authentifie: true },
+    );
+    return { ok: true, valeur };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { ok: false, echec: erreur.message };
+    throw erreur;
+  }
+}
+
+export async function envoyerLaReponse(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const candidature = String(donnees.get("candidature") ?? "");
+  const courriel = String(donnees.get("courriel") ?? "");
+  return agir(
+    () =>
+      appeler(`/vitrine/cabinet/candidatures/${encodeURIComponent(candidature)}/reponse`, {
+        methode: "POST",
+        authentifie: true,
+        corps: {
+          objet: String(donnees.get("objet") ?? "").trim(),
+          corps: String(donnees.get("corps") ?? "").trim(),
+          source: String(donnees.get("source") ?? "MODELE"),
+        },
+      }),
+    courriel
+      ? `Réponse envoyée à ${courriel}.`
+      : "Réponse gardée : le candidat n'a pas laissé d'adresse, dites-la-lui au téléphone.",
+  );
 }

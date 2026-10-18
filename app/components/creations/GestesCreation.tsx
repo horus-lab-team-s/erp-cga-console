@@ -11,6 +11,7 @@ import {
   recevoirUnePiece,
 } from "@/app/lib/actions-creations";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 /**
  * Les gestes du tunnel de création (pas 82).
@@ -142,12 +143,15 @@ export function RecevoirPiece({
   code,
   libelle,
   remplacer = false,
+  horsListe = false,
 }: {
   reference: string;
   code: string;
   libelle: string;
   /** La pièce est déjà reçue : le geste remplace son document (« le cabinet vous dira si l'un d'eux doit être repris »). */
   remplacer?: boolean;
+  /** 18 octobre 2026 : une pièce que la liste n'a pas prévue, que le collaborateur nomme. */
+  horsListe?: boolean;
 }) {
   const [etat, recevoir, enCours] = useActionState(recevoirUnePiece, ETAT_ACTE_INITIAL);
   const [avecFichier, setAvecFichier] = useState(false);
@@ -156,12 +160,21 @@ export function RecevoirPiece({
     <form action={recevoir} style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />
       <input type="hidden" name="code" value={code} />
+      {horsListe && (
+        <input
+          name="libelle"
+          required
+          maxLength={120}
+          placeholder="Nom de la pièce (ex. plan de localisation)"
+          aria-label="Nom de la pièce hors liste"
+          style={{ ...champ, display: "inline-block", width: 260, marginTop: 0 }}
+        />
+      )}
       <label style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
         {/* Le libellé de la pièce pour les lecteurs d'écran : sur une liste de
             neuf lignes, « Choisir un fichier » seul ne dit pas laquelle. */}
         <span className="visuellement-cache">Document de : {libelle}</span>
-        <input
-          type="file"
+        <ChampFichier
           name="fichier"
           accept="image/jpeg,image/png,image/tiff,application/pdf"
           onChange={(e) => setAvecFichier(Boolean(e.target.files?.length))}

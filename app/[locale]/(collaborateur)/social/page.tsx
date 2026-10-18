@@ -22,6 +22,7 @@ import {
   lireBulletin,
   lireDeclaration,
   lireGroupeDeRisque,
+  lireLesChargesDuMois,
   lirePersonnel,
   moisDePaieParDefaut,
   type Bulletin,
@@ -31,6 +32,7 @@ import {
 } from "@/app/lib/social";
 import { ContratDuSalarie, EmbaucheSalarie } from "@/app/components/social/GestesPersonnel";
 import { GroupeDeRisque } from "@/app/components/social/GroupeDeRisque";
+import { ArreterLesCharges } from "@/app/components/social/ArreterLesCharges";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = { title: "Social et paie · Plateforme CGA" };
@@ -135,6 +137,8 @@ export default async function SocialEtPaie({
   const groupe: GroupeRisque | undefined =
     parametres.groupe === "A" || parametres.groupe === "B" || parametres.groupe === "C" ? parametres.groupe : undefined;
   const groupeDuDossier = await lireGroupeDeRisque(niu).catch(() => null);
+  // 18 octobre 2026 (point 8) : la paie propose, le cabinet arrête. Une panne ne cache pas la paie.
+  const charges = declaration && saisit ? await lireLesChargesDuMois(niu, annee, mois).catch(() => null) : null;
   let bulletin: Bulletin | null = null;
   let refusBulletin: string | null = null;
   if (parametres.bulletin && !erreur) {
@@ -194,6 +198,15 @@ export default async function SocialEtPaie({
             )}
 
             {declaration && <SyntheseVersement declaration={declaration} />}
+
+            {charges && (
+              <Panneau
+                titre="Arrêter les charges du mois"
+                aide="La paie propose ; vous corrigez s'il le faut, puis vous arrêtez. Seuls les montants arrêtés servent aux appels de fonds et aux déclarations."
+              >
+                <ArreterLesCharges entreprise={niu} annee={annee} mois={mois} charges={charges} />
+              </Panneau>
+            )}
 
             {declaration && declaration.mouvements.length > 0 && (
               <Panneau

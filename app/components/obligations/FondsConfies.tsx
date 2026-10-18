@@ -5,6 +5,7 @@ import { startTransition, useActionState } from "react";
 import { reverserAvecQuittance } from "@/app/lib/actions-collecte";
 import { arreterUnAppel } from "@/app/lib/actions-fonds";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 /**
  * Les deux gestes du comptable sur une échéance que le cabinet paie pour l'adhérent
@@ -72,7 +73,7 @@ export function PorterLaQuittance({ niu, appel }: { niu: string; appel: string }
       <input type="hidden" name="appel" value={appel} />
       <label>
         Quittance de l&rsquo;administration
-        <input type="file" name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" />
+        <ChampFichier name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" />
       </label>
       <button type="submit" className="bouton-primaire" disabled={enCours}>
         {enCours ? "…" : "Porter la quittance : payée"}

@@ -29,6 +29,15 @@ export type EcheanceDHonoraires = {
   reglement: ReglementDHonoraires | null;
 };
 
+/** 18 octobre 2026 : un nouveau montant, à partir d'une date ; le passé garde son prix. */
+export type RevisionDHonoraires = {
+  montant: string;
+  a_partir_du: string;
+  motif: string;
+  fixe_par: string;
+  fixe_le: string;
+};
+
 export type ContratDHonoraires = {
   niu: string;
   denomination: string;
@@ -37,6 +46,47 @@ export type ContratDHonoraires = {
   debut: string;
   fixe_par: string;
   fixe_le: string;
+  revisions?: RevisionDHonoraires[];
+};
+
+/** 18 octobre 2026 : qui est en règle, et qui ne se traite plus. */
+export type EtatDeReglement = "SANS_CONTRAT" | "EN_REGLE" | "EN_RETARD" | "SOUS_GRACE" | "BLOQUE";
+
+export type GraceDeReglement = {
+  identifiant: string;
+  niu: string;
+  jusqu_au: string;
+  motif: string;
+  accordee_par: string;
+  accordee_le: string;
+  levee_le: string | null;
+  levee_par: string | null;
+};
+
+export type SituationDeReglement = {
+  niu: string;
+  etat: EtatDeReglement;
+  du: string;
+  en_retard_depuis: string | null;
+  bloque_le: string | null;
+  grace: GraceDeReglement | null;
+};
+
+export const LIBELLES_SITUATION: Record<EtatDeReglement, string> = {
+  SANS_CONTRAT: "Sans contrat",
+  EN_REGLE: "En règle",
+  EN_RETARD: "En retard",
+  SOUS_GRACE: "Sous grâce",
+  BLOQUE: "Bloqué",
+};
+
+/** La couleur dit la gravité ; le libellé, toujours écrit, dit l'état. */
+export const TON_SITUATION: Record<EtatDeReglement, "neutre" | "succes" | "attention" | "danger"> = {
+  SANS_CONTRAT: "neutre",
+  EN_REGLE: "succes",
+  EN_RETARD: "attention",
+  SOUS_GRACE: "attention",
+  BLOQUE: "danger",
 };
 
 export type MesHonoraires = {
@@ -45,6 +95,7 @@ export type MesHonoraires = {
   du: string;
   en_retard: number;
   reglable_en_ligne: boolean;
+  situation?: SituationDeReglement | null;
 };
 
 export type LigneDeCaisseHonoraires = {

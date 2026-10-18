@@ -187,6 +187,9 @@ function SectionFicheDsf({ dossier, vue, peutRenseigner }: { dossier: string; vu
         les reprend chaque année.
       </p>
       <FicheDsf dossier={dossier} vue={vue} peutRenseigner={peutRenseigner} peutValider={false} cote="client" />
+      <p className="adherent__suite">
+        <Link href="/mon-espace/dsf">Les pièces de ma DSF et où elle en est</Link>
+      </p>
     </section>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { Montant } from "@/app/components/Montant";
 import { BalanceAuxiliaire } from "@/app/components/comptabilite/BalanceAuxiliaire";
 import { LivresObligatoires } from "@/app/components/comptabilite/LivresObligatoires";
+import { SoldesARegarder } from "@/app/components/comptabilite/SoldesARegarder";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
 import { DetailDuCompte } from "@/app/components/comptabilite/DetailDuCompte";
@@ -20,6 +21,7 @@ import {
   exerciceCourant,
   lireBalance,
   lireBalanceAuxiliaire,
+  lireLesSoldesARegarder,
   lireGrandLivre,
   lireJournaux,
   lirePlanComptable,
@@ -121,7 +123,7 @@ export default async function Comptabilite({
 
   const niu = dossier && dossiers.some((d) => d.niu === dossier) ? dossier : dossiers[0].niu;
   const courant = dossiers.find((d) => d.niu === niu)!;
-  const [soldes, sante, plan, journaux] = await Promise.all([
+  const [soldes, sante, plan, journaux, aRegarder] = await Promise.all([
     lireBalance(niu, exercice, filtres),
     lireSante(niu, exercice, filtres),
     // ⚠️ Pas 77 : la balance ne porte pas l'intitulé des comptes, et la colonne était
@@ -129,6 +131,8 @@ export default async function Comptabilite({
     // tomber la balance.
     lirePlanComptable().catch(() => []),
     lireJournaux().catch(() => []),
+    // 18 octobre 2026 (point 15) : un relevé illisible n'empêche pas de lire la balance.
+    lireLesSoldesARegarder(niu, exercice).catch(() => null),
   ]);
   const intitules = new Map(plan.map((c) => [c.numero, c.intitule]));
   const visibles = recherche
@@ -179,6 +183,15 @@ export default async function Comptabilite({
         </div>
 
         <Sante sante={sante} />
+
+        {aRegarder && (
+          <SoldesARegarder
+            dossier={niu}
+            exercice={exercice}
+            soldes={aRegarder.soldes}
+            intitules={Object.fromEntries(plan.map((c) => [c.numero, c.intitule]))}
+          />
+        )}
 
         <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
 

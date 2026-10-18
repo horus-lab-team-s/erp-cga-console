@@ -207,6 +207,8 @@ export const NAVIGATION: EntreeNav[] = [
       { libelle: "Échange avec le logiciel du client", href: "/comptabilite/echange" },
       // Pas 101 : confronter le relevé de la banque au journal de banque.
       { libelle: "Rapprochement bancaire", href: "/comptabilite/rapprochement" },
+      // 17 octobre 2026 : le registre des biens, la dotation et le tableau de la DSF.
+      { libelle: "Immobilisations", href: "/comptabilite/immobilisations" },
       // Pas 102 : les passages de relais entre comptable et réviseur.
       { libelle: "Revue des dossiers", href: "/comptabilite/revues" },
       // Pas 107 : vérifier le mois, puis le transmettre, ce qui le verrouille.
@@ -260,6 +262,8 @@ export const NAVIGATION: EntreeNav[] = [
     href: "/caisse",
     icone: "souscriptions",
     permission: "ENCAISSER",
+    // 18 octobre 2026 : la direction y lit le journal par axe.
+    ouAussi: ["LIRE_PILOTAGE"],
     construit: true,
   },
   {
@@ -321,6 +325,16 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 18 octobre 2026 : la matrice des rôles. Le super administrateur la règle ;
+    // l'administrateur la lit, pour savoir ce que permet le rôle qu'il attribue.
+    libelle: "Matrice des rôles",
+    href: "/roles",
+    icone: "parametres",
+    permission: "GERER_ROLES",
+    ouAussi: ["GERER_COMPTES"],
+    construit: true,
+  },
+  {
     // Pas 83. Rangé en administration : son geste principal ouvre un accès à un dossier.
     libelle: "Souscriptions en ligne",
     href: "/souscriptions",
@@ -345,6 +359,8 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     href: "/offres-de-poste",
     icone: "offres",
     permission: "EDITER_VITRINE",
+    // 18 octobre 2026 : un rôle « ressources humaines » y traite les candidatures.
+    ouAussi: ["GERER_RECRUTEMENT"],
     construit: true,
   },
   {

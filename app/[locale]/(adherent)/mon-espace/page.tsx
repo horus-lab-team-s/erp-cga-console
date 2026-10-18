@@ -5,6 +5,8 @@ import { lireMesNotifications } from "@/app/lib/notifications";
 
 import { deconnexion } from "@/app/lib/actions-session";
 import { DepotDePiece } from "@/app/components/collecte/DepotDePiece";
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
+import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import {
   LIBELLES_CANAL,
   LIBELLES_ETAT,
@@ -296,6 +298,9 @@ function FicheDossier({ dossier }: { dossier: Dossier }) {
       <p className="adherent__suite">
         <Link href="/mon-espace/entreprise">Mon entreprise, mon interlocuteur, signaler un changement</Link>
       </p>
+      <p className="adherent__suite">
+        <Link href="/mon-espace/dsf">Ma déclaration annuelle (DSF) : les pièces à verser, l&rsquo;état du dépôt</Link>
+      </p>
       <p className="adherent__mention">
         Statuts résolus au jour d&rsquo;aujourd&rsquo;hui. Un régime change de date à
         date : celui-ci ne dit rien de vos exercices antérieurs.
@@ -331,6 +336,14 @@ function LigneDeposee({ piece }: { piece: LignePiece }) {
         <span className="adherent__piece-montant tabulaire">
           {montantFcfa(Number(piece.montant_ttc))}
         </span>
+      )}
+      {/* 18 octobre 2026 : ce qui vient d'être envoyé se revoit ici, sans changer d'écran. */}
+      {piece.nom_fichier && (
+        <DocumentDeLaPiece
+          champs={{ identifiant: piece.identifiant }}
+          libelle={piece.emetteur ?? piece.nom_fichier}
+          lire={lireLeDocumentDUnePiece}
+        />
       )}
     </li>
   );

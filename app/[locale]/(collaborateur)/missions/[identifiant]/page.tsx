@@ -8,6 +8,7 @@ import {
   CahierDeRedaction,
   LireAvecLAgent,
   PointAInstruire,
+  ReaffecterLaMission,
   Soumettre,
   ValiderOuRenvoyer,
 } from "@/app/components/missions/GestesMission";
@@ -15,8 +16,14 @@ import { EtatErreur, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
 import { lireLeDocumentDeLaMission } from "@/app/lib/actions-missions";
 import { ErreurApi } from "@/app/lib/api";
-import { lectureAutomatiqueDisponible, lireMission, type Mission } from "@/app/lib/missions";
-import { LIBELLES_ETAT, LIBELLES_TYPE } from "@/app/lib/missions-etats";
+import {
+  lectureAutomatiqueDisponible,
+  lireLesCandidatsALaMission,
+  lireLesModelesDeContrat,
+  lireMission,
+  type Mission,
+} from "@/app/lib/missions";
+import { LIBELLES_ETAT, LIBELLES_TYPE, type ModeleDeContrat } from "@/app/lib/missions-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 
@@ -38,8 +45,11 @@ export default async function PageMission({ params }: { params: Promise<{ identi
   const { identifiant } = await params;
   let mission: Mission;
   let disponible = false;
+  let modeles: ModeleDeContrat[] = [];
   try {
     mission = await lireMission(identifiant);
+    if (mission.type === "REDACTION_CONTRAT" && detient(acces, "TRAITER_MISSION"))
+      modeles = await lireLesModelesDeContrat();
     // Seul le juriste lance l'agent : la question n'est posée que pour lui (le valideur
     // recevait un refus, et la page entière tombait).
     if (detient(acces, "TRAITER_MISSION")) disponible = await lectureAutomatiqueDisponible();
@@ -57,6 +67,11 @@ export default async function PageMission({ params }: { params: Promise<{ identi
   // Les gestes d'instruction au seul juriste ; le valideur lit, valide ou renvoie.
   const ouverte = mission.etat === "OUVERTE" && detient(acces, "TRAITER_MISSION");
   const enAttente = mission.propositions.filter((p) => p.decision === "EN_ATTENTE").length;
+  // 18 octobre 2026 (point 22) : qui affecte les dossiers peut confier la mission à un autre.
+  const candidats =
+    mission.etat !== "LIVREE" && detient(acces, "AFFECTER_DOSSIER")
+      ? await lireLesCandidatsALaMission(mission.identifiant).catch(() => [])
+      : [];
   return (
     <>
       <EnteteTravail
@@ -71,6 +86,12 @@ export default async function PageMission({ params }: { params: Promise<{ identi
             {mission.objet} · {mission.identifiant} · <strong>{LIBELLES_ETAT[mission.etat]}</strong>
           </p>
         </div>
+        {candidats.length > 0 && (
+          <details className="lecture-depot__cadre">
+            <summary>Confier la mission à un autre collaborateur</summary>
+            <ReaffecterLaMission identifiant={mission.identifiant} candidats={candidats} actuel={mission.responsable} />
+          </details>
+        )}
         {mission.renvoi && ouverte && (
           <p role="status" className="avertissement-ecran avertissement-ecran--reserve">
             Renvoyée par le second regard : {mission.renvoi}
@@ -101,6 +122,8 @@ export default async function PageMission({ params }: { params: Promise<{ identi
                   cahier={mission.cahier}
                   disponible={disponible}
                   modifiable={ouverte}
+                  modeles={modeles}
+                  modeleVerse={mission.propositions.some((p) => p.origine === "MODELE")}
                 />
               </Panneau>
             )}
@@ -139,6 +162,12 @@ export default async function PageMission({ params }: { params: Promise<{ identi
                 >
                   {mission.etat === "LIVREE" ? "Le livrable (PDF) ↗" : "Aperçu du livrable, en projet (PDF) ↗"}
                 </a>
+                {/* 18 octobre 2026 (point 23) : le projet de contrat, à retoucher avec les parties. */}
+                {mission.type === "REDACTION_CONTRAT" && (
+                  <a className="bouton-discret" href={`/api/missions/${encodeURIComponent(mission.identifiant)}/word`}>
+                    {mission.etat === "LIVREE" ? "Le contrat en Word (.docx)" : "Le projet en Word (.docx)"}
+                  </a>
+                )}
               </p>
             )}
           </section>

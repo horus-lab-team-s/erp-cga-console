@@ -44,3 +44,16 @@ export type PropositionDeLaPiece = {
     lignes: LigneProposee[];
   } | null;
 };
+
+/**
+ * Le HT et la TVA tirés d'un TTC (18 octobre 2026) : « si je fournis déjà le TTC, la TVA
+ * doit en ressortir, et le HT ». En francs CFA, sans centimes : HT = TTC ÷ (1 + taux),
+ * arrondi au franc, et la TVA est le reste, pour que HT + TVA rende exactement le TTC.
+ *
+ * ⚠️ Une proposition : une facture exonérée, ou à un autre taux, se corrige à la main.
+ * Le taux vient du référentiel (`TVA_TAUX_GENERAL`, CAC compris), jamais d'une constante.
+ */
+export function ventilerLeTtc(ttc: number, tauxPourCent: number): { ht: number; tva: number } {
+  const ht = Math.round(ttc / (1 + tauxPourCent / 100));
+  return { ht, tva: ttc - ht };
+}

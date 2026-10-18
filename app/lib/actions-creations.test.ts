@@ -8,6 +8,7 @@ const {
   convertirLeDossier,
   ouvrirUnDossierDeCreation,
   porterLesIdentifiants,
+  recevoirUnePiece,
 } = await import("./actions-creations");
 
 /**
@@ -249,5 +250,21 @@ describe("Convertir le dossier en entreprise du portefeuille", () => {
     // à l'écran, pas à chercher.
     expect(etat.fait).toContain("BÂTIMENT PLUS SARL");
     expect(etat.fait).toContain("M081234567890P");
+  });
+});
+
+describe("Une pièce hors liste (18 octobre 2026)", () => {
+  it("part sous le code AUTRE avec son nom ; une pièce de la liste n'en porte pas", async () => {
+    const f = doublerFetch({ pieces: [] });
+    await recevoirUnePiece(
+      VIDE,
+      formulaire({ reference: "CR-2026-4F7A", code: "AUTRE", libelle: " Plan de localisation ", canal: "WHATSAPP" }),
+    );
+    expect(corps(f)).toEqual({ code: "AUTRE", canal: "WHATSAPP", libelle: "Plan de localisation" });
+
+    vi.unstubAllGlobals();
+    const g = doublerFetch({ pieces: [] });
+    await recevoirUnePiece(VIDE, formulaire({ reference: "CR-2026-4F7A", code: "STATUTS", canal: "GUICHET" }));
+    expect(corps(g)).toEqual({ code: "STATUTS", canal: "GUICHET" });
   });
 });

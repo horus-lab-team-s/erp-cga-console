@@ -2958,6 +2958,601 @@ a.adherent__quitter {
   object-fit: contain;
 }
 
+/* ── Lecture automatique au dépôt (18 octobre 2026) ─────────────────────────── */
+.lecture__preparee {
+  padding: 10px 12px;
+  border: 1px solid var(--brand-indigo-700);
+  border-radius: var(--rayon);
+  background: var(--brand-indigo-100);
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.lecture__preparee ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.lecture-depot__cadre {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+}
+
+.lecture-depot__cadre summary {
+  cursor: pointer;
+  font: 500 13px/1.5 var(--police-texte);
+}
+
+.lecture-depot__aide,
+.lecture-depot__etat {
+  margin: 6px 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.lecture-depot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.lecture-depot label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12px/1.4 var(--police-texte);
+  min-width: min(360px, 100%);
+}
+
+.lecture-depot input {
+  font: 400 13px/1.4 var(--police-texte);
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+}
+
+.lecture-depot__retour {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+}
+
+.lecture-depot__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.lecture-depot__retour[data-ton="fait"] {
+  color: var(--success);
+}
+
+/* ── Arrêté des charges sociales (18 octobre 2026) ─────────────────────────── */
+.arrete-charges {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  align-items: flex-start;
+}
+
+.arrete-charges table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13px/1.5 var(--police-texte);
+}
+
+.arrete-charges th,
+.arrete-charges td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-100);
+  text-align: right;
+}
+
+.arrete-charges th[scope="row"],
+.arrete-charges thead th:first-child {
+  text-align: left;
+  font-weight: 400;
+}
+
+.arrete-charges thead th {
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.arrete-charges tr[data-ecart="true"] td:last-child input {
+  border-color: var(--warning);
+  background: var(--warning-100);
+}
+
+.arrete-charges input {
+  width: 130px;
+  text-align: right;
+  font: 400 13px/1.4 var(--police-texte);
+  padding: 5px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+}
+
+.arrete-charges__etat,
+.arrete-charges__retour {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.arrete-charges__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.arrete-charges__retour[data-ton="fait"] {
+  color: var(--success);
+}
+
+.arrete-charges__motif {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(520px, 100%);
+  font: 500 12px/1.4 var(--police-texte);
+}
+
+.arrete-charges__motif input {
+  width: 100%;
+  text-align: left;
+}
+
+/* ── Journal de caisse (18 octobre 2026) ─────────────────────────────────────── */
+.journal-caisse {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 16px;
+}
+
+.journal-caisse__periode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.journal-caisse__periode label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12px/1.4 var(--police-texte);
+}
+
+.journal-caisse__periode input {
+  font: 400 13px/1.4 var(--police-texte);
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+}
+
+.journal-caisse__totaux {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13px/1.5 var(--police-texte);
+}
+
+.journal-caisse__totaux th,
+.journal-caisse__totaux td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-100);
+  text-align: right;
+}
+
+.journal-caisse__totaux th:first-child,
+.journal-caisse__totaux thead th:first-child {
+  text-align: left;
+}
+
+.journal-caisse__totaux thead th {
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.journal-caisse__totaux tbody th {
+  font-weight: 500;
+}
+
+/* ── Règlement des honoraires (18 octobre 2026) ────────────────────────────── */
+.pastille-situation {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: var(--rayon-pilule);
+  font: 600 11.5px/1.6 var(--police-texte);
+  white-space: nowrap;
+  background: var(--surface-alt);
+  color: var(--ink-700, var(--ink-900));
+  border: 1px solid var(--line-200);
+}
+
+.pastille-situation[data-ton="succes"] {
+  color: var(--success);
+  border-color: currentColor;
+}
+
+/* ⚠️ --warning n'est jamais un texte (4,3:1) : l'encre sur fond orangé, bordure orangée. */
+.pastille-situation[data-ton="attention"] {
+  color: var(--ink-900);
+  background: var(--warning-100);
+  border-color: var(--warning);
+}
+
+.pastille-situation[data-ton="danger"] {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.situation-dossier {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  font: 400 13px/1.5 var(--police-texte);
+}
+
+.revisions-tarif,
+.faveurs__liste,
+.situations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 12.5px/1.5 var(--police-texte);
+}
+
+.situations li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.situations li span:last-child,
+.faveurs__vide {
+  color: var(--ink-500);
+}
+
+.faveurs__titre {
+  margin: 4px 0 0;
+  font: 600 13px/1.3 var(--police-titre);
+}
+
+.faveurs__vide {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+}
+
+.geste-reglement summary {
+  cursor: pointer;
+  font: 500 12.5px/1.5 var(--police-texte);
+  color: var(--brand-indigo-700);
+}
+
+.geste-reglement form {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.geste-reglement label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12px/1.4 var(--police-texte);
+}
+
+.geste-reglement input:not([type="checkbox"]) {
+  font: 400 13px/1.4 var(--police-texte);
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+}
+
+.geste-reglement fieldset {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line-100);
+  border-radius: var(--rayon);
+  display: flex;
+  gap: 12px;
+}
+
+.geste-reglement label.geste-reglement__case {
+  flex-direction: row;
+  align-items: center;
+}
+
+.geste-reglement__retour {
+  flex-basis: 100%;
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+}
+
+.geste-reglement__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.geste-reglement__retour[data-ton="fait"] {
+  color: var(--success);
+}
+
+.honoraires__alerte {
+  margin: 0 0 var(--espace-3, 12px);
+  padding: 12px 14px;
+  border-radius: var(--rayon-grand);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: var(--surface);
+  font: 400 13.5px/1.55 var(--police-texte);
+}
+
+.honoraires__alerte[data-ton="attention"] {
+  border-color: var(--warning);
+  color: var(--ink-900);
+}
+
+/* ── Matrice des rôles (18 octobre 2026) ──────────────────────────────────── */
+.matrice {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 16px 16px;
+}
+
+.matrice__grille {
+  overflow: auto;
+  max-height: 70vh;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+}
+
+.matrice__grille table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 400 12.5px/1.4 var(--police-texte);
+  min-width: 100%;
+}
+
+.matrice__grille thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.matrice__droit {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 260px;
+  padding: 6px 12px;
+  text-align: left;
+  font-weight: 400;
+  color: var(--ink-900);
+  background: var(--surface);
+  border-right: 1px solid var(--line-100);
+}
+
+thead .matrice__droit {
+  z-index: 3;
+  font-weight: 600;
+}
+
+.matrice__role {
+  padding: 0;
+  vertical-align: bottom;
+}
+
+.matrice__role button {
+  all: unset;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 96px;
+  padding: 8px 8px;
+  text-align: center;
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--brand-indigo-700);
+  cursor: pointer;
+}
+
+.matrice__role button:focus-visible {
+  outline: 2px solid var(--brand-indigo-700);
+  outline-offset: -2px;
+}
+
+.matrice__marque {
+  font-weight: 400;
+  color: var(--brand-magenta-600);
+}
+
+.matrice__famille th {
+  padding: 10px 12px 4px;
+  text-align: left;
+  font: 600 11px/1.3 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+  background: var(--surface-alt);
+}
+
+.matrice__case {
+  text-align: center;
+  color: var(--brand-indigo-700);
+  border-bottom: 1px solid var(--line-100);
+}
+
+[data-choisi="true"].matrice__case,
+[data-choisi="true"].matrice__role {
+  background: var(--brand-indigo-100);
+}
+
+.matrice__reglage {
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.matrice__reglage h2 {
+  margin: 0;
+  font: 600 15px/1.3 var(--police-titre);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.matrice__reglage h2 small {
+  font: 400 12px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.matrice__reglage form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.matrice__cases {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.matrice__cases fieldset {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line-100);
+  border-radius: var(--rayon);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.matrice__cases legend {
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.matrice__cases label {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font: 400 12.5px/1.4 var(--police-texte);
+}
+
+.matrice__cases label[data-grise="true"] {
+  color: var(--ink-500);
+}
+
+.matrice__champ {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(520px, 100%);
+  font: 500 12px/1.4 var(--police-texte);
+}
+
+.matrice__champ input {
+  font: 400 13px/1.4 var(--police-texte);
+  padding: 7px 9px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+}
+
+.matrice__retrait {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center !important;
+}
+
+.matrice__retour {
+  margin: 0;
+  font: 500 12.5px/1.4 var(--police-texte);
+}
+
+.matrice__retour[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.matrice__retour[data-ton="fait"] {
+  color: var(--success);
+}
+
+/* ── Aperçu avant envoi (18 octobre 2026) : ce qu'on s'apprête à déposer ───── */
+.apercu-envoi {
+  margin: 8px 0 0;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface-alt);
+  overflow: hidden;
+  flex-basis: 100%;
+  max-width: 520px;
+}
+
+.apercu-envoi__legende {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line-100);
+  background: var(--surface);
+  font: 400 12.5px/1.4 var(--police-texte);
+}
+
+.apercu-envoi__nom {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--ink-900);
+}
+
+.apercu-envoi__taille {
+  color: var(--ink-500);
+}
+
+.apercu-envoi__cadre {
+  max-height: 360px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.apercu-envoi__image {
+  display: block;
+  max-width: 100%;
+  max-height: 340px;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: var(--rayon-petit);
+}
+
+.apercu-envoi__note {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}
+
 /* ── Honoraires des adhérents (14 octobre 2026) ───────────────────────────── */
 .honoraires__resume {
   padding: var(--espace-3);
@@ -3336,6 +3931,11 @@ a.adherent__quitter {
   background: var(--brand-magenta-100);
   color: var(--brand-magenta-600);
   font: 600 10.5px/1.6 var(--police-texte);
+}
+
+.lecture__depuis-ttc {
+  justify-self: start;
+  margin: -4px 0 0;
 }
 
 .lecture__ecart {
@@ -4373,4 +4973,492 @@ a.adherent__quitter {
 .texte-riche ul {
   list-style: disc;
   padding-left: 1.4em;
+}
+
+/* ── Registre des immobilisations (17 octobre 2026) ───────────────────────── */
+.immobilisations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 16px;
+  align-items: flex-start;
+}
+.immobilisations__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.immobilisations__fiche {
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--ink-500);
+  border-radius: var(--rayon, 8px);
+  padding: 10px 14px;
+  font: 400 13.5px/1.5 var(--police-texte);
+  color: var(--ink-900);
+}
+.immobilisations__fiche[data-sortie="oui"] {
+  opacity: 0.7;
+}
+.immobilisations__entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.immobilisations__entete small,
+.immobilisations__note,
+.immobilisations__vide {
+  color: var(--ink-500);
+}
+.immobilisations__note,
+.immobilisations__vide {
+  margin: 4px 0 0;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.immobilisations__valeur {
+  font: 600 13.5px/1.4 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+}
+.immobilisations__gestes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.immobilisations__formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+.immobilisations__champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 12px;
+}
+.immobilisations__champs label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+.immobilisations__champs input,
+.immobilisations__champs select {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon, 8px);
+  font: 400 14px/1.5 var(--police-texte);
+  background: var(--surface);
+  color: var(--ink-900);
+}
+.immobilisations__fait {
+  margin: 6px 0 0;
+  color: var(--success);
+}
+.immobilisations__echec {
+  margin: 6px 0 0;
+  color: var(--danger, #b42318);
+}
+.immobilisations__defile {
+  width: 100%;
+  overflow-x: auto;
+}
+.immobilisations__tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 13px/1.4 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}
+.immobilisations__tableau th,
+.immobilisations__tableau td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line-200);
+  text-align: right;
+  white-space: nowrap;
+}
+.immobilisations__tableau thead th {
+  font: 600 12px/1.3 var(--police-texte);
+  color: var(--ink-500);
+  white-space: normal;
+}
+.immobilisations__tableau tbody th {
+  text-align: left;
+  font-weight: 500;
+  white-space: normal;
+  min-width: 200px;
+}
+.immobilisations__tableau tr[data-total="oui"] th,
+.immobilisations__tableau tr[data-total="oui"] td {
+  font-weight: 700;
+  border-top: 2px solid var(--ink-500);
+}
+.immobilisations__controle {
+  width: 100%;
+  border-radius: var(--rayon, 8px);
+  padding: 8px 12px;
+  font: 400 13px/1.5 var(--police-texte);
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--warning);
+}
+.immobilisations__controle[data-concorde="oui"] {
+  border-left-color: var(--success);
+}
+.immobilisations__controle p {
+  margin: 0;
+}
+
+/* ── Signature de l'entreprise porteuse (17 octobre 2026) ─────────────────── */
+.barre__signature {
+  margin: 8px 12px 4px;
+  font: 400 10.5px/1.4 var(--police-texte);
+  color: rgb(255 255 255 / 45%);
+  text-align: center;
+}
+.barre__signature strong,
+.connexion__signature strong {
+  color: rgb(255 255 255 / 72%);
+  font-weight: 600;
+}
+.connexion__signature {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  z-index: 2;
+  margin: 0;
+  text-align: center;
+  font: 400 12px/1.6 var(--police-texte);
+  color: rgb(255 255 255 / 55%);
+}
+
+
+/* ══ Espace adhérent, couche douce (18 octobre 2026, point 10) ══════════════════════
+   « Améliorer vraiment la vue web côté adhérent, pour un rendu plus soft et attrayant. »
+   Une couche posée après tout le reste et bornée à `[data-espace="adherent"]` : les écrans
+   du cabinet n'en voient rien. Elle ne change ni les couleurs de marque ni les tailles de
+   cible (44 px) : des cartes sans cadre dur, plus d'air, des rayons de 16 px, une ombre
+   teintée d'indigo : les mêmes que l'application mobile (16 points). */
+
+[data-espace="adherent"].espace-adherent,
+[data-espace="adherent"] .espace-adherent {
+  background: var(--fond-adherent);
+}
+
+[data-espace="adherent"] .adherent {
+  gap: 20px;
+  padding: 20px 16px 28px;
+}
+
+[data-espace="adherent"] .adherent__section,
+[data-espace="adherent"] .adherent__bandeau,
+[data-espace="adherent"] .honoraires__resume {
+  padding: 20px;
+  border: 0;
+  border-radius: var(--rayon-carte);
+  box-shadow: var(--ombre-carte);
+}
+
+[data-espace="adherent"] .adherent__bandeau[data-etat],
+[data-espace="adherent"] .honoraires__alerte {
+  border-radius: var(--rayon-carte);
+}
+
+[data-espace="adherent"] .adherent__titre {
+  font-size: 16.5px;
+  letter-spacing: -0.005em;
+  margin-bottom: 14px;
+}
+
+[data-espace="adherent"] .adherent__nom {
+  font-size: 18px;
+}
+
+[data-espace="adherent"] .adherent__jeton {
+  width: 48px;
+  height: 48px;
+  background: var(--brand-indigo-700);
+  color: #fff;
+  box-shadow: var(--ombre-carte);
+}
+
+[data-espace="adherent"] .adherent__quitter {
+  border-color: transparent;
+  border-radius: var(--rayon-champ);
+  box-shadow: var(--ombre-carte);
+}
+
+/* Les listes se lisent en lignes aérées, séparées par un filet très clair. */
+[data-espace="adherent"] .adherent__piece,
+[data-espace="adherent"] .adherent__echeances li {
+  border-top-color: var(--line-100);
+}
+
+[data-espace="adherent"] .adherent__piece {
+  padding: 12px 0;
+}
+
+[data-espace="adherent"] .adherent__piece-etat {
+  border-radius: var(--rayon-pilule);
+}
+
+/* Les champs : plus hauts, plus ronds, et un anneau de focus visible. */
+[data-espace="adherent"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+[data-espace="adherent"] select,
+[data-espace="adherent"] textarea {
+  border-radius: var(--rayon-champ);
+  border-color: var(--line-200);
+  background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-espace="adherent"] input:focus-visible,
+[data-espace="adherent"] select:focus-visible,
+[data-espace="adherent"] textarea:focus-visible {
+  outline: none;
+  border-color: var(--brand-indigo-700);
+  box-shadow: 0 0 0 3px rgb(73 47 121 / 18%);
+}
+
+/* Les actions : l'action principale pleine et arrondie, les autres en retrait. */
+[data-espace="adherent"] .bouton-primaire {
+  min-height: var(--hauteur-action-principale, 52px);
+  border-radius: var(--rayon-champ);
+  box-shadow: 0 6px 16px rgb(140 45 134 / 22%);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+[data-espace="adherent"] .bouton-primaire:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px rgb(140 45 134 / 22%);
+}
+
+[data-espace="adherent"] .bouton-discret {
+  border-radius: var(--rayon-champ);
+}
+
+/* La barre d'onglets du bas flotte au-dessus du contenu, comme sur le téléphone. */
+[data-espace="adherent"] .adherent__onglets {
+  bottom: 12px;
+  border: 0;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 92%);
+  backdrop-filter: saturate(1.4) blur(10px);
+  box-shadow: var(--ombre-carte-survol);
+}
+
+:root[data-theme="sombre"] [data-espace="adherent"] .adherent__onglets {
+  background: var(--surface);
+}
+
+/* L'aperçu avant envoi et le dépôt prennent la même douceur. */
+[data-espace="adherent"] .apercu-envoi,
+[data-espace="adherent"] .document-piece__apercu {
+  border: 0;
+  border-radius: var(--rayon-champ);
+  box-shadow: var(--ombre-carte);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-espace="adherent"] .bouton-primaire,
+  [data-espace="adherent"] input,
+  [data-espace="adherent"] select,
+  [data-espace="adherent"] textarea {
+    transition: none;
+  }
+}
+
+/* La note d'honoraires d'une échéance (18 octobre 2026, points 19 et 20). */
+.honoraires__note {
+  font: 500 12.5px/1.4 var(--police-texte);
+  color: var(--brand-indigo-700);
+}
+
+/* ── Recrutement : traiter une candidature, lui répondre (18 octobre 2026) ───── */
+.offres__etat-candidature {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--rayon-pilule);
+  font: 600 11px/1.6 var(--police-texte);
+  background: var(--surface-alt);
+  border: 1px solid var(--line-200);
+  color: var(--ink-700);
+}
+
+.offres__etat-candidature[data-etat="RETENUE"] {
+  color: var(--success);
+  border-color: currentColor;
+}
+
+.offres__etat-candidature[data-etat="NON_RETENUE"] {
+  color: var(--ink-500);
+}
+
+.offres__etat-candidature[data-etat="PRESELECTIONNEE"],
+.offres__etat-candidature[data-etat="ENTRETIEN"] {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+  border-color: transparent;
+}
+
+.offres__traitement,
+.offres__image {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+}
+
+.offres__decision,
+.offres__reponse {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.offres__reponse {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px;
+  border-radius: var(--rayon);
+  background: var(--surface-alt);
+}
+
+.offres__decision label,
+.offres__reponse label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: 500 12px/1.4 var(--police-texte);
+  min-width: min(260px, 100%);
+}
+
+.offres__decision input,
+.offres__decision select,
+.offres__reponse input,
+.offres__reponse textarea {
+  font: 400 13px/1.5 var(--police-texte);
+  padding: 6px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  background: var(--surface);
+}
+
+.offres__reponse button {
+  align-self: flex-start;
+}
+
+.offres__historique summary {
+  cursor: pointer;
+  font: 500 12.5px/1.5 var(--police-texte);
+  color: var(--brand-indigo-700);
+}
+
+.offres__historique ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.offres__image img {
+  max-width: 320px;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--rayon);
+  border: 1px solid var(--line-200);
+}
+
+/* 18 octobre 2026, point 24 : les remarques de l'agent sur le dossier de la DSF. */
+.dsf__remarques {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font: 400 13px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.dsf__remarques em {
+  color: var(--ink-500);
+}
+
+/* 18 octobre 2026, point 15 : les soldes à regarder, et la relecture par l'agent. */
+.soldes-a-regarder {
+  display: grid;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-700);
+}
+
+.soldes-a-regarder__titre,
+.soldes-a-regarder__message {
+  margin: 0;
+}
+
+.soldes-a-regarder__message[data-ton="echec"] {
+  color: var(--danger);
+}
+
+.soldes-a-regarder__liste {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.soldes-a-regarder__liste em {
+  color: var(--ink-500);
+}
+
+.soldes-a-regarder__agent {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+/* Revue du 18 octobre 2026 : sept onglets ne tiennent pas sur 390 px, les libellés se
+   chevauchaient. Sur écran étroit, la barre défile ; chaque onglet garde son libellé entier. */
+@media (max-width: 560px) {
+  [data-espace="adherent"] .adherent__onglets {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  [data-espace="adherent"] .adherent__onglets::-webkit-scrollbar {
+    display: none;
+  }
+  [data-espace="adherent"] .adherent__onglets a {
+    flex: 0 0 auto;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+}
+
+/* Ma DSF : l'exercice se déplie, le formulaire d'une pièce s'ouvre à la demande. */
+.adherent__exercice-dsf > summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+.adherent__ma-piece > summary {
+  cursor: pointer;
+  margin-top: 6px;
+  color: var(--brand-indigo-700);
+  font: 600 13px/1.4 var(--police-texte);
 }

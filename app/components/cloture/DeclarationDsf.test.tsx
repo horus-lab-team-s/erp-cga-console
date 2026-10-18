@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/app/lib/actions-dsf", () => ({
   preparerLaDsf: vi.fn(async () => ({ echec: null, enregistree: null })),
   validerLaDsf: vi.fn(async () => ({ echec: null, enregistree: null })),
+  demanderUneRelectureDsf: vi.fn(async () => ({ echec: null, message: null, remarques: [] })),
 }));
 vi.mock("@/app/lib/actions-collecte", () => ({
   constaterLeDepotDeLaDsf: vi.fn(async () => ({ echec: null, enregistree: null })),

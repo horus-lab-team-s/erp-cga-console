@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
-import { OuvrirUneMission } from "@/app/components/missions/GestesMission";
+import { OuvrirDepuisUneDemande, OuvrirUneMission } from "@/app/components/missions/GestesMission";
 import { EtatErreur, EtatVide, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { dateCourte } from "@/app/lib/formats";
-import { lireMissions, type Mission } from "@/app/lib/missions";
+import { lireLesDemandesAOuvrir, lireMissions, type Mission } from "@/app/lib/missions";
 import { LIBELLES_ETAT, LIBELLES_TYPE } from "@/app/lib/missions-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +33,9 @@ export default async function Missions() {
     if (!(cause instanceof ErreurApi)) throw cause;
     erreur = cause.message;
   }
+  // 18 octobre 2026 (point 22) : les demandes ponctuelles payées n'attendent plus qu'on
+  // recopie leur référence ; elles se présentent ici. Une panne ne cache pas les missions.
+  const aOuvrir = detient(acces, "TRAITER_MISSION") ? await lireLesDemandesAOuvrir().catch(() => []) : [];
   const aDecider = (m: Mission) => m.propositions.filter((p) => p.decision === "EN_ATTENTE").length;
   return (
     <>
@@ -42,6 +45,27 @@ export default async function Missions() {
           <h1>Prestations ponctuelles</h1>
           <p>L&rsquo;agent propose, le juriste décide, un second valide : rien ne part au client sans eux.</p>
         </div>
+        {aOuvrir.length > 0 && (
+          <Panneau
+            titre={`${aOuvrir.length} demande${aOuvrir.length > 1 ? "s" : ""} payée${aOuvrir.length > 1 ? "s" : ""}, à ouvrir`}
+            aide="Venues de la vitrine, chiffrées et réglées : il reste à choisir la prestation. Le client reçoit un courriel à l'ouverture."
+          >
+            <ul className="mission__liste">
+              {aOuvrir.map((d) => (
+                <li key={d.reference}>
+                  <strong>{d.client}</strong>
+                  <span>
+                    {d.reference} · {d.telephone}
+                    {d.courriel ? ` · ${d.courriel}` : ""}
+                    {d.payee_le ? ` · payée le ${dateCourte(jourDuFait(d.payee_le))}` : ""}
+                  </span>
+                  {d.message && <span className="mission__note">« {d.message} »</span>}
+                  <OuvrirDepuisUneDemande demande={d} />
+                </li>
+              ))}
+            </ul>
+          </Panneau>
+        )}
         {detient(acces, "TRAITER_MISSION") && (
           <Panneau titre="Ouvrir une mission" aide="Depuis un dossier commercial payé, ou directement avec le nom du client.">
             <OuvrirUneMission />

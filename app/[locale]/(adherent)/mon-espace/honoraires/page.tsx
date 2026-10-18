@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
 import { ReglerUnePeriode } from "@/app/components/adherent/ReglerUnePeriode";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
-import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { lireLesHonoraires } from "@/app/lib/honoraires";
 import {
   LIBELLES_CANAL,
@@ -15,7 +15,7 @@ import {
 } from "@/app/lib/honoraires-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
-import { jourDuFait } from "@/app/lib/heure-douala";
+import { jourADouala, jourDuFait } from "@/app/lib/heure-douala";
 
 export const metadata: Metadata = {
   title: "Mes honoraires · CGA Broad Range Consulting Group",
@@ -79,12 +79,31 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
   const contrat = vue.contrat!;
   const dues = vue.echeances.filter((e) => e.etat === "EN_RETARD" || e.etat === "A_REGLER");
   const autres = vue.echeances.filter((e) => e.etat !== "EN_RETARD" && e.etat !== "A_REGLER").reverse();
+  // 18 octobre 2026 : le prix du jour, révisions comprises ; la prochaine révision s'annonce.
+  const jour = jourADouala();
+  const revisions = contrat.revisions ?? [];
+  const enVigueur = [...revisions].reverse().find((r) => r.a_partir_du <= jour);
+  const prochaine = revisions.find((r) => r.a_partir_du > jour);
+  const situation = vue.situation;
 
   return (
     <>
+      {situation?.etat === "BLOQUE" && (
+        <p className="honoraires__alerte" role="alert">
+          <strong>Le traitement de votre dossier est suspendu.</strong> Vos honoraires sont en retard depuis le{" "}
+          {situation.en_retard_depuis ? dateCourte(situation.en_retard_depuis) : TIRET} : le cabinet reprend votre
+          comptabilité et vos déclarations dès le règlement. Vous pouvez toujours déposer vos pièces.
+        </p>
+      )}
+      {situation?.etat === "EN_RETARD" && situation.bloque_le && (
+        <p className="honoraires__alerte" data-ton="attention" role="status">
+          Sans règlement avant le {dateCourte(situation.bloque_le)}, le traitement de votre dossier sera suspendu.
+        </p>
+      )}
       <section className="honoraires__resume" aria-label="En résumé">
         <p className="honoraires__contrat">
-          {montantFcfa(contrat.montant)} {LIBELLES_PERIODICITE[contrat.periodicite]}, payables en début de période.
+          {montantFcfa(enVigueur?.montant ?? contrat.montant)} {LIBELLES_PERIODICITE[contrat.periodicite]}, payables en début de période.
+          {prochaine && ` ${montantFcfa(prochaine.montant)} à partir du ${dateCourte(prochaine.a_partir_du)}.`}
         </p>
         {dues.length === 0 ? (
           <p className="honoraires__a-jour">
@@ -110,6 +129,7 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
             {dues.map((e) => (
               <li key={e.debut} className="honoraires__ligne" data-etat={e.etat}>
                 <Periode echeance={e} periodicite={contrat.periodicite} />
+                <NoteDHonoraires niu={e.niu} periode={e.debut} />
                 <ReglerUnePeriode niu={niu} periode={e.debut} montant={montantFcfa(e.montant)} telephone={null} />
               </li>
             ))}
@@ -140,11 +160,26 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
                   </a>
                 </span>
               )}
+              {e.etat !== "A_VENIR" && <NoteDHonoraires niu={e.niu} periode={e.debut} />}
             </li>
           ))}
         </ul>
       </section>
     </>
+  );
+}
+
+/** 18 octobre 2026 (points 19 et 20) : la note d'une échéance, à classer ou à imprimer. */
+function NoteDHonoraires({ niu, periode }: { niu: string; periode: string }) {
+  return (
+    <a
+      className="honoraires__note"
+      href={`/api/honoraires/${encodeURIComponent(niu)}/note/${encodeURIComponent(periode)}`}
+      target="_blank"
+      rel="noopener"
+    >
+      Note d&rsquo;honoraires (PDF)
+    </a>
   );
 }
 

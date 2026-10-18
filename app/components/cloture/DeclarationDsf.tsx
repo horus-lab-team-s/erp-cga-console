@@ -8,6 +8,8 @@ import { LIBELLES_ETAT_DSF, type VersionDsf } from "@/app/lib/dsf-etats";
 import { depuisUtc } from "@/app/lib/heure-douala";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { montantFcfa } from "@/app/lib/formats";
+import { ChampFichier } from "@/app/components/ChampFichier";
+import { RelectureDeLAgent } from "@/app/components/cloture/RelectureDeLAgent";
 
 /** Un horodatage UTC du backend, lu à l'heure de Douala : « 14/10/2026 11:05 ». */
 const fr = (utc: string) => {
@@ -167,7 +169,7 @@ export function DeclarationDsf({
                 </label>
                 <label className="dsf__fichier">
                   L&rsquo;accusé rendu par le portail (PDF ou photo)
-                  <input name="fichier" type="file" required accept="application/pdf,image/jpeg,image/png" />
+                  <ChampFichier name="fichier" required accept="application/pdf,image/jpeg,image/png" />
                 </label>
                 <button type="submit" className="action-principale" disabled={enDepot}>
                   {enDepot ? "…" : "Consigner le dépôt"}
@@ -195,6 +197,8 @@ export function DeclarationDsf({
           <Message etat={preparation} />
         </form>
       )}
+
+      {peutPreparer && !deposee && <RelectureDeLAgent dossier={dossier} exercice={exercice} />}
 
       {remplacees.length > 0 && (
         <p className="dsf__note">

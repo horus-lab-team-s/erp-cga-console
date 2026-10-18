@@ -7,8 +7,10 @@ import {
   analyserLeContrat,
   deciderDUnPoint,
   ecrireLeCahier,
-  redigerLeContrat,
   ouvrirUneMission,
+  partirDUnModele,
+  reaffecterLaMission,
+  redigerLeContrat,
   renvoyerLaMission,
   soumettreLaMission,
   validerLaMission,
@@ -21,9 +23,13 @@ import {
   rubriquesDuType,
   type Proposition,
   type TypeMission,
+  type CandidatALaMission,
+  type ModeleDeContrat,
+  type DemandeAOuvrir,
 } from "@/app/lib/missions-etats";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
 import { useRouter } from "@/i18n/navigation";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 function Message({ etat }: { etat: EtatActe }) {
   if (etat.echec) return <p role="alert" className="mission__message" data-ton="echec">{etat.echec}</p>;
@@ -82,7 +88,7 @@ export function OuvrirUneMission() {
       )}
       <label className="mission__large">
         {type === "REDACTION_CONTRAT" ? "Modèle ou ancien contrat (facultatif)" : "Document (PDF ou photo)"}
-        <input name="fichier" type="file" accept="application/pdf,image/jpeg,image/png" />
+        <ChampFichier name="fichier" accept="application/pdf,image/jpeg,image/png" />
       </label>
       <div className="mission__large">
         <button type="submit" className="action-principale" disabled={enCours}>
@@ -120,17 +126,50 @@ export function CahierDeRedaction({
   cahier,
   disponible,
   modifiable,
+  modeles = [],
+  modeleVerse = false,
 }: {
   mission: string;
   typeDeContrat: string | null;
   cahier: string | null;
   disponible: boolean;
   modifiable: boolean;
+  /** 18 octobre 2026 (point 23) : les modèles du cabinet ; vide, le choix n'apparaît pas. */
+  modeles?: ModeleDeContrat[];
+  /** Les articles d'un modèle sont déjà là : un second modèle les doublerait. */
+  modeleVerse?: boolean;
 }) {
   const [etat, ecrire, enCours] = useActionState(ecrireLeCahier, ETAT_ACTE_INITIAL);
   const [etatR, rediger, enR] = useActionState(redigerLeContrat, ETAT_ACTE_INITIAL);
+  const [etatM, verserLeModele, enM] = useActionState(partirDUnModele, ETAT_ACTE_INITIAL);
   return (
     <div className="mission__cahier">
+      {modifiable && modeles.length > 0 && !modeleVerse && (
+        <form action={verserLeModele} className="mission__agent">
+          <input type="hidden" name="mission" value={mission} />
+          <p className="mission__note">
+            Partir d&rsquo;un modèle du cabinet : le canevas du cahier (s&rsquo;il est vide) et des articles types, chacun
+            à décider. Sans l&rsquo;agent, c&rsquo;est le point de départ ; avec lui, il complète.
+          </p>
+          <label>
+            Modèle
+            <select name="modele" required defaultValue="">
+              <option value="" disabled>
+                Choisir…
+              </option>
+              {modeles.map((m) => (
+                <option key={m.code} value={m.code}>
+                  {m.libelle} ({m.articles} articles)
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className="bouton-discret" disabled={enM}>
+            {enM ? "…" : "Partir de ce modèle"}
+          </button>
+          <Message etat={etatM} />
+        </form>
+      )}
       <form action={ecrire} className="mission__ajout">
         <input type="hidden" name="mission" value={mission} />
         <label className="mission__large">
@@ -195,7 +234,7 @@ export function PointAInstruire({
       <div className="mission__point-entete">
         <span className="mission__rubrique">{libelleDeRubrique(point.rubrique, type)}</span>
         {point.gravite && <span className="mission__gravite" data-gravite={point.gravite}>{LIBELLES_GRAVITE[point.gravite]}</span>}
-        <span className="mission__origine">{point.origine === "AGENT" ? "proposé par l'agent" : "ajouté à la main"}</span>
+        <span className="mission__origine">{point.origine === "AGENT" ? "proposé par l'agent" : point.origine === "MODELE" ? "tiré du modèle" : "ajouté à la main"}</span>
         <span className="mission__decision">{LIBELLES_DECISION[point.decision]}</span>
       </div>
       <strong className="mission__titre">{point.titre}</strong>
@@ -339,5 +378,85 @@ export function ValiderOuRenvoyer({ mission }: { mission: string }) {
         <Message etat={etatR} />
       </form>
     </div>
+  );
+}
+
+/**
+ * Ouvrir la mission d'une demande ponctuelle payée (18 octobre 2026, point 22) : la référence,
+ * le client et son adresse viennent du dossier commercial ; on choisit la prestation et l'objet.
+ */
+export function OuvrirDepuisUneDemande({ demande }: { demande: DemandeAOuvrir }) {
+  const routeur = useRouter();
+  const [etat, ouvrir, enCours] = useActionState(async (p: EtatActe, d: FormData) => {
+    const r = await ouvrirUneMission(p, d);
+    if (r.fait) routeur.push(`/missions/${encodeURIComponent(r.fait)}`);
+    return r;
+  }, ETAT_ACTE_INITIAL);
+  return (
+    <form action={ouvrir} className="mission__ouverture">
+      <input type="hidden" name="reference_commerciale" value={demande.reference} />
+      <label>
+        Prestation
+        <select name="type" defaultValue="ANALYSE_CONTRAT">
+          {(Object.keys(LIBELLES_TYPE) as (keyof typeof LIBELLES_TYPE)[])
+            .filter((t) => t !== "DSF_CIBLEE")
+            .map((t) => (
+              <option key={t} value={t}>
+                {LIBELLES_TYPE[t]}
+              </option>
+            ))}
+        </select>
+      </label>
+      <label className="mission__large">
+        Objet
+        <input name="objet" required maxLength={500} defaultValue={demande.message.slice(0, 200)} />
+      </label>
+      <button type="submit" className="bouton-primaire" disabled={enCours}>
+        {enCours ? "…" : "Ouvrir la mission"}
+      </button>
+      {etat.echec && <p role="alert">{etat.echec}</p>}
+    </form>
+  );
+}
+
+/** Confier la mission à un autre collaborateur (18 octobre 2026, point 22). */
+export function ReaffecterLaMission({
+  identifiant,
+  candidats,
+  actuel,
+}: {
+  identifiant: string;
+  candidats: CandidatALaMission[];
+  actuel: string;
+}) {
+  const [etat, reaffecter, enCours] = useActionState(reaffecterLaMission, ETAT_ACTE_INITIAL);
+  return (
+    <form action={reaffecter} className="mission__ouverture">
+      <input type="hidden" name="identifiant" value={identifiant} />
+      <label>
+        Confier à
+        <select name="responsable" defaultValue="">
+          <option value="" disabled>
+            Choisir
+          </option>
+          {candidats
+            .filter((c) => c.compte !== actuel)
+            .map((c) => (
+              <option key={c.compte} value={c.compte}>
+                {c.nom}
+              </option>
+            ))}
+        </select>
+      </label>
+      <label className="mission__large">
+        Motif
+        <input name="motif" required minLength={10} maxLength={500} placeholder="Absence, charge, compétence…" />
+      </label>
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : "Confier la mission"}
+      </button>
+      {etat.echec && <p role="alert">{etat.echec}</p>}
+      {etat.fait && <p role="status">{etat.fait}</p>}
+    </form>
   );
 }

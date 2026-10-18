@@ -4,7 +4,8 @@ import { startTransition, useState } from "react";
 
 import { enregistrerLaFacture, enregistrerLeBrouillon, lireAutomatiquement, proposerLEcriture } from "@/app/lib/actions-facture";
 import type { FactureSaisie, LigneSaisie, PropositionDeLaPiece, ValeurProposee } from "@/app/lib/facture-etats";
-import { montantFcfa } from "@/app/lib/formats";
+import { ventilerLeTtc } from "@/app/lib/facture-etats";
+import { montantFcfa, taux } from "@/app/lib/formats";
 
 /**
  * Lire une facture, la confirmer, proposer son écriture (14 octobre 2026).
@@ -26,6 +27,9 @@ import { montantFcfa } from "@/app/lib/formats";
  *
  * ⚠️ Les champs « à vérifier » restent marqués tant que le collaborateur ne les a pas
  * touchés ou confirmés : la lecture propose, elle ne décide pas.
+ *
+ * 18 octobre 2026 : le TTC seul suffit à proposer le HT et la TVA, au taux général lu au
+ * référentiel (`tauxTva`). Sans taux lisible, le bouton n'apparaît pas : on ne devine pas.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -50,15 +54,20 @@ export function LectureDeFacture({
   lectureDisponible,
   initiale,
   dejaLue,
+  tauxTva,
+  preparee = null,
 }: {
   identifiant: string;
   dossier: string;
   lectureDisponible: boolean;
   initiale: FactureSaisie | null;
   dejaLue: boolean;
+  tauxTva: number | null;
+  /** 18 octobre 2026 (point 13) : ce que l'agent a lu au dépôt, et ce qu'il signale. */
+  preparee?: { aVerifier: Record<string, number>; points: string[]; lueLe: string } | null;
 }) {
   const [facture, setFacture] = useState<FactureSaisie>(initiale ?? VIDE);
-  const [aVerifier, setAVerifier] = useState<Record<string, number>>({});
+  const [aVerifier, setAVerifier] = useState<Record<string, number>>(preparee?.aVerifier ?? {});
   const [message, setMessage] = useState<{ ton: "echec" | "fait" | "info"; texte: string } | null>(null);
   const [enCours, setEnCours] = useState<string | null>(null);
   const [enregistree, setEnregistree] = useState(dejaLue);
@@ -82,6 +91,29 @@ export function LectureDeFacture({
     });
     setEnregistree(false);
     setProposition(null);
+  }
+  function deduireDuTtc() {
+    if (tauxTva == null || ttc <= 0) return;
+    const { ht: deduitHt, tva: deduiteTva } = ventilerLeTtc(ttc, tauxTva);
+    setFacture((f) => ({
+      ...f,
+      montant_ht: String(deduitHt),
+      montant_tva: String(deduiteTva),
+      // Une seule ligne sans montant : c'est tout le HT.
+      lignes: f.lignes.length === 1 && !f.lignes[0].montant_ht ? [{ ...f.lignes[0], montant_ht: String(deduitHt) }] : f.lignes,
+    }));
+    setAVerifier((a) => {
+      const { montant_ht: _h, montant_tva: _t, ...reste } = a;
+      void _h;
+      void _t;
+      return reste;
+    });
+    setEnregistree(false);
+    setProposition(null);
+    setMessage({
+      ton: "info",
+      texte: `HT et TVA calculés depuis le TTC, au taux de ${taux(tauxTva)}. Corrigez si la facture est exonérée ou à un autre taux.`,
+    });
   }
   function changerLigne(i: number, champ: keyof LigneSaisie, valeur: string) {
     changer("lignes", facture.lignes.map((l, j) => (j === i ? { ...l, [champ]: valeur } : l)));
@@ -264,6 +296,23 @@ export function LectureDeFacture({
             <input inputMode="numeric" value={facture.montant_ttc} onChange={(e) => changer("montant_ttc", e.target.value.replace(/[^\d]/g, ""))} required />
           </label>
         </div>
+        {preparee && (
+          <div className="lecture__preparee" role="note">
+            <strong>Lue au dépôt le {preparee.lueLe} : vérifiez avant d&rsquo;enregistrer.</strong>
+            {preparee.points.length > 0 && (
+              <ul>
+                {preparee.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        {tauxTva != null && (
+          <button type="button" className="bouton-discret lecture__depuis-ttc" onClick={deduireDuTtc} disabled={ttc <= 0}>
+            Calculer HT et TVA depuis le TTC ({taux(tauxTva)})
+          </button>
+        )}
         {ecartTotaux && <p className="lecture__ecart">HT + TVA = {montantFcfa(ht + tva)}, la facture annonce {montantFcfa(ttc)}.</p>}
 
         <button type="submit" className="bouton-primaire" disabled={enCours !== null || ecartLignes || ecartTotaux}>

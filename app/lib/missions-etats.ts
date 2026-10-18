@@ -12,7 +12,8 @@ export type Proposition = {
   texte: string;
   citation: string | null;
   gravite: "FAIBLE" | "MOYENNE" | "ELEVEE" | null;
-  origine: "AGENT" | "COLLABORATEUR";
+  /** 18 octobre 2026 (point 23) : `MODELE`, un article type versé depuis un modèle de contrat. */
+  origine: "AGENT" | "COLLABORATEUR" | "MODELE";
   decision: Decision;
   texte_retenu: string | null;
   motif_ecart: string | null;
@@ -99,3 +100,20 @@ export const LIBELLES_DECISION: Record<Decision, string> = {
 };
 
 export const LIBELLES_GRAVITE = { FAIBLE: "risque faible", MOYENNE: "risque moyen", ELEVEE: "risque élevé" } as const;
+
+/** 18 octobre 2026 (point 22) : une demande ponctuelle payée qui attend sa mission. */
+export type DemandeAOuvrir = {
+  reference: string;
+  client: string;
+  courriel: string | null;
+  telephone: string;
+  message: string;
+  payee_le: string | null;
+  responsable: string | null;
+};
+
+/** Un collaborateur qui peut reprendre la mission. */
+export type CandidatALaMission = { compte: string; nom: string };
+
+/** Un modèle de contrat du cabinet (18 octobre 2026, point 23). Voir `modeles_de_contrat.py`. */
+export type ModeleDeContrat = { code: string; libelle: string; cahier: string; articles: number };

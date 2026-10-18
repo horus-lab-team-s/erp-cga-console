@@ -31,3 +31,7 @@ export const LIBELLES_ETAT_DSF: Record<EtatDsf, string> = {
   DEPOSEE: "Déposée à la DGI",
   REMPLACEE: "Remplacée",
 };
+
+/** La relecture du dossier de la DSF par l'agent (18 octobre 2026, point 24). */
+export type RemarqueDeLAgent = { sujet: string; constat: string; suggestion: string };
+export type EtatDeLaRelecture = { echec: string | null; message: string | null; remarques: RemarqueDeLAgent[] };

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { deposerSurMaCreation, type EtatDepotCreation } from "@/app/lib/actions-ma-creation";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 const INITIAL: EtatDepotCreation = { echec: null, fait: null };
 
@@ -32,7 +33,7 @@ export function DepotSurMaCreation({ reference, code, libelle }: { reference: st
         {/* Le libellé répété pour les lecteurs d'écran : « Choisir un fichier » seul,
             sur une liste de neuf lignes, ne dit pas laquelle. */}
         <span className="creation__invisible">Envoyer : {libelle}</span>
-        <input type="file" name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" />
+        <ChampFichier name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" />
       </label>
       <button type="submit" className="creation__envoyer" disabled={enCours}>
         {enCours ? "Envoi…" : "Envoyer"}

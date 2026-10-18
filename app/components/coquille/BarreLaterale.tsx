@@ -15,7 +15,7 @@ import {
 } from "@/app/lib/navigation";
 import type { Compteurs, Dossier } from "@/app/lib/portefeuille";
 import { basculerRepli, lireRepli, repliParDefaut, souscrireRepli } from "@/app/lib/preferences";
-import { detient, initiales, LIBELLES_ROLE, type Acces } from "@/app/lib/acces";
+import { detient, initiales, libelleRole, type Acces } from "@/app/lib/acces";
 import { Icone } from "./Icone";
 import { SelecteurEntreprise } from "./SelecteurEntreprise";
 
@@ -91,7 +91,7 @@ export function BarreLaterale({
 
   const ecrans = entreesVisibles(NAVIGATION, acces.permissions);
   const administration = entreesVisibles(NAVIGATION_ADMINISTRATION, acces.permissions);
-  const role = acces.roles.map((r) => LIBELLES_ROLE[r]).join(", ") || "Sans rôle";
+  const role = acces.roles.map((r) => libelleRole(r)).join(", ") || "Sans rôle";
 
   return (
     <nav
@@ -223,6 +223,12 @@ export function BarreLaterale({
           </button>
         </form>
       </div>
+      {/* 17 octobre 2026 : l'entreprise porteuse de la plateforme. */}
+      {!repliee && (
+        <p className="barre__signature">
+          Powered by <strong>Zayra Technologies</strong>
+        </p>
+      )}
     </nav>
   );
 }

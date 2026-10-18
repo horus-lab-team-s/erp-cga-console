@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { appeler, ErreurApi, telecharger } from "./api";
 import type { EtatActe } from "./saisie";
 import type { EtatExport } from "./saisie-echange";
+import type { EtatDeLaRelecture, RemarqueDeLAgent } from "./dsf-etats";
 
 const chemin = (dossier: string, exercice: string) =>
   `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}`;
@@ -73,6 +74,8 @@ const PRODUITES: Record<string, string> = {
   "balance-fournisseurs": "balances-auxiliaires/fournisseurs/excel",
   "dgi-fournisseurs": "declarations-par-tiers/fournisseurs/excel",
   "dgi-tiers": "declarations-par-tiers/tiers/excel",
+  // 17 octobre 2026 : l'exercice est dans le chemin, et non en paramètre.
+  "tableau-amortissements": "amortissements/{exercice}/excel",
 };
 
 async function agirSurUnePiece(acte: () => Promise<unknown>, fait: string): Promise<EtatActe> {
@@ -144,7 +147,9 @@ export async function telechargerUnePieceDsf(_precedent: EtatExport, donnees: Fo
   const numero = String(donnees.get("numero") ?? "");
   const produite = PRODUITES[String(donnees.get("produite") ?? "")];
   const route = produite
-    ? `/comptabilite/dossiers/${encodeURIComponent(dossier)}/${produite}?${new URLSearchParams({ exercice })}`
+    ? produite.includes("{exercice}")
+      ? `/comptabilite/dossiers/${encodeURIComponent(dossier)}/${produite.replace("{exercice}", encodeURIComponent(exercice))}`
+      : `/comptabilite/dossiers/${encodeURIComponent(dossier)}/${produite}?${new URLSearchParams({ exercice })}`
     : `${chemin(dossier, exercice)}/pieces-jointes/${encodeURIComponent(numero)}/fichier`;
   try {
     const f = await telecharger(route);
@@ -183,4 +188,26 @@ export async function renseignerUnTiers(_precedent: EtatActe, donnees: FormData)
       }),
     `Fiche de ${denomination} enregistrée : les modèles de la DGI la reprennent.`,
   );
+}
+
+// ── La relecture par l'agent (18 octobre 2026, point 24) ─────────────────────────
+
+
+/** L'agent relit le dossier de la DSF et propose ; sans clé, il le dit, et rien n'attend. */
+export async function demanderUneRelectureDsf(
+  _precedent: EtatDeLaRelecture,
+  donnees: FormData,
+): Promise<EtatDeLaRelecture> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  try {
+    const r = await appeler<{ disponible: boolean; remarques: RemarqueDeLAgent[]; message: string }>(
+      `${chemin(dossier, exercice)}/relecture-de-l-agent`,
+      { methode: "POST", authentifie: true },
+    );
+    return { echec: null, message: r.message, remarques: r.remarques };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, message: null, remarques: [] };
+    throw erreur;
+  }
 }

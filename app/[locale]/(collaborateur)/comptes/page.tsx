@@ -21,7 +21,7 @@ import {
 } from "@/app/components/administration/GestesHabilitations";
 import { AccorderUnMandat, RevoquerUnMandat } from "@/app/components/administration/GestesMandats";
 import { lireDossiers } from "@/app/lib/portefeuille";
-import { LIBELLES_ROLE, detient } from "@/app/lib/acces";
+import { LIBELLES_ROLE, libelleRole, detient } from "@/app/lib/acces";
 import {
   lireAudit,
   lireComptes,
@@ -136,9 +136,15 @@ export default async function Comptes() {
 
   // ⚠️ Les rôles internes seulement : l'accès d'un adhérent s'ouvre par sa souscription,
   // et celui d'un inspecteur ne se donne pas par une invitation de collaborateur.
+  //
+  // 18 octobre 2026 : les rôles créés par le cabinet s'invitent comme les autres ; le super
+  // administrateur ne se propose qu'à qui règle la matrice (le serveur refuserait aux autres).
   const rolesInvitables = roles
     .map((r) => r.role)
-    .filter((r) => r !== "ADHERENT" && r !== "INSPECTEUR");
+    .filter((r) => r !== "ADHERENT" && r !== "INSPECTEUR" && r !== "CLIENT_CREATION")
+    .filter((r) => r !== "SUPER_ADMIN" || detient(acces, "GERER_ROLES"));
+  // Un mandat couvre des rôles tenus ailleurs : un rôle propre à ce cabinet n'existe pas chez l'autre.
+  const rolesMandatables = rolesInvitables.filter((r) => r in LIBELLES_ROLE);
   const dossiers = detient(acces, "LIRE_DOSSIER")
     ? (await lireDossiers(jour)).map((d) => ({ niu: d.niu, denomination: d.denomination }))
     : null;
@@ -272,7 +278,7 @@ export default async function Comptes() {
           titre="Inviter"
           aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
         >
-          <InvitationCollaborateur roles={rolesInvitables} dossiers={dossiers} aujourdhui={jour} />
+          <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
         </Panneau>
 
         <Panneau
@@ -281,7 +287,7 @@ export default async function Comptes() {
         >
           <EnteteTableau colonnes={COMPTES} />
           {comptes.map((ligne, rang) => (
-            <Ligne key={ligne.compte.identifiant} ligne={ligne} rang={rang} soi={acces.compte} />
+            <Ligne roles={roles} key={ligne.compte.identifiant} ligne={ligne} rang={rang} soi={acces.compte} />
           ))}
         </Panneau>
 
@@ -289,7 +295,7 @@ export default async function Comptes() {
           titre="Mandats accordés"
           aide="Ce que ce cabinet a ouvert à d'autres locataires. Un mandat n'accorde aucun rôle : il autorise l'exercice, ici, de rôles déjà tenus ailleurs. Les mandats retirés restent affichés, parce qu'un retrait se relit."
         >
-          <AccorderUnMandat roles={rolesInvitables} aujourdhui={jour} />
+          <AccorderUnMandat roles={rolesMandatables} aujourdhui={jour} />
           {mandats.length === 0 ? (
             <EtatVide
               titre="Aucun mandat accordé"
@@ -315,7 +321,7 @@ export default async function Comptes() {
             .map(({ h, compte }, rang) => (
               <LigneTableau key={h.identifiant} colonnes={HABILITATIONS} ton={rang % 2 ? "alterne" : "normal"}>
                 <Cellule gras>{compte.nom_complet}</Cellule>
-                <Cellule>{LIBELLES_ROLE[h.role]}</Cellule>
+                <Cellule>{libelleRole(h.role, roles)}</Cellule>
                 <Cellule couleur="var(--ink-500)" titre={h.portee?.join(", ") ?? ""}>
                   {h.portee === null ? "tout le cabinet" : h.portee.length ? h.portee.join(", ") : "aucun dossier"}
                 </Cellule>
@@ -332,7 +338,7 @@ export default async function Comptes() {
                     {h.compte !== acces.compte && (
                       <FermerUneHabilitation
                         habilitation={h.identifiant}
-                        libelle={`${LIBELLES_ROLE[h.role]} de ${compte.nom_complet}`}
+                        libelle={`${libelleRole(h.role, roles)} de ${compte.nom_complet}`}
                         aujourdhui={jour}
                       />
                     )}
@@ -401,11 +407,14 @@ function Ligne({
   ligne,
   rang,
   soi,
+  roles,
 }: {
   ligne: LigneCompte;
   rang: number;
   /** L'identifiant du compte connecté : il ne reçoit pas le bouton de réinitialisation. */
   soi: string;
+  /** Le catalogue : il nomme les rôles créés par le cabinet. */
+  roles: readonly { role: string; libelle: string }[];
 }) {
   const suspendu = ligne.compte.etat === "SUSPENDU";
   const enAttente = ligne.compte.etat === "EN_ATTENTE_ACTIVATION";
@@ -418,7 +427,7 @@ function Ligne({
       {/* Aucun rôle au jour ne veut pas dire « compte vide » : c'est souvent une
           habilitation fermée, et l'historique la conserve. */}
       <Cellule couleur={ligne.roles.length ? undefined : "var(--ink-500)"}>
-        {ligne.roles.map((r) => LIBELLES_ROLE[r]).join(", ") || "aucun à cette date"}
+        {ligne.roles.map((r) => libelleRole(r, roles)).join(", ") || "aucun à cette date"}
       </Cellule>
       <Cellule aDroite tabulaire couleur="var(--ink-500)">
         {ligne.dossiers === null
@@ -471,7 +480,7 @@ function LigneMandat({ mandat, rang }: { mandat: MandatAccorde; rang: number }) 
         {mandat.mandataire}
       </Cellule>
       <Cellule couleur={eteint ? "var(--ink-500)" : undefined}>
-        {mandat.roles.map((r) => LIBELLES_ROLE[r]).join(", ")}
+        {mandat.roles.map((r) => libelleRole(r)).join(", ")}
       </Cellule>
       {/* ⚠️ « tous les comptes » et « aucun » ne se confondent pas : `null` ouvre à tout
           le monde chez le mandataire, et c'est l'inverse de ce qu'une liste vide

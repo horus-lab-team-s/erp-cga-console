@@ -11,7 +11,10 @@ import {
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Admission, Resiliation } from "@/app/components/portefeuille/GestesDAdhesion";
 import { InscriptionsEnAttente } from "@/app/components/portefeuille/InscriptionsEnAttente";
-import { dateCourte, TIRET } from "@/app/lib/formats";
+import { RegleDeDepassement } from "@/app/components/portefeuille/GestesDeReglement";
+import { PastilleDeSituation } from "@/app/components/portefeuille/PastilleDeSituation";
+import { lireLaRegleDeDepassement, lireLesSituations } from "@/app/lib/honoraires";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { aujourdhui, lireDossiers, lireInscriptionsEnAttente, type Dossier } from "@/app/lib/portefeuille";
 import { lireAnomaliesDuPortefeuille, type AnomalieIdentifiant } from "@/app/lib/fiche-dossier";
 import { ErreurApi } from "@/app/lib/api";
@@ -82,7 +85,14 @@ export default async function Portefeuille() {
   }
   const peutInscrire = detient(acces, "INSCRIRE_STATUT");
   // 16 octobre 2026 : les entreprises payées à inscrire ; une panne ne cache pas la liste.
-  const enAttente = peutInscrire ? await lireInscriptionsEnAttente().catch(() => []) : [];
+  // 18 octobre 2026 : le responsable affecté au dossier commercial les inscrit aussi ; le
+  // serveur ne lui rend que les dossiers qu'il suit.
+  const voitLaFile = peutInscrire || detient(acces, "QUALIFIER_PROSPECT");
+  const enAttente = voitLaFile ? await lireInscriptionsEnAttente().catch(() => []) : [];
+  // 18 octobre 2026 : qui est en règle. Une panne ne cache pas la liste des dossiers.
+  const situations = acces.interne ? await lireLesSituations().catch(() => null) : null;
+  const regle = detient(acces, "ACCORDER_FAVEURS") ? await lireLaRegleDeDepassement().catch(() => null) : null;
+  const horsRegle = (situations ?? []).filter((s) => ["BLOQUE", "SOUS_GRACE", "EN_RETARD"].includes(s.situation.etat));
 
   return (
     <>
@@ -118,6 +128,41 @@ export default async function Portefeuille() {
             aide="Le dossier commercial préremplit ce qu'il sait ; vérifiez l'identité fiscale sur pièces."
           >
             <InscriptionsEnAttente attente={enAttente} finDAnnee={`${jour.slice(0, 4)}-12-31`} />
+          </Panneau>
+        )}
+
+        {(situations || regle) && (
+          <Panneau
+            titre={
+              horsRegle.length === 0
+                ? "Règlement des honoraires : tous en règle"
+                : `Règlement des honoraires : ${horsRegle.length} dossier${horsRegle.length > 1 ? "s" : ""} hors règle`
+            }
+            aide={
+              regle
+                ? regle.d_office
+                  ? "Règle d'office : un dossier en retard ne se traite plus. Fixez un dépassement toléré, ou accordez une grâce depuis la fiche du dossier."
+                  : `Un retard de plus de ${regle.regle.delai_jours} jours arrête le traitement, sauf grâce.`
+                : "Un dossier bloqué se lit, reçoit ses pièces et se règle ; il ne se traite plus."
+            }
+          >
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {horsRegle.length > 0 && (
+                <ul className="situations">
+                  {horsRegle.map((s) => (
+                    <li key={s.situation.niu}>
+                      <PastilleDeSituation situation={s.situation} />
+                      <Link href={`/portefeuille/${s.situation.niu}`}>{s.denomination}</Link>
+                      <span>
+                        {montantFcfa(s.situation.du)} dus
+                        {s.situation.en_retard_depuis ? `, en retard depuis le ${dateCourte(s.situation.en_retard_depuis)}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {regle && <RegleDeDepassement delai={regle.regle.delai_jours} dOffice={regle.d_office} />}
+            </div>
           </Panneau>
         )}
 

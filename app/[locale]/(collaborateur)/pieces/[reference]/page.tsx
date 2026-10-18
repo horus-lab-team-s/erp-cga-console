@@ -225,12 +225,12 @@ export default async function DetailPiece({
             {/* Pas 88 : le document tel qu'il a été reçu. La visionneuse dessine la facture à
                 partir des données extraites ; comparer les deux est le contrôle de la lecture. */}
             {piecesDeLaFacture.length > 0 && (
-              <p style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", font: "400 12.5px/1.5 var(--police-texte)" }}>
+              <div style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", font: "400 12.5px/1.5 var(--police-texte)" }}>
                 <span style={{ color: "var(--ink-500)" }}>Document reçu :</span>
                 {piecesDeLaFacture.map((p) => (
                   <DocumentDeLaPiece key={p.identifiant} identifiant={p.identifiant} nom={p.nom_fichier} />
                 ))}
-              </p>
+              </div>
             )}
 
             {/* 2 · Données extraites, avec indice de confiance. */}

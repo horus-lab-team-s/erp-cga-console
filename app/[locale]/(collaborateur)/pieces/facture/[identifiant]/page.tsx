@@ -9,6 +9,10 @@ import { detient } from "@/app/lib/acces";
 import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import { appeler, ErreurApi } from "@/app/lib/api";
 import type { FactureSaisie } from "@/app/lib/facture-etats";
+import { lireParametre } from "@/app/lib/referentiel";
+import { lireLaLecturePreparee } from "@/app/lib/lecture-au-depot";
+import { dateCourte } from "@/app/lib/formats";
+import { jourDuFait } from "@/app/lib/heure-douala";
 import { exigerAcces } from "@/app/lib/session";
 
 export const metadata: Metadata = { title: "Lire une facture" };
@@ -73,7 +77,20 @@ export default async function PageLectureDeFacture({ params }: { params: Promise
     }
     throw erreur;
   }
+  // 18 octobre 2026 : le taux du calcul HT/TVA depuis le TTC, lu à la date de la facture
+  // quand elle est connue (une facture de 2024 se lit au taux de 2024). Illisible, le
+  // bouton se retire.
+  const tauxTva = await lireParametre("TVA_TAUX_GENERAL", piece.facture?.date_emission || undefined)
+    .then((p) => (typeof p.valeur === "number" ? p.valeur : Number(p.valeur)))
+    .then((v) => (Number.isFinite(v) ? v : null))
+    .catch(() => null);
   const f = piece.facture;
+  // 18 octobre 2026 (point 13) : sans facture enregistrée, ce que l'agent a lu au dépôt.
+  const lue = f ? null : await lireLaLecturePreparee(piece.identifiant).catch(() => null);
+  const prepareeUtilisable = lue && !lue.incident ? lue : null;
+  const v = Object.fromEntries((prepareeUtilisable?.valeurs ?? []).map((x) => [x.champ, x.valeur]));
+  const texte = (c: string) => (v[c] == null ? "" : String(v[c]));
+  const montant = (c: string) => (v[c] == null ? "" : String(Math.round(Number(v[c]) || 0)));
   const initiale: FactureSaisie | null = f
     ? {
         emetteur: f.emetteur,
@@ -86,6 +103,35 @@ export default async function PageLectureDeFacture({ params }: { params: Promise
         montant_tva: entier(f.montant_tva),
         montant_ttc: entier(f.montant_ttc),
         source: f.source,
+      }
+    : prepareeUtilisable
+      ? {
+          emetteur: texte("emetteur"),
+          niu_emetteur: texte("niu_emetteur"),
+          niu_actif: null,
+          reference: texte("reference_document"),
+          date_emission: texte("date_emission"),
+          lignes: Array.isArray(v.lignes)
+            ? (v.lignes as { designation: string; montant_ht: string | null }[]).map((l) => ({
+                designation: l.designation,
+                montant_ht: l.montant_ht == null ? "" : String(Math.round(Number(l.montant_ht) || 0)),
+              }))
+            : [{ designation: "", montant_ht: "" }],
+          montant_ht: montant("montant_ht"),
+          montant_tva: montant("montant_tva"),
+          montant_ttc: montant("montant_ttc"),
+          source: "LECTURE_AUTOMATIQUE",
+        }
+      : null;
+  const preparee = prepareeUtilisable
+    ? {
+        aVerifier: Object.fromEntries(
+          prepareeUtilisable.valeurs
+            .filter((x) => x.a_relire)
+            .map((x) => [x.champ === "reference_document" ? "reference" : x.champ, Math.round(Number(x.confiance) * 100)]),
+        ),
+        points: prepareeUtilisable.points_a_verifier,
+        lueLe: dateCourte(jourDuFait(prepareeUtilisable.lue_le)),
       }
     : null;
 
@@ -121,6 +167,8 @@ export default async function PageLectureDeFacture({ params }: { params: Promise
               lectureDisponible={disponible && Boolean(piece.empreinte)}
               initiale={initiale}
               dejaLue={Boolean(f)}
+              tauxTva={tauxTva}
+              preparee={preparee}
             />
           </section>
         </div>

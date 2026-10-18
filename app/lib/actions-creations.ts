@@ -143,12 +143,19 @@ export async function recevoirUnePiece(_precedent: EtatActe, donnees: FormData):
   // reste une pièce reçue. Les deux canaux de la cliente ne sont pas proposés ici,
   // et le serveur les refuserait.
   const canal = champ(donnees, "canal");
+  // 18 octobre 2026 : le nom d'une pièce hors liste (code `AUTRE`, rang donné par le serveur).
+  const libelle = champ(donnees, "libelle");
   return geste(
     () =>
       appeler<DossierCreation>(`/creations/${encodeURIComponent(reference)}/pieces`, {
         methode: "POST",
         authentifie: true,
-        corps: { code, ...(empreinte ? { empreinte } : {}), ...(canal ? { canal } : {}) },
+        corps: {
+          code,
+          ...(empreinte ? { empreinte } : {}),
+          ...(canal ? { canal } : {}),
+          ...(libelle ? { libelle } : {}),
+        },
       }),
     empreinte
       ? "Pièce reçue, document joint au dossier."
