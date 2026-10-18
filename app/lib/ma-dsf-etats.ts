@@ -44,7 +44,8 @@ export const EXPLICATIONS_DE_MA_DSF: Record<EtatDeMaDsf, string> = {
     "Le cabinet arrête vos comptes de l'exercice. Les pièces ci-dessous l'aident : versez celles qui sont à fournir.",
   PREPAREE: "La déclaration est établie ; un second collaborateur la relit avant qu'elle parte.",
   VALIDEE: "La déclaration est relue et validée ; elle part sur le portail de la DGI.",
-  DEPOSEE: "La DGI a délivré son accusé. La copie déposée se télécharge.",
+  // Sans copie quand la DSF n'est connue que par son accusé : le lien suit `document`.
+  DEPOSEE: "La DGI a délivré son accusé de réception.",
 };
 
 export const LIBELLES_DE_MA_PIECE: Record<EtatDeMaPiece, string> = {
