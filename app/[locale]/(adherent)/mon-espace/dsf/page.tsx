@@ -96,7 +96,8 @@ function Exercice({
   ouvert: boolean;
 }) {
   const pieces = peutVerser ? e.pieces : e.pieces.map((p) => ({ ...p, versable: false }));
-  const attendues = pieces.filter((p) => p.etat === "A_FOURNIR" || p.etat === "JOINTE");
+  // 18 octobre 2026 : déposée, la DSF ne liste plus « à fournir » ce qui ne manque plus.
+  const attendues = pieces.filter((p) => p.etat === "JOINTE" || (p.etat === "A_FOURNIR" && e.etat !== "DEPOSEE"));
   const parLeCabinet = pieces.filter((p) => p.etat === "PRODUITE" || p.etat === "NEANT");
   return (
     <details className="adherent__section adherent__exercice-dsf" open={ouvert || undefined} aria-label={`DSF ${e.exercice}`}>
