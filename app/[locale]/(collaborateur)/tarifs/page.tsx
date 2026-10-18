@@ -12,6 +12,8 @@ import {
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { FixerUnTarif } from "@/app/components/souscription/FixerUnTarif";
+import { IdentiteFiscaleDuCabinet } from "@/app/components/souscription/IdentiteFiscaleDuCabinet";
+import { lireLIdentiteFiscale } from "@/app/lib/facturation";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
@@ -72,6 +74,9 @@ export default async function Tarifs() {
     if (erreur instanceof ErreurApi) lecture = { echec: erreur.message };
     else throw erreur;
   }
+  // 18 octobre 2026 : l'identité fiscale, que la facture définitive attend. Illisible, le
+  // panneau ne s'affiche pas, et les tarifs restent lisibles.
+  const identite = await lireLIdentiteFiscale().catch(() => null);
 
   return (
     <>
@@ -126,6 +131,15 @@ export default async function Tarifs() {
                 </>
               )}
             </Panneau>
+
+            {identite && (
+              <Panneau
+                titre="Identité fiscale du cabinet"
+                aide="Ce que la facture définitive porte : NIU, RCCM, régime de TVA. Saisissez-la quand vous l'avez."
+              >
+                <IdentiteFiscaleDuCabinet lue={identite} />
+              </Panneau>
+            )}
           </>
         )}
       </div>

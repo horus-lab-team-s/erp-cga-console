@@ -96,6 +96,8 @@ export type MesHonoraires = {
   en_retard: number;
   reglable_en_ligne: boolean;
   situation?: SituationDeReglement | null;
+  /** 18 octobre 2026 : l'identité fiscale du cabinet est complète, la facture s'émet. */
+  facture_disponible?: boolean;
 };
 
 export type LigneDeCaisseHonoraires = {

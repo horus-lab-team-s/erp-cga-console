@@ -161,6 +161,9 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
                 </span>
               )}
               {e.etat !== "A_VENIR" && <NoteDHonoraires niu={e.niu} periode={e.debut} />}
+              {e.etat === "REGLEE" && vue.facture_disponible && (
+                <FactureDefinitive niu={e.niu} periode={e.debut} />
+              )}
             </li>
           ))}
         </ul>
@@ -179,6 +182,23 @@ function NoteDHonoraires({ niu, periode }: { niu: string; periode: string }) {
       rel="noopener"
     >
       Note d&rsquo;honoraires (PDF)
+    </a>
+  );
+}
+
+/**
+ * 18 octobre 2026 : la facture au sens fiscal d'une échéance réglée. Elle n'apparaît que
+ * lorsque la direction a saisi l'identité fiscale du cabinet (NIU, RCCM, TVA).
+ */
+function FactureDefinitive({ niu, periode }: { niu: string; periode: string }) {
+  return (
+    <a
+      className="honoraires__note"
+      href={`/api/honoraires/${encodeURIComponent(niu)}/facture/${encodeURIComponent(periode)}`}
+      target="_blank"
+      rel="noopener"
+    >
+      Facture (PDF)
     </a>
   );
 }
