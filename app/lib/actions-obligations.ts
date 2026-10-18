@@ -223,7 +223,11 @@ export async function jugerLaQuittance(_precedent: EtatActe, donnees: FormData):
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
   }
-  revalidatePath("/[locale]/obligations", "page");
+  // ⚠️ 18 octobre 2026 : PAS DE RELECTURE APRÈS UNE VALIDATION. Une quittance validée quitte
+  // la liste des preuves à juger ; relire la page démontait aussitôt le formulaire de son
+  // écriture de paiement (point 7), qui ne se voyait jamais. La page se relit quand
+  // l'on y revient. Un refus, sans écriture, la relit tout de suite.
+  if (verdict !== "VALIDEE") revalidatePath("/[locale]/obligations", "page");
   return {
     echec: null,
     fait: verdict === "VALIDEE" ? "Quittance validée : l'adhérent lit « Payée »." : "Quittance refusée : l'adhérent lit le motif.",
@@ -254,6 +258,8 @@ export async function enregistrerLEcritureDePaiement(_precedent: EtatActe, donne
       `/comptabilite/dossiers/${encodeURIComponent(dossier)}/ecritures`,
       { methode: "POST", authentifie: true, corps: proposee },
     );
+    // ⚠️ Pas de relecture des obligations ici non plus : elle démontait la confirmation
+    // « écriture proposée » avant qu'on la lise. La page se relit à la navigation suivante.
     revalidatePath("/[locale]/comptabilite/saisie", "page");
     return {
       echec: null,

@@ -180,8 +180,19 @@ export default async function Obligations({
         .map((e) => e.obligation)
         .filter((o) => fonds.obligations_mandatees.includes(o.code_obligation) && !o.deposee && o.periode_debut <= jour)
     : [];
+  // 18 octobre 2026 : les quittances validées restent aussi. Sans écriture de paiement, pour
+  // qu'elle se propose (voir `JugerLaQuittance`) ; écrites, une semaine encore, pour que la
+  // confirmation se lise : toute action serveur relit la page, et la faisait disparaître.
+  const ilYaUneSemaine = new Date(new Date(`${jour}T00:00:00Z`).getTime() - 7 * 24 * 3600 * 1000).toISOString();
   const preuves = await lireMesEcheances(niu)
-    .then((v) => v.echeances.filter((e) => e.etat === "PREUVE_ENVOYEE"))
+    .then((v) =>
+      v.echeances.filter(
+        (e) =>
+          e.etat === "PREUVE_ENVOYEE" ||
+          (e.preuve?.verdict === "VALIDEE" &&
+            (!e.preuve.ecriture_de_paiement || (e.preuve.verifiee_le ?? "") >= ilYaUneSemaine)),
+      ),
+    )
     .catch(() => []);
 
   return (
@@ -315,6 +326,14 @@ export default async function Obligations({
                         codeObligation={p.code_obligation}
                         periodeDebut={p.periode_debut}
                         piece={p.preuve!.piece}
+                        validee={
+                          p.preuve!.verdict === "VALIDEE"
+                            ? {
+                                montant: p.preuve!.montant_quittance ?? null,
+                                ecriture: p.preuve!.ecriture_de_paiement ?? null,
+                              }
+                            : null
+                        }
                       />
                     )}
                   </div>

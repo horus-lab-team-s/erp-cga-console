@@ -3,9 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: "jeton" }) }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-const { constaterLeDepotTva, constaterUnDepot, simulerUnePenalite } = await import(
+const { constaterLeDepotTva, constaterUnDepot, jugerLaQuittance, simulerUnePenalite } = await import(
   "./actions-obligations"
 );
+const { revalidatePath } = await import("next/cache");
 
 /**
  * Le constat d'un dépôt fiscal — ce qui prouve qu'on a déclaré, et quand.
@@ -210,5 +211,37 @@ describe("La simulation de pénalité", () => {
       expect(etat.echec, `montant « ${montant} »`).toContain("n'est pas nul");
     }
     expect(f).not.toHaveBeenCalled();
+  });
+});
+
+describe("Juger une quittance (18 octobre 2026, point 7)", () => {
+  function verdict(v: string) {
+    const d = new FormData();
+    for (const [k, valeur] of Object.entries({
+      dossier: "M081234567890P",
+      code_obligation: "TVA",
+      periode_debut: "2026-07-01",
+      piece: "PJ-1",
+      verdict: v,
+      motif: v === "REFUSEE" ? "Quittance de juin, pas de juillet." : "",
+    })) {
+      d.set(k, valeur);
+    }
+    return d;
+  }
+
+  beforeEach(() => vi.mocked(revalidatePath).mockClear());
+
+  it("validée, elle ne relit pas la page : son écriture de paiement reste à l'écran", async () => {
+    doublerFetch({});
+    const etat = await jugerLaQuittance({ echec: null, fait: null }, verdict("VALIDEE"));
+    expect(etat.fait).toContain("validée");
+    expect(revalidatePath).not.toHaveBeenCalledWith("/[locale]/obligations", "page");
+  });
+
+  it("refusée, elle relit la page : il n'y a pas d'écriture à proposer", async () => {
+    doublerFetch({});
+    await jugerLaQuittance({ echec: null, fait: null }, verdict("REFUSEE"));
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/obligations", "page");
   });
 });

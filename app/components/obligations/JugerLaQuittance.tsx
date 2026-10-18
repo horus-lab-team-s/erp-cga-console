@@ -16,15 +16,48 @@ export function JugerLaQuittance({
   codeObligation,
   periodeDebut,
   piece,
+  validee = null,
 }: {
   dossier: string;
   codeObligation: string;
   periodeDebut: string;
   piece: string;
+  /**
+   * 18 octobre 2026 : la quittance est déjà validée, sans écriture de paiement encore. Toute
+   * action serveur relit la page, et une quittance validée quittait la liste : son écriture ne
+   * se proposait jamais. Elle reste donc au panneau, et n'offre plus que son écriture.
+   * `montant` : celui relevé au verdict, s'il l'a été.
+   */
+  validee?: { montant: string | null; ecriture: string | null } | null;
 }) {
   const [etat, juger, enCours] = useActionState(jugerLaQuittance, ETAT_ACTE_INITIAL);
   const [refuser, setRefuser] = useState(false);
   const [montant, setMontant] = useState("");
+
+  if (validee?.ecriture) {
+    return (
+      <p role="status" style={{ margin: 0, color: "var(--success)", font: "500 12.5px/1.4 var(--police-texte)" }}>
+        Quittance validée, écriture de paiement passée : {validee.ecriture}, à relire et valider sur l&rsquo;écran
+        de saisie.
+      </p>
+    );
+  }
+  if (validee) {
+    return (
+      <>
+        <p style={{ margin: 0, color: "var(--success)", font: "500 12.5px/1.4 var(--police-texte)" }}>
+          Quittance validée : l&rsquo;adhérent lit « Payée ». Reste son écriture de paiement.
+        </p>
+        <EcritureDePaiement
+          dossier={dossier}
+          codeObligation={codeObligation}
+          periodeDebut={periodeDebut}
+          piece={piece}
+          montant={validee.montant ? String(Math.round(Number(validee.montant))) : ""}
+        />
+      </>
+    );
+  }
 
   if (etat.fait) {
     return (

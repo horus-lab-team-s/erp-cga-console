@@ -177,6 +177,9 @@ export type EcheanceDeLAdherent = {
     verdict?: "VALIDEE" | "REFUSEE" | null;
     motif?: string | null;
     verifiee_le?: string | null;
+    /** 18 octobre 2026 (point 7) : le montant relevé au verdict, et l'écriture déjà passée. */
+    montant_quittance?: string | null;
+    ecriture_de_paiement?: string | null;
   } | null;
   /** Sous mandat de paiement : les fonds remis au cabinet pour cette échéance. */
   fonds?: { montant: string; canal: string; recus_le: string } | null;
