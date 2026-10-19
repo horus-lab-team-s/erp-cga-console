@@ -12,6 +12,7 @@ import {
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { ReinitialiserSecondFacteur } from "@/app/components/securite/ReinitialiserSecondFacteur";
 import { InvitationCollaborateur, RetablirCompte, SuspendreCompte } from "@/app/components/administration/GestesComptes";
 import {
@@ -200,6 +201,17 @@ export default async function Comptes() {
           </p>
         </div>
 
+        {/* 19 octobre 2026 : inviter, suspendre, rétablir, fermer une habilitation ou
+            retirer un second facteur exigent la session renforcée. Les gestes ne se
+            montrent qu'une fois le code saisi : un bouton qui répond « refusé » à
+            chaque clic ne dit pas ce qu'il faut faire. */}
+        {!acces.facteur_fort && (
+          <PorteSecondFacteur
+            enrole={acces.second_facteur_enrole}
+            geste="Inviter, suspendre ou rétablir un compte"
+          />
+        )}
+
         {!verification.intacte && (
           <div className="avertissement-ecran" role="alert">
             <strong>Le journal d&rsquo;audit ne se vérifie plus.</strong>
@@ -278,7 +290,11 @@ export default async function Comptes() {
           titre="Inviter"
           aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
         >
-          <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
+          {acces.facteur_fort ? (
+            <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
+          ) : (
+            <p style={{ margin: 0, color: "var(--ink-500)" }}>Renforcez d&rsquo;abord la session, ci-dessus.</p>
+          )}
         </Panneau>
 
         <Panneau
@@ -287,7 +303,14 @@ export default async function Comptes() {
         >
           <EnteteTableau colonnes={COMPTES} />
           {comptes.map((ligne, rang) => (
-            <Ligne roles={roles} key={ligne.compte.identifiant} ligne={ligne} rang={rang} soi={acces.compte} />
+            <Ligne
+              roles={roles}
+              key={ligne.compte.identifiant}
+              ligne={ligne}
+              rang={rang}
+              soi={acces.compte}
+              fort={acces.facteur_fort}
+            />
           ))}
         </Panneau>
 
@@ -335,7 +358,7 @@ export default async function Comptes() {
                     {affecte && !h.transverse && h.role !== "ADHERENT" && h.role !== "INSPECTEUR" && (
                       <ConfierUnDossier habilitation={h.identifiant} />
                     )}
-                    {h.compte !== acces.compte && (
+                    {h.compte !== acces.compte && acces.facteur_fort && (
                       <FermerUneHabilitation
                         habilitation={h.identifiant}
                         libelle={`${libelleRole(h.role, roles)} de ${compte.nom_complet}`}
@@ -408,9 +431,12 @@ function Ligne({
   rang,
   soi,
   roles,
+  fort,
 }: {
   ligne: LigneCompte;
   rang: number;
+  /** La session est renforcée : les gestes qui modifient le compte se montrent. */
+  fort: boolean;
   /** L'identifiant du compte connecté : il ne reçoit pas le bouton de réinitialisation. */
   soi: string;
   /** Le catalogue : il nomme les rôles créés par le cabinet. */
@@ -436,7 +462,7 @@ function Ligne({
       </Cellule>
       <Cellule couleur={ligne.compte.second_facteur_actif ? undefined : "var(--ink-500)"}>
         {ligne.compte.second_facteur_actif ? "Enrôlé" : TIRET}
-        {ligne.compte.second_facteur_actif && ligne.compte.identifiant !== soi && (
+        {fort && ligne.compte.second_facteur_actif && ligne.compte.identifiant !== soi && (
           <ReinitialiserSecondFacteur
             identifiant={ligne.compte.identifiant}
             nom={ligne.compte.nom_complet}
@@ -449,11 +475,11 @@ function Ligne({
         }
       >
         {suspendu ? "Suspendu" : enAttente ? "Jamais activé" : "Actif"}
-        {!suspendu && ligne.compte.identifiant !== soi && (
+        {fort && !suspendu && ligne.compte.identifiant !== soi && (
           <SuspendreCompte identifiant={ligne.compte.identifiant} nom={ligne.compte.nom_complet} />
         )}
         {/* Pas 91 : la levée de suspension a sa route. */}
-        {suspendu && <RetablirCompte identifiant={ligne.compte.identifiant} />}
+        {fort && suspendu && <RetablirCompte identifiant={ligne.compte.identifiant} />}
         {ligne.compte.etat === "ACTIF" && ligne.compte.identifiant !== soi && (
           <FermerLesSessions identifiant={ligne.compte.identifiant} />
         )}
