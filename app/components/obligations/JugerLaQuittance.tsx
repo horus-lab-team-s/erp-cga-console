@@ -16,12 +16,18 @@ export function JugerLaQuittance({
   codeObligation,
   periodeDebut,
   piece,
+  montantAttendu = null,
   validee = null,
 }: {
   dossier: string;
   codeObligation: string;
   periodeDebut: string;
   piece: string;
+  /**
+   * 19 octobre 2026 (point 7) : ce que porte l'accusé de dépôt de l'échéance, s'il est
+   * consigné. La quittance s'y compare à la saisie ; un écart demande un mot.
+   */
+  montantAttendu?: string | null;
   /**
    * 18 octobre 2026 : la quittance est déjà validée, sans écriture de paiement encore. Toute
    * action serveur relit la page, et une quittance validée quittait la liste : son écriture ne
@@ -33,6 +39,9 @@ export function JugerLaQuittance({
   const [etat, juger, enCours] = useActionState(jugerLaQuittance, ETAT_ACTE_INITIAL);
   const [refuser, setRefuser] = useState(false);
   const [montant, setMontant] = useState("");
+  const attendu = montantAttendu ? Math.round(Number(montantAttendu)) : null;
+  const ecart = attendu !== null && montant ? Number(montant) - attendu : null;
+  const ecartAJustifier = ecart !== null && Math.abs(ecart) > 1;
 
   if (validee?.ecriture) {
     return (
@@ -112,6 +121,21 @@ export function JugerLaQuittance({
               placeholder="ex. 84000"
             />
           </label>
+          {attendu !== null && (
+            <p className="juger-quittance__attendu" style={{ margin: 0, font: "400 12.5px/1.5 var(--police-texte)", color: ecartAJustifier ? "var(--warning)" : "var(--ink-500)" }}>
+              L&rsquo;accusé de dépôt porte {attendu.toLocaleString("fr-FR")} FCFA
+              {ecart !== null &&
+                (ecartAJustifier
+                  ? ` : écart de ${ecart > 0 ? "+" : "−"}${Math.abs(ecart).toLocaleString("fr-FR")} FCFA.`
+                  : " : la quittance concorde.")}
+            </p>
+          )}
+          {ecartAJustifier && (
+            <label className="juger-quittance__motif">
+              Pourquoi la valider malgré l&rsquo;écart ?
+              <input name="motif" maxLength={500} required placeholder="Paiement partiel, le solde suit le 30 août." />
+            </label>
+          )}
           <button type="submit" name="verdict" value="VALIDEE" className="bouton-primaire" disabled={enCours}>
             {enCours ? "…" : "Valider : payée"}
           </button>

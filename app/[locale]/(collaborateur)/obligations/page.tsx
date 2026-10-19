@@ -326,6 +326,7 @@ export default async function Obligations({
                         codeObligation={p.code_obligation}
                         periodeDebut={p.periode_debut}
                         piece={p.preuve!.piece}
+                        montantAttendu={p.montant_constate ?? null}
                         validee={
                           p.preuve!.verdict === "VALIDEE"
                             ? {
