@@ -73,6 +73,11 @@ const DUREE_TEMOIN = 12 * 60 * 60;
  * ─────────────────────────────────────────────────────────────────────────────
  */
 async function surHttps(): Promise<boolean> {
+  // ⚠️ 19 octobre 2026 (audit de sécurité) : en production, le témoin est « Secure »
+  // d'office. Déduit du seul en-tête du mandataire, il partait en clair le jour où
+  // celui-ci oubliait de le poser. `CGA_AUTORISER_HTTP=1` le lève pour une
+  // démonstration servie en clair sur un réseau local.
+  if (process.env.NODE_ENV === "production" && process.env.CGA_AUTORISER_HTTP !== "1") return true;
   const { headers } = await import("next/headers");
   const entetes = await headers();
   return (entetes.get("x-forwarded-proto") ?? "").split(",")[0].trim() === "https";

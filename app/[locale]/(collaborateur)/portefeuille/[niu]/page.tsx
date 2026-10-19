@@ -368,9 +368,13 @@ export default async function FicheDuDossier({
                   ))}
                 </ul>
               )}
-              {detient(acces, "FIXER_LES_TARIFS") && !("echec" in honoraires) && (
-                <FixerLeContrat niu={niu} actuel={honoraires.valeur.contrat} />
-              )}
+              {/* 19 octobre 2026 : un contrat révisé ne se refait plus (le serveur le refuse) ;
+                  seule la révision datée reste proposée. */}
+              {detient(acces, "FIXER_LES_TARIFS") &&
+                !("echec" in honoraires) &&
+                (honoraires.valeur.contrat?.revisions?.length ?? 0) === 0 && (
+                  <FixerLeContrat niu={niu} actuel={honoraires.valeur.contrat} />
+                )}
               {detient(acces, "FIXER_LES_TARIFS") && !("echec" in honoraires) && honoraires.valeur.contrat && (
                 <ReviserLeTarif niu={niu} aujourdhui={jour} />
               )}
