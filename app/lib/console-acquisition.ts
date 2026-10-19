@@ -144,6 +144,14 @@ export type FicheDossier = {
     emise_le: string;
     transmise_le: string | null;
   }[];
+  /** 19 octobre 2026 (point 22) : les documents joints par le visiteur à sa demande. */
+  pieces_jointes?: {
+    empreinte: string;
+    nom: string;
+    type_mime: string;
+    taille: number;
+    recue_le: string;
+  }[];
   demande: {
     nom: string;
     telephone: string;

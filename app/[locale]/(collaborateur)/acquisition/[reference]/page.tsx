@@ -169,6 +169,31 @@ export default async function FicheDossierCommercial({
                 Affectation : {fiche.motif_affectation}
               </p>
             )}
+            {/* 19 octobre 2026 (point 22) : ce que le visiteur a joint, à lire avant
+                de le rappeler. */}
+            {(fiche.pieces_jointes ?? []).length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <p style={{ margin: 0, font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
+                  Documents joints par le visiteur
+                </p>
+                <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                  {(fiche.pieces_jointes ?? []).map((p) => (
+                    <li key={p.empreinte}>
+                      <a
+                        href={`/api/demandes/${encodeURIComponent(reference)}/${p.empreinte}`}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        {p.nom}
+                      </a>{" "}
+                      <span style={{ color: "var(--ink-500)", fontSize: 12 }}>
+                        · {Math.max(1, Math.round(p.taille / 1024))} Ko · reçu le {dateCourte(jourDuFait(p.recue_le))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </Panneau>
 
