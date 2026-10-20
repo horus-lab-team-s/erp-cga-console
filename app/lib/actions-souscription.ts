@@ -28,70 +28,15 @@
  */
 
 import { revalidatePath } from "next/cache";
-import { getLocale } from "next-intl/server";
-
-import { redirect } from "@/i18n/navigation";
 
 import { appeler, ErreurApi } from "./api";
 import type { EtatActe } from "./saisie";
-import type { Devis, Engagement, Souscription } from "./souscription";
+import type { Souscription } from "./souscription";
 
 const CHEMIN_CABINET = "/[locale]/souscriptions";
 
-/** L'état du formulaire d'engagement : le message du backend et la souscription créée. */
-export type EtatEngagement = { echec: string | null; message: string | null; souscription: string | null };
-
 function texte(donnees: FormData, cle: string): string {
   return String(donnees.get(cle) ?? "").trim();
-}
-
-export async function etablirUnDevis(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
-  const service = texte(donnees, "service");
-  const formule = texte(donnees, "formule");
-  const prospect = {
-    nom: texte(donnees, "nom"),
-    prenom: texte(donnees, "prenom"),
-    courriel: texte(donnees, "courriel"),
-    telephone: texte(donnees, "telephone"),
-    // `null` et non "" : une chaîne vide serait un NIU déclaré, et faux.
-    denomination: texte(donnees, "denomination") || null,
-    niu: texte(donnees, "niu").toUpperCase() || null,
-    // Chiffres seulement : « 28 000 000 » saisi avec des espaces reste lisible.
-    chiffre_affaires_declare: texte(donnees, "chiffre_affaires").replace(/\s/g, "") || null,
-  };
-  if (!service || !prospect.nom || !prospect.prenom || !prospect.courriel || !prospect.telephone) {
-    return { echec: "Service, nom, prénom, adresse et téléphone sont obligatoires.", fait: null };
-  }
-  let devis: Devis;
-  try {
-    devis = await appeler<Devis>("/souscription/devis", {
-      methode: "POST",
-      corps: { prospect, lignes: [{ service, formule: formule || null }] },
-    });
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
-    throw erreur;
-  }
-  // ⚠️ `redirect` lève : il ne doit pas être dans le `try`, sinon le `catch` l'avalerait.
-  redirect({ href: `/souscrire/devis/${devis.reference}`, locale: await getLocale() });
-  return { echec: null, fait: null };
-}
-
-export async function sEngagerSurLeDevis(_precedent: EtatEngagement, donnees: FormData): Promise<EtatEngagement> {
-  const reference = texte(donnees, "reference");
-  if (donnees.get("accord") !== "oui") {
-    return { echec: "Cochez la case pour confirmer votre engagement.", message: null, souscription: null };
-  }
-  try {
-    const r = await appeler<Engagement>(`/souscription/devis/${encodeURIComponent(reference)}/engagement`, {
-      methode: "POST",
-      corps: {},
-    });
-    return { echec: null, message: r.message, souscription: r.souscription.reference };
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, message: null, souscription: null };
-    throw erreur;
-  }
 }
 
 export async function activerUneSouscription(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {

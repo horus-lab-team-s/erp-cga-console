@@ -136,3 +136,28 @@ export async function cloreUnContrat(_precedent: EtatActe, donnees: FormData): P
     throw erreur;
   }
 }
+
+/**
+ * Enregistrer le groupe de risque professionnel que la CNPS a notifié (16 octobre 2026) :
+ * le cabinet, ou l'employeur depuis son espace. Bulletins et DIPE le lisent ensuite.
+ */
+export async function enregistrerLeGroupeDeRisque(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const groupe = texte(donnees, "groupe");
+  const notifieLe = texte(donnees, "notifie_le");
+  if (!groupe || !["A", "B", "C"].includes(groupe)) return { echec: "Choisissez le groupe notifié.", fait: null };
+  if (!notifieLe) return { echec: "Indiquez la date de la notification de la CNPS.", fait: null };
+  try {
+    await appeler(`/social/dossiers/${encodeURIComponent(dossier)}/groupe-risque`, {
+      methode: "PUT",
+      authentifie: true,
+      corps: { groupe, notifie_le: notifieLe },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath(CHEMIN, "page");
+  revalidatePath("/[locale]/mon-espace/paie", "page");
+  return { echec: null, fait: `Groupe ${groupe} enregistré : chaque bulletin et le DIPE l'appliquent.` };
+}

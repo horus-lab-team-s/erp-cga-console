@@ -107,6 +107,8 @@ export type Question = {
   valeurs: string[] | null;
   unite: string | null;
   aide: string;
+  /** Le nom lisible de chaque valeur d'une liste, quand le référentiel le donne. */
+  libelles_valeurs?: Record<string, string>;
 };
 
 export type Questionnaire = { service: string; version: string; questions: Question[] };
@@ -142,6 +144,14 @@ export type FicheDossier = {
     emise_le: string;
     transmise_le: string | null;
   }[];
+  /** 19 octobre 2026 (point 22) : les documents joints par le visiteur à sa demande. */
+  pieces_jointes?: {
+    empreinte: string;
+    nom: string;
+    type_mime: string;
+    taille: number;
+    recue_le: string;
+  }[];
   demande: {
     nom: string;
     telephone: string;
@@ -150,6 +160,11 @@ export type FicheDossier = {
     message: string | null;
     canal_prefere: string;
     deposee_le: string;
+    /**
+     * Ce que le client a répondu lui-même sur le site, par code de question, tel
+     * qu'il l'a écrit. Ces réponses ont ouvert la qualification déjà remplie.
+     */
+    declarations?: Record<string, string>;
     /**
      * L'accord d'être contacté sur WhatsApp. ⚠️ Lire `accorde` ET `revoque_le` :
      * un accord révoqué n'autorise plus rien (voir `vautMaintenant`).
@@ -296,18 +311,6 @@ export type ProformaEmise = {
   transmise_le?: string | null;
 };
 
-export type ProformaConsultee = {
-  numero: string;
-  version: number;
-  service: string;
-  etat: "EMISE" | "TRANSMISE" | "ACCEPTEE" | "REMPLACEE" | "ANNULEE";
-  montant: string;
-  lignes: { libelle: string; montant: string }[];
-  debours: { libelle: string; montant: string }[];
-  expire_le: string;
-  acceptee: boolean;
-};
-
 /** L'état des canaux de contact (pas 90) : ceux que le centre exploite, et pourquoi les autres ne le sont pas. */
 export type EtatDesCanaux = {
   actifs: string[];
@@ -342,7 +345,31 @@ export type OuvertureDeLEspace = {
   etapes_substituees: string[];
   slug: string | null;
   dernier_echec: string | null;
+  /**
+   * ⚠️ Cette vente n'ouvre pas d'espace de plateforme, et n'en ouvrira jamais : une
+   * création d'entreprise ouvre un dossier de formalité, pas un locataire. Sans ce
+   * champ, `demarree: false` se lisait « pas encore ».
+   */
+  sans_objet?: boolean;
 };
+
+/** Une ligne de la caisse : un règlement à constater, ou déjà constaté. */
+export type ReglementDeCaisse = {
+  dossier: string;
+  client: string;
+  telephone: string;
+  service: string;
+  proforma: string;
+  montant: string;
+  etat: "A_ENCAISSER" | "ENCAISSE";
+  payee_le: string | null;
+  /** Vrai seulement pour l'offre qui ouvre un espace : une adresse est alors due. */
+  ouvre_un_espace: boolean;
+};
+
+export function lireLaCaisse() {
+  return appeler<ReglementDeCaisse[]>("/acquisition/caisse", authentifie);
+}
 
 export function lireOuvertureDeLEspace(reference: string) {
   return appeler<OuvertureDeLEspace>(

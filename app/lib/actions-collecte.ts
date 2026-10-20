@@ -24,7 +24,9 @@ import { revalidatePath } from "next/cache";
 
 import { appeler, ErreurApi, telecharger } from "./api";
 import { lirePieces, type DemandePiece } from "./collecte";
+import type { EtatDocumentDeCreation } from "./document-de-creation";
 import type { EtatActe } from "./saisie";
+import { versUtc } from "./heure-douala";
 
 const CHEMINS = ["/[locale]/pieces/[reference]", "/[locale]/pieces/attendues"] as const;
 
@@ -330,26 +332,6 @@ export async function recevoirUnePieceAuCabinet(_precedent: EtatActe, donnees: F
   }
 }
 
-/** Le document d'une pièce, en base64 : les octets passent intacts jusqu'au navigateur (pas 88). */
-export type EtatDocument = { echec: string | null; fichier: { nom: string; typeMime: string; base64: string } | null };
-
-/**
- * Récupérer le document scanné d'une pièce (pas 88).
- *
- * ⚠️ Le backend le rend en pièce jointe, avec `nosniff` : un fichier déposé de l'extérieur
- * ne doit jamais s'ouvrir dans la page du cabinet. L'écran le télécharge, il ne l'insère pas.
- */
-export async function recupererLeDocument(_precedent: EtatDocument, donnees: FormData): Promise<EtatDocument> {
-  const identifiant = String(donnees.get("identifiant") ?? "");
-  try {
-    const f = await telecharger(`/collecte/pieces/${encodeURIComponent(identifiant)}/fichier`);
-    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
-    throw erreur;
-  }
-}
-
 /**
  * Envoyer la relance des pièces cochées (pas 111). La sélection, le modèle et les canaux partent ;
  * le message, lui, est rendu par le backend, le même qu'à l'aperçu.
@@ -523,6 +505,100 @@ export async function envoyerUnePreuveDePaiement(_precedent: EtatActe, donnees: 
           }
           throw erreur;
         }
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Le document d'une pièce, pour l'aperçu (14 octobre 2026) : la quittance que le cabinet vérifie,
+ * le justificatif que l'adhérent relit. Même route que le téléchargement, même garde de portée.
+ */
+export async function lireLeDocumentDUnePiece(
+  _precedent: EtatDocumentDeCreation,
+  donnees: FormData,
+): Promise<EtatDocumentDeCreation> {
+  const identifiant = String(donnees.get("identifiant") ?? "");
+  try {
+    const f = await telecharger(`/collecte/pieces/${encodeURIComponent(identifiant)}/fichier`);
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Le cabinet a payé l'administration avec les fonds de l'adhérent : il dépose la quittance au
+ * dossier, puis la porte sur l'appel de fonds (14 octobre 2026). L'échéance de l'adhérent passe
+ * à « Payée ».
+ *
+ * ⚠️ Ici, et non dans `actions-fonds.ts` : le dépôt passe par `deposerFichierEtPiece`, les mêmes
+ * contrôles que toute pièce, et cette fonction ne s'exporte pas (elle deviendrait une action
+ * serveur appelable de partout).
+ */
+export async function reverserAvecQuittance(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const appel = String(donnees.get("appel") ?? "");
+  donnees.set("type", "QUITTANCE_IMPOT");
+  try {
+    return await deposerFichierEtPiece(donnees, {
+      canal: "DEPOT_CABINET",
+      deposeLe: null,
+      pourLeCabinet: true,
+      ensuite: async (resultat) => {
+        await appeler(
+          `/souscription/fonds-de-tiers/${encodeURIComponent(dossier)}/appels/${encodeURIComponent(appel)}/reversement`,
+          { methode: "POST", authentifie: true, corps: { quittance: resultat.piece.identifiant } },
+        );
+        revalidatePath("/[locale]/obligations", "page");
+        return { echec: null, fait: `Quittance ${resultat.piece.identifiant} portée : l'échéance de l'adhérent est payée.` };
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * La DSF est déposée sur le portail de la DGI : le réviseur verse l'accusé au dossier, puis
+ * le consigne sur la version validée (14 octobre 2026). L'accusé y est confronté à
+ * l'empreinte de la version, et l'obligation DSF passe à « déclarée » à l'échéancier.
+ *
+ * ⚠️ Ici, et non dans `actions-dsf.ts`, pour la même raison que `reverserAvecQuittance`.
+ */
+export async function constaterLeDepotDeLaDsf(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  const version = String(donnees.get("version") ?? "");
+  const numero = String(donnees.get("numero") ?? "").trim();
+  const deposeLe = String(donnees.get("depose_le") ?? "").trim();
+  if (!numero) return { echec: "Le numéro de l'accusé de la DGI est obligatoire.", fait: null };
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(deposeLe)) {
+    return { echec: "La date et l'heure du dépôt, telles que l'accusé les porte, sont obligatoires.", fait: null };
+  }
+  donnees.set("type", "AUTRE");
+  try {
+    return await deposerFichierEtPiece(donnees, {
+      canal: "DEPOT_CABINET",
+      deposeLe: null,
+      pourLeCabinet: true,
+      ensuite: async (resultat) => {
+        await appeler(
+          `/cloture/dossiers/${encodeURIComponent(dossier)}/dsf/${encodeURIComponent(exercice)}/${encodeURIComponent(version)}/depot`,
+          {
+            methode: "POST",
+            authentifie: true,
+            corps: { numero, depose_le: versUtc(deposeLe), piece: resultat.piece.identifiant },
+          },
+        );
+        revalidatePath("/[locale]/cloture", "page");
+        revalidatePath("/[locale]/obligations", "page");
+        return { echec: null, fait: `Accusé ${numero} consigné : la DSF ${exercice} est déclarée à l'échéancier.` };
       },
     });
   } catch (erreur) {

@@ -100,6 +100,10 @@ COPY . .
 #     docker build --build-arg NEXT_PUBLIC_ADRESSE_VITRINE=https://… .
 ARG NEXT_PUBLIC_ADRESSE_VITRINE
 ENV NEXT_PUBLIC_ADRESSE_VITRINE=${NEXT_PUBLIC_ADRESSE_VITRINE}
+# 20 octobre 2026 : l'adresse publique du site lui-même (plan du site, aperçus de partage). Absente,
+# le défaut du code s'applique (`app/lib/site.ts`).
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build

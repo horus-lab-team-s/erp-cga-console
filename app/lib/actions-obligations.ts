@@ -190,3 +190,83 @@ export async function reglerMesRappels(_precedent: EtatActe, donnees: FormData):
     throw erreur;
   }
 }
+
+/**
+ * Valider ou refuser la quittance envoyée par l'adhérent (14 octobre 2026).
+ *
+ * ⚠️ Un verdict ne se reprend pas : il est écrit au journal chaîné. Un refus dit pourquoi, et
+ * l'adhérent le lit sur sa carte pour envoyer la bonne quittance.
+ */
+export async function jugerLaQuittance(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const verdict = String(donnees.get("verdict") ?? "");
+  const motif = String(donnees.get("motif") ?? "").trim();
+  const montantQuittance = String(donnees.get("montant_quittance") ?? "").replace(/\s/g, "");
+  if (verdict === "REFUSEE" && motif.length < 5) {
+    return { echec: "Dites pourquoi : l'adhérent doit savoir quelle quittance renvoyer.", fait: null };
+  }
+  try {
+    await appeler(`/obligations/dossiers/${encodeURIComponent(dossier)}/preuves-de-paiement/verdict`, {
+      methode: "POST",
+      authentifie: true,
+      corps: {
+        code_obligation: String(donnees.get("code_obligation") ?? ""),
+        periode_debut: String(donnees.get("periode_debut") ?? ""),
+        piece: String(donnees.get("piece") ?? ""),
+        verdict,
+        ...(motif ? { motif } : {}),
+        // 18 octobre 2026 (point 7) : le montant que porte la quittance, s'il est relevé.
+        ...(/^\d+$/.test(montantQuittance) ? { montant_quittance: montantQuittance } : {}),
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  // ⚠️ 18 octobre 2026 : PAS DE RELECTURE APRÈS UNE VALIDATION. Une quittance validée quitte
+  // la liste des preuves à juger ; relire la page démontait aussitôt le formulaire de son
+  // écriture de paiement (point 7), qui ne se voyait jamais. La page se relit quand
+  // l'on y revient. Un refus, sans écriture, la relit tout de suite.
+  if (verdict !== "VALIDEE") revalidatePath("/[locale]/obligations", "page");
+  return {
+    echec: null,
+    fait: verdict === "VALIDEE" ? "Quittance validée : l'adhérent lit « Payée »." : "Quittance refusée : l'adhérent lit le motif.",
+  };
+}
+
+/**
+ * L'écriture de paiement d'une quittance validée, enregistrée en brouillon (18 octobre 2026,
+ * point 7). Le serveur la propose (compte soldé au débit, trésorerie au crédit) ; elle part
+ * par la route de saisie, qui rejoue ses contrôles, et un comptable la valide ensuite.
+ */
+export async function enregistrerLEcritureDePaiement(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const params = new URLSearchParams({
+    code_obligation: String(donnees.get("code_obligation") ?? ""),
+    periode_debut: String(donnees.get("periode_debut") ?? ""),
+    piece: String(donnees.get("piece") ?? ""),
+    compte_tresorerie: String(donnees.get("compte_tresorerie") ?? "521"),
+  });
+  const montant = String(donnees.get("montant") ?? "").replace(/\s/g, "");
+  if (/^\d+$/.test(montant)) params.set("montant", montant);
+  try {
+    const proposee = await appeler<Record<string, unknown>>(
+      `/obligations/dossiers/${encodeURIComponent(dossier)}/preuves-de-paiement/ecriture-proposee?${params}`,
+      { authentifie: true },
+    );
+    const ecriture = await appeler<{ journal: string; numero: number }>(
+      `/comptabilite/dossiers/${encodeURIComponent(dossier)}/ecritures`,
+      { methode: "POST", authentifie: true, corps: proposee },
+    );
+    // ⚠️ Pas de relecture des obligations ici non plus : elle démontait la confirmation
+    // « écriture proposée » avant qu'on la lise. La page se relit à la navigation suivante.
+    revalidatePath("/[locale]/comptabilite/saisie", "page");
+    return {
+      echec: null,
+      fait: `Brouillon ${ecriture.journal} n° ${ecriture.numero} créé : à relire et valider sur l'écran de saisie.`,
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}

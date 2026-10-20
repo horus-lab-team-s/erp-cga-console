@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { depuisUtc, jourADouala, moisPrecedentADouala, versUtc } from "./heure-douala";
+import { depuisUtc, jourADouala, jourDuFait, moisPrecedentADouala, versUtc } from "./heure-douala";
 
 /**
  * L'heure saisie à Douala, rendue en UTC pour le backend.
@@ -148,5 +148,17 @@ describe("Le mois écoulé, à Douala", () => {
       const rendu = moisPrecedentADouala(instantUtc(`2026-${m}-15T09:00:00`));
       expect(rendu, `mois ${m}`).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
     }
+  });
+});
+
+describe("jourDuFait", () => {
+  it("date un fait horodaté en UTC au jour de Douala", () => {
+    // Un règlement constaté le 15 mai à 0 h 30 à Douala, soit le 14 à 23 h 30 UTC.
+    expect(jourDuFait("2026-05-14T23:30:00")).toBe("2026-05-15");
+    expect(jourDuFait("2026-05-14T22:59:59.123456")).toBe("2026-05-14");
+  });
+
+  it("rend une date seule telle quelle", () => {
+    expect(jourDuFait("2026-05-14")).toBe("2026-05-14");
   });
 });

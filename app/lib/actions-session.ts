@@ -36,7 +36,7 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 
 import { appeler, ErreurApi, TEMOIN_SESSION } from "./api";
-import type { Acces } from "./acces";
+import { detient, type Acces } from "./acces";
 
 /** Douze heures — la durée de session du backend. Voir `DUREE_SESSION`. */
 const DUREE_TEMOIN = 12 * 60 * 60;
@@ -73,6 +73,11 @@ const DUREE_TEMOIN = 12 * 60 * 60;
  * ─────────────────────────────────────────────────────────────────────────────
  */
 async function surHttps(): Promise<boolean> {
+  // ⚠️ 19 octobre 2026 (audit de sécurité) : en production, le témoin est « Secure »
+  // d'office. Déduit du seul en-tête du mandataire, il partait en clair le jour où
+  // celui-ci oubliait de le poser. `CGA_AUTORISER_HTTP=1` le lève pour une
+  // démonstration servie en clair sur un réseau local.
+  if (process.env.NODE_ENV === "production" && process.env.CGA_AUTORISER_HTTP !== "1") return true;
   const { headers } = await import("next/headers");
   const entetes = await headers();
   return (entetes.get("x-forwarded-proto") ?? "").split(",")[0].trim() === "https";
@@ -118,7 +123,26 @@ export async function connexion(
   // page de connexion n'offre aucun choix d'espace, parce qu'il n'y a rien à
   // choisir. Un adhérent qui atterrirait sur l'espace de travail y verrait des
   // écrans dont aucune donnée ne le concerne.
-  redirect({ href: acces.interne ? "/tableau-de-bord" : "/mon-espace", locale: langue });
+  // ⚠️ La responsable de caisse arrive sur sa caisse (14 octobre 2026). Son rôle ne
+  // porte que la permission d'encaisser : le tableau de bord, qui lit les dossiers,
+  // lui afficherait un écran réservé à sa première seconde dans le produit.
+  // ⚠️ 18 octobre 2026 : « elle encaisse et ne lit aucun dossier », et non plus « sa seule
+  // permission est d'encaisser ». La caisse a reçu la vue des versements par axe
+  // (`VOIR_VERSEMENTS_*`) : la règle ne la reconnaissait plus, et elle retombait sur le
+  // tableau de bord fermé à son rôle.
+  const seulementLaCaisse = detient(acces, "ENCAISSER") && !detient(acces, "LIRE_DOSSIER");
+  // ⚠️ La cliente d'une création arrive sur SA création (14 octobre 2026). Elle n'a pas encore
+  // d'entreprise au portefeuille : l'espace adhérent lui afficherait « aucune entreprise ». Le
+  // jour où sa société est immatriculée, son compte reçoit `LIRE_DOSSIER` et elle arrive chez elle.
+  const seulementSaCreation = !detient(acces, "LIRE_DOSSIER") && detient(acces, "SUIVRE_MA_CREATION");
+  const accueil = !acces.interne
+    ? seulementSaCreation
+      ? "/ma-creation"
+      : "/mon-espace"
+    : seulementLaCaisse
+      ? "/caisse"
+      : "/tableau-de-bord";
+  redirect({ href: accueil, locale: langue });
 
   // `redirect` interrompt l'exécution en levant : la ligne suivante n'est jamais
   // atteinte. Elle est là parce que le vérificateur de types l'ignore, et non

@@ -10,6 +10,9 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
+import { BalanceAuxiliaire } from "@/app/components/comptabilite/BalanceAuxiliaire";
+import { LivresObligatoires } from "@/app/components/comptabilite/LivresObligatoires";
+import { SoldesARegarder } from "@/app/components/comptabilite/SoldesARegarder";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { Link } from "@/i18n/navigation";
 import { DetailDuCompte } from "@/app/components/comptabilite/DetailDuCompte";
@@ -17,6 +20,8 @@ import { ErreurApi } from "@/app/lib/api";
 import {
   exerciceCourant,
   lireBalance,
+  lireBalanceAuxiliaire,
+  lireLesSoldesARegarder,
   lireGrandLivre,
   lireJournaux,
   lirePlanComptable,
@@ -85,6 +90,7 @@ export default async function Comptabilite({
     q?: string;
     compte?: string;
     lettrage?: string;
+    auxiliaire?: string;
   }>;
 }) {
   const acces = await exigerAcces();
@@ -117,7 +123,7 @@ export default async function Comptabilite({
 
   const niu = dossier && dossiers.some((d) => d.niu === dossier) ? dossier : dossiers[0].niu;
   const courant = dossiers.find((d) => d.niu === niu)!;
-  const [soldes, sante, plan, journaux] = await Promise.all([
+  const [soldes, sante, plan, journaux, aRegarder] = await Promise.all([
     lireBalance(niu, exercice, filtres),
     lireSante(niu, exercice, filtres),
     // ⚠️ Pas 77 : la balance ne porte pas l'intitulé des comptes, et la colonne était
@@ -125,6 +131,8 @@ export default async function Comptabilite({
     // tomber la balance.
     lirePlanComptable().catch(() => []),
     lireJournaux().catch(() => []),
+    // 18 octobre 2026 (point 15) : un relevé illisible n'empêche pas de lire la balance.
+    lireLesSoldesARegarder(niu, exercice).catch(() => null),
   ]);
   const intitules = new Map(plan.map((c) => [c.numero, c.intitule]));
   const visibles = recherche
@@ -144,10 +152,14 @@ export default async function Comptabilite({
     }
   }
   const auPlan = compte ? plan.find((c) => c.numero === compte) : undefined;
+  // 15 octobre 2026 : la balance auxiliaire demandée, à l'écran. Toujours sur l'exercice
+  // entier : un solde de tiers se lit à la clôture, pas sur une période.
+  const auxiliaire = brut.auxiliaire === "clients" || brut.auxiliaire === "fournisseurs" ? brut.auxiliaire : null;
+  const lignesAuxiliaires = auxiliaire ? await lireBalanceAuxiliaire(niu, auxiliaire, exercice) : null;
   // Les liens gardent les filtres : ouvrir un compte ne doit pas faire perdre la période.
   const lien = (autres: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const valeurs = { dossier: niu, exercice, du: filtres.du, au: filtres.au, journal: filtres.journal, q: brut.q, compte: compte ?? undefined, lettrage: lettrage === "TOUTES" ? undefined : lettrage, ...autres };
+    const valeurs = { dossier: niu, exercice, du: filtres.du, au: filtres.au, journal: filtres.journal, q: brut.q, compte: compte ?? undefined, lettrage: lettrage === "TOUTES" ? undefined : lettrage, auxiliaire: auxiliaire ?? undefined, ...autres };
     for (const [cle, valeur] of Object.entries(valeurs)) if (valeur) p.set(cle, valeur);
     return `/comptabilite?${p}`;
   };
@@ -171,6 +183,32 @@ export default async function Comptabilite({
         </div>
 
         <Sante sante={sante} />
+
+        {aRegarder && (
+          <SoldesARegarder
+            dossier={niu}
+            exercice={exercice}
+            soldes={aRegarder.soldes}
+            intitules={Object.fromEntries(plan.map((c) => [c.numero, c.intitule]))}
+          />
+        )}
+
+        <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
+
+        {auxiliaire && lignesAuxiliaires ? (
+          <BalanceAuxiliaire
+            nature={auxiliaire}
+            lignes={lignesAuxiliaires}
+            autre={lien({ auxiliaire: auxiliaire === "clients" ? "fournisseurs" : "clients" })}
+            fermer={lien({ auxiliaire: undefined })}
+          />
+        ) : (
+          <p style={{ margin: 0, font: "400 12.5px/1.5 var(--police-texte)", color: "var(--ink-700)" }}>
+            Balances auxiliaires à l&rsquo;écran :{" "}
+            <Link href={lien({ auxiliaire: "clients" })}>clients</Link> ·{" "}
+            <Link href={lien({ auxiliaire: "fournisseurs" })}>fournisseurs</Link>
+          </p>
+        )}
 
         <form method="get" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "end", padding: "10px 14px", background: "var(--surface)", border: "1px solid var(--line-200)", borderRadius: "var(--rayon)" }}>
           <input type="hidden" name="dossier" value={niu} />

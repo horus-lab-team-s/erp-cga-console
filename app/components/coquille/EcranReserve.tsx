@@ -1,5 +1,5 @@
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
-import { LIBELLES_ROLE, type Acces, type Permission } from "@/app/lib/acces";
+import { libelleRole, type Acces, type Permission } from "@/app/lib/acces";
 import { lireRoles } from "@/app/lib/administration";
 import { ErreurApi } from "@/app/lib/api";
 
@@ -48,7 +48,7 @@ async function profilsQuiOuvrent(permissions: Permission[]): Promise<string[]> {
     const roles = await lireRoles();
     return roles
       .filter((r) => r.role !== "ADHERENT" && permissions.some((p) => r.permissions.includes(p)))
-      .map((r) => LIBELLES_ROLE[r.role] ?? r.role);
+      .map((r) => libelleRole(r.role));
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return [];
     throw erreur;
@@ -102,7 +102,7 @@ export async function EcranReserve({
         {acces !== null && (
           <p className="faits">
             Connecté comme {acces.nom_complet} ·{" "}
-            {acces.roles.map((r) => LIBELLES_ROLE[r] ?? r).join(", ") ||
+            {acces.roles.map((r) => libelleRole(r)).join(", ") ||
               "aucun rôle actif à ce jour"}
           </p>
         )}

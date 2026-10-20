@@ -46,7 +46,17 @@ export function depuisUtc(utcSansFuseau: string): string {
   return douala.toISOString().slice(0, 19);
 }
 
-
+/**
+ * Le jour d'un fait horodaté en UTC par le backend, **à Douala** (AAAA-MM-JJ).
+ *
+ * ⚠️ 16 octobre 2026 : `payee_le.slice(0, 10)` et ses semblables rendaient le jour UTC ;
+ * un règlement constaté à 0 h 30 à Douala s'affichait la veille. Une date seule
+ * (« 2026-05-15 ») est rendue telle quelle : elle n'a pas d'heure à convertir.
+ */
+export function jourDuFait(horodatage: string): string {
+  if (horodatage.length <= 10) return horodatage;
+  return depuisUtc(horodatage).slice(0, 10);
+}
 
 /**
  * Aujourd'hui, **à Douala**, au format que le backend attend.

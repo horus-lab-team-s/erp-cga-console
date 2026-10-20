@@ -75,3 +75,36 @@ export async function reprendreUnFichier(_precedent: EtatReprise, donnees: FormD
     throw erreur;
   }
 }
+
+/**
+ * Un livre obligatoire, en PDF (14 octobre 2026). En octets, comme l'export : le
+ * navigateur reçoit le document tel que le serveur l'a mis en page.
+ */
+export async function editerUnLivre(_precedent: EtatExport, donnees: FormData): Promise<EtatExport> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  const livre = String(donnees.get("livre") ?? "");
+  const du = String(donnees.get("du") ?? "").trim();
+  const au = String(donnees.get("au") ?? "").trim();
+  // 15 octobre 2026 : les balances auxiliaires, annexes Excel de la DSF, sur l'exercice
+  // entier (un solde de tiers se lit à la clôture, pas sur une période).
+  const auxiliaire = { "auxiliaire-clients": "clients", "auxiliaire-fournisseurs": "fournisseurs" }[livre];
+  // Les modèles « MODELE FOURNISSEURS » et « MODELE TIERS » de la DGI, sur l'exercice entier.
+  const declaration = { "dgi-fournisseurs": "fournisseurs", "dgi-tiers": "tiers" }[livre];
+  if (!/^\d{4}$/.test(exercice) || !(auxiliaire || declaration || ["journal", "grand-livre", "balance"].includes(livre))) {
+    return { echec: "Choisissez un livre et un exercice.", fichier: null };
+  }
+  const requete = new URLSearchParams({ exercice, ...(du ? { du } : {}), ...(au ? { au } : {}) });
+  const chemin = declaration
+    ? `/comptabilite/dossiers/${encodeURIComponent(dossier)}/declarations-par-tiers/${declaration}/excel?${new URLSearchParams({ exercice })}`
+    : auxiliaire
+      ? `/comptabilite/dossiers/${encodeURIComponent(dossier)}/balances-auxiliaires/${auxiliaire}/excel?${new URLSearchParams({ exercice })}`
+      : `/comptabilite/dossiers/${encodeURIComponent(dossier)}/livres/${livre}?${requete}`;
+  try {
+    const f = await telecharger(chemin);
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
+    throw erreur;
+  }
+}

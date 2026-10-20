@@ -27,7 +27,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 /** Interne au réseau : jamais `NEXT_PUBLIC_`, voir l'en-tête. */
 export const BASE_API = process.env.API_URL ?? "http://127.0.0.1:8000";
@@ -49,7 +49,7 @@ export class ErreurApi extends Error {
 type Options = {
   /** Transmet le témoin de session. Faux pour les routes publiques. */
   authentifie?: boolean;
-  methode?: "GET" | "POST" | "DELETE";
+  methode?: "GET" | "POST" | "PUT" | "DELETE";
   corps?: unknown;
   /**
    * Un formulaire multipart, pour envoyer un fichier (pas 81). Exclusif de `corps` :
@@ -85,6 +85,41 @@ async function enteteSession(): Promise<Record<string, string>> {
 }
 
 /**
+ * ⚠️ 19 octobre 2026 (audit de sécurité) : `encodeURIComponent("..")` rend « .. » intact,
+ * et l'URL se normalise ensuite. Un paramètre de route valant « .. » remontait donc d'un
+ * segment dans le chemin du backend. Aucun chemin ne passe avec un segment « . » ou « .. ».
+ */
+function exigerUnCheminSur(chemin: string): void {
+  const segments = chemin.split("?")[0].split("/");
+  if (segments.some((s) => s === "." || s === ".." || /^(%2e|\.){1,2}$/i.test(s))) {
+    throw new ErreurApi("Chemin refusé.", 400);
+  }
+}
+
+/**
+ * L'adresse du visiteur, transmise au backend (19 octobre 2026, audit de sécurité).
+ *
+ * ⚠️ Sans elle, toutes les requêtes arrivaient au backend depuis l'adresse de ce serveur :
+ * la limite de « 30 connexions en 5 minutes par adresse » devenait une limite pour tout
+ * le cabinet, et trente essais ratés suffisaient à fermer la connexion à tous. L'en-tête
+ * reçu vient du mandataire de confiance (l'ingress) ; le backend ne le croit que de
+ * l'adresse de ce serveur (`FORWARDED_ALLOW_IPS`).
+ */
+async function enteteVisiteur(): Promise<Record<string, string>> {
+  try {
+    const recus = await headers();
+    const adresse =
+      // ⚠️ La DERNIÈRE adresse de la liste : c'est celle que l'ingress ajoute. Les
+      // premières viennent du client, qui peut écrire ce qu'il veut.
+      recus.get("x-forwarded-for")?.split(",").at(-1)?.trim() || recus.get("x-real-ip")?.trim();
+    return adresse ? { "X-Forwarded-For": adresse } : {};
+  } catch {
+    // Hors d'une requête (rendu statique) : il n'y a pas de visiteur à nommer.
+    return {};
+  }
+}
+
+/**
  * Le motif lisible d'une réponse en erreur : le `detail` du backend, ou le premier
  * message d'une erreur de validation. Partagé par `appeler` et `telecharger` (pas 85).
  */
@@ -113,9 +148,11 @@ async function motifDErreur(reponse: Response): Promise<string> {
 export async function appeler<T>(chemin: string, options: Options = {}): Promise<T> {
   const { authentifie = false, methode = "GET", corps, formulaire, cache, accepter = [] } = options;
 
+  exigerUnCheminSur(chemin);
   const entetes: Record<string, string> = { Accept: "application/json" };
   if (corps !== undefined) entetes["Content-Type"] = "application/json";
   if (authentifie) Object.assign(entetes, await enteteSession());
+  Object.assign(entetes, await enteteVisiteur());
 
   let reponse: Response;
   try {
@@ -129,8 +166,12 @@ export async function appeler<T>(chemin: string, options: Options = {}): Promise
     });
   } catch {
     throw new ErreurApi(
-      `Le backend est injoignable sur ${BASE_API}. ` +
-        "Vérifier qu'il est démarré : uvicorn app.main:app --reload",
+      // ⚠️ 19 octobre 2026 (audit) : l'adresse interne et la commande de lancement
+      // s'affichaient à l'écran. Elles ne servent qu'au développeur, sur son poste.
+      process.env.NODE_ENV === "production"
+        ? "Le service est momentanément indisponible. Réessayez dans un instant."
+        : `Le backend est injoignable sur ${BASE_API}. ` +
+            "Vérifier qu'il est démarré : uvicorn app.main:app --reload",
       null,
     );
   }
@@ -357,11 +398,20 @@ export type FichierTelecharge = { octets: Uint8Array; typeMime: string; nom: str
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export async function telecharger(chemin: string): Promise<FichierTelecharge> {
+  exigerUnCheminSur(chemin);
   let reponse: Response;
   try {
-    reponse = await fetch(`${BASE_API}${chemin}`, { headers: await enteteSession(), cache: "no-store" });
+    reponse = await fetch(`${BASE_API}${chemin}`, {
+      headers: { ...(await enteteSession()), ...(await enteteVisiteur()) },
+      cache: "no-store",
+    });
   } catch {
-    throw new ErreurApi(`Le backend est injoignable sur ${BASE_API}.`, null);
+    throw new ErreurApi(
+      process.env.NODE_ENV === "production"
+        ? "Le service est momentanément indisponible. Réessayez dans un instant."
+        : `Le backend est injoignable sur ${BASE_API}.`,
+      null,
+    );
   }
   if (!reponse.ok) throw new ErreurApi(await motifDErreur(reponse), reponse.status);
   const disposition = reponse.headers.get("content-disposition") ?? "";

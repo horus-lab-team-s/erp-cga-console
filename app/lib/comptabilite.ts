@@ -235,3 +235,33 @@ export type Journal = {
 export function lireJournaux() {
   return appeler<Journal[]>("/comptabilite/journaux", authentifie);
 }
+
+/** 15 octobre 2026 : la balance auxiliaire, tiers par tiers. Voir `balance_auxiliaire.py`. */
+export type NatureAuxiliaire = "clients" | "fournisseurs";
+
+export type LigneAuxiliaire = {
+  /** `null` : des écritures sans tiers, à ventiler avant le dépôt. */
+  tiers: string | null;
+  denomination: string | null;
+  niu: string | null;
+  report: string;
+  debit: string;
+  credit: string;
+  /** Positif : débiteur. Négatif : créditeur. */
+  solde: string;
+};
+
+export function lireBalanceAuxiliaire(niu: string, nature: NatureAuxiliaire, exercice: string) {
+  return appeler<LigneAuxiliaire[]>(
+    `/comptabilite/dossiers/${encodeURIComponent(niu)}/balances-auxiliaires/${nature}?${new URLSearchParams({ exercice })}`,
+    authentifie,
+  );
+}
+
+/** 18 octobre 2026 (point 15) : les soldes dont le sens contredit la nature du compte. */
+export function lireLesSoldesARegarder(niu: string, exercice: string) {
+  return appeler<{ soldes: import("./soldes-a-regarder-etats").SoldeARegarder[] }>(
+    `/comptabilite/dossiers/${encodeURIComponent(niu)}/balance/soldes-a-regarder?${new URLSearchParams({ exercice })}`,
+    authentifie,
+  );
+}

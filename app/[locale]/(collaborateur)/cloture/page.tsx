@@ -11,11 +11,27 @@ import {
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
 import { ClotureExercice } from "@/app/components/cloture/ClotureExercice";
+import { DeclarationDsf } from "@/app/components/cloture/DeclarationDsf";
+import { DsfFormatDgi } from "@/app/components/cloture/DsfFormatDgi";
+import { PiecesDsf } from "@/app/components/cloture/PiecesDsf";
+import { TiersDeLaDsf } from "@/app/components/cloture/TiersDeLaDsf";
+import { NatureDActivite } from "@/app/components/cloture/NatureDActivite";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
+import {
+  lireLeFormatDgi,
+  lireLesFournisseursDeclares,
+  lireLesPiecesDsf,
+  lireLesVersionsDsf,
+  type FormatDgi,
+  type VersionDsf,
+} from "@/app/lib/dsf";
+import type { PiecesDeLaDsf } from "@/app/lib/pieces-dsf-etats";
+import type { DeclarationParTiers } from "@/app/lib/tiers-dsf-etats";
 import { dateCourte } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
@@ -27,6 +43,7 @@ import {
   exerciceDejaClos,
   lireLiasse,
   lirePlanDeLaLiasse,
+  type ImpotEstime,
   type Liasse,
   type SystemeDsf,
 } from "@/app/lib/cloture";
@@ -53,7 +70,10 @@ export const dynamic = "force-dynamic";
  *
  * ⚠️ CE QUE CET ÉCRAN NE FAIT PAS, ET POURQUOI
  *
- * Il ne dépose pas la DSF : ce dépôt reste à construire.
+ * Il ne dépose pas la DSF lui-même : le portail de la DGI ne s'atteint pas d'ici. Depuis
+ * le 14 octobre 2026, il la PRÉPARE (version figée, empreinte), la fait VALIDER par un
+ * second regard, et CONSIGNE l'accusé du portail, confronté à l'empreinte. Voir
+ * `DeclarationDsf`.
  *
  * ⚠️ IL CLÔT, DEPUIS LE PAS 55, ET EN DERNIER
  *
@@ -113,6 +133,26 @@ export default async function ClotureEtDsf({
   const peutClore = detient(acces, "CLOTURER_EXERCICE");
   const clos = liasse && peutClore ? await exerciceDejaClos(niu, liasse.cloture) : null;
 
+  // La DSF de l'exercice, version par version (14 octobre 2026).
+  let versionsDsf: VersionDsf[] = [];
+  let erreurDsf: string | null = null;
+  let formatDgi: FormatDgi | null = null;
+  let piecesDsf: PiecesDeLaDsf | null = null;
+  let fournisseurs: DeclarationParTiers | null = null;
+  if (liasse) {
+    try {
+      versionsDsf = await lireLesVersionsDsf(niu, exercice);
+      // 15 octobre 2026 : le format DGI, modèle Normal seulement ; une panne ici ne cache pas la DSF.
+      formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
+      // 15 octobre 2026 : les pièces à joindre, Normal ou SMT ; une panne ne cache pas la DSF.
+      piecesDsf = await lireLesPiecesDsf(niu, exercice).catch(() => null);
+      // 16 octobre 2026 : les fiches des fournisseurs que les modèles de la DGI déclarent.
+      fournisseurs = await lireLesFournisseursDeclares(niu, exercice).catch(() => null);
+    } catch (cause) {
+      erreurDsf = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
+    }
+  }
+
   return (
     <>
       <EnteteTravail
@@ -138,6 +178,12 @@ export default async function ClotureEtDsf({
         ) : (
           liasse && (
             <>
+              <NatureDActivite
+                dossier={niu}
+                nature={liasse.nature_activite}
+                reelDOffice={liasse.reel_d_office}
+                modifiable={detient(acces, "INSCRIRE_STATUT")}
+              />
               <Controles liasse={liasse} />
               <TableauDePassage liasse={liasse} />
               {ORDRE_SENS.map((sens) => {
@@ -190,6 +236,46 @@ export default async function ClotureEtDsf({
                   {!clos && <ClotureExercice key={`${niu}-${exercice}`} dossier={niu} exercice={exercice} />}
                 </Panneau>
               )}
+              <Panneau
+                titre="Déclaration statistique et fiscale"
+                aide="Préparée sur l'exercice clos, validée par le réviseur, puis déposée sur le portail de la DGI et consignée ici avec son accusé."
+              >
+                {erreurDsf ? (
+                  <EtatErreur titre="Versions de la DSF indisponibles" detail={erreurDsf} />
+                ) : (
+                  <DeclarationDsf
+                    key={`${niu}-${exercice}`}
+                    dossier={niu}
+                    exercice={exercice}
+                    versions={versionsDsf}
+                    peutPreparer={detient(acces, "PREPARER_DSF")}
+                    peutValider={detient(acces, "REVISER_DOSSIER")}
+                    peutDeposer={detient(acces, "DEPOSER_DECLARATION")}
+                    compte={acces.compte}
+                    porteDuSecondFacteur={
+                      acces.facteur_fort ? null : (
+                        <PorteSecondFacteur enrole={acces.second_facteur_enrole} geste="Consigner le dépôt de la DSF" />
+                      )
+                    }
+                  />
+                )}
+                {formatDgi && <DsfFormatDgi dossier={niu} exercice={exercice} etat={formatDgi} />}
+                {piecesDsf && (
+                  <PiecesDsf
+                    dossier={niu}
+                    exercice={exercice}
+                    etat={piecesDsf}
+                    peutPreparer={detient(acces, "PREPARER_DSF")}
+                  />
+                )}
+                {fournisseurs && (
+                  <TiersDeLaDsf
+                    dossier={niu}
+                    declaration={fournisseurs}
+                    peutSaisir={detient(acces, "SAISIR_ECRITURE")}
+                  />
+                )}
+              </Panneau>
             </>
           )
         )}
@@ -266,7 +352,7 @@ function Controles({ liasse }: { liasse: Liasse }) {
               color: "var(--ink-500)",
             }}
           >
-            ⚠️ Classement en {LIBELLES_SYSTEME[liasse.systeme]} fondé sur un seuil non validé
+            ⚠️ Classement en {LIBELLES_SYSTEME[liasse.systeme]} par défaut : régime fiscal du dossier inconnu
           </span>
         )}
       </div>
@@ -340,6 +426,7 @@ function TableauDePassage({ liasse }: { liasse: Liasse }) {
       )}
       <Ligne libelle="Résultat fiscal" montant={liasse.resultat_fiscal} fort surligne />
       <DroitCga liasse={liasse} />
+      {liasse.impot && <ImpotDeLExercice impot={liasse.impot} />}
       {Number(liasse.tva_rejetee_a_verifier) > 0 && (
         <div
           style={{
@@ -401,6 +488,52 @@ function DroitCga({ liasse }: { liasse: Liasse }) {
     >
       <strong style={{ color: couleur }}>{intitule}</strong> : {detail}
     </div>
+  );
+}
+
+/**
+ * L'impôt sur les sociétés estimé (15 octobre 2026) : 30 % du résultat fiscal, jamais moins
+ * que le minimum de perception sur le chiffre d'affaires (CGI art. 17, 22, 23), centimes
+ * additionnels compris. Ce qui fixe l'impôt dû se lit, et ce qui n'est pas estimé se dit.
+ */
+function ImpotDeLExercice({ impot }: { impot: ImpotEstime }) {
+  const note = {
+    padding: "10px 16px",
+    font: "400 12.5px/1.5 var(--police-texte)",
+    color: "var(--ink-500)",
+    borderTop: "1px solid var(--line-100)",
+  } as const;
+  if (!impot.estime || impot.impot_du === null) {
+    return (
+      <div style={note}>
+        <strong style={{ color: "var(--ink-700)" }}>Impôt non estimé</strong> : {impot.motif}
+      </div>
+    );
+  }
+  return (
+    <>
+      <Ligne
+        libelle="IS au taux, centimes additionnels compris"
+        montant={impot.is_au_taux ?? "0"}
+        nonValide={impot.non_valide}
+      />
+      <Ligne
+        libelle={`Minimum de perception, sur ${Number(impot.base_du_minimum ?? 0).toLocaleString("fr-FR")} FCFA de chiffre d'affaires`}
+        montant={impot.minimum_de_perception ?? "0"}
+        nonValide={impot.non_valide}
+      />
+      <Ligne libelle="Impôt sur les sociétés dû, estimé" montant={impot.impot_du} fort surligne />
+      <div style={note}>
+        <strong style={{ color: "var(--ink-700)" }}>
+          {impot.retenu === "MINIMUM"
+            ? "Le minimum de perception s’applique"
+            : impot.retenu === "AUCUN"
+              ? "Aucun impôt dû : ni bénéfice ni chiffre d’affaires sur l’exercice"
+              : "L’IS au taux s’applique"}
+        </strong>{" "}
+        : {impot.motif}
+      </div>
+    </>
   );
 }
 

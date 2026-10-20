@@ -37,6 +37,7 @@ import { appeler, controlerPieceDemonstration, ErreurApi } from "./api";
 // export d'un module « use server » soit une fonction asynchrone, et le message
 // d'erreur ne dit pas laquelle des exportations est fautive.
 import type { Ecriture, PropositionDEcriture } from "./comptabilite";
+import type { EtatDeLaRelectureDeBalance, RemarqueSurLaBalance } from "./soldes-a-regarder-etats";
 import { LIGNES_OFFERTES, type EtatActe, type EtatProposition, type EtatSaisie } from "./saisie";
 
 // ⚠️ Un groupe de routes — `(collaborateur)` — **ne figure pas** dans l'URL, et
@@ -393,6 +394,25 @@ export async function enregistrerLEcritureDeLaPiece(
     if (erreur instanceof ErreurApi) {
       return { echec: erreur.message, proposition: null, dossier: null, enregistree: null };
     }
+    throw erreur;
+  }
+}
+
+/** 18 octobre 2026 (point 15) : l'agent relit la balance et propose ; il n'écrit rien. */
+export async function demanderUneRelectureDeLaBalance(
+  _precedent: EtatDeLaRelectureDeBalance,
+  donnees: FormData,
+): Promise<EtatDeLaRelectureDeBalance> {
+  const dossier = String(donnees.get("dossier") ?? "");
+  const exercice = String(donnees.get("exercice") ?? "");
+  try {
+    const r = await appeler<{ message: string; remarques: RemarqueSurLaBalance[] }>(
+      `/comptabilite/dossiers/${encodeURIComponent(dossier)}/balance/relecture-de-l-agent?${new URLSearchParams({ exercice })}`,
+      { methode: "POST", authentifie: true },
+    );
+    return { echec: null, message: r.message, remarques: r.remarques };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, message: null, remarques: [] };
     throw erreur;
   }
 }

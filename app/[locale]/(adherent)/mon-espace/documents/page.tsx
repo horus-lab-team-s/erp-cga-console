@@ -124,6 +124,15 @@ function Recu({ denomination, niu, document: d }: { denomination: string; niu: s
         {d.verifiable ? ", dont le justificatif est archivé au dossier." : " ; aucun justificatif n'est encore archivé avec cet accusé."}
       </p>
       <p className="adherent__actions">
+        {/* 18 octobre 2026 : le reçu de dépôt en PDF, à la charte du cabinet. */}
+        <a
+          className="bouton-discret"
+          href={`/api/documents/${encodeURIComponent(niu)}/${encodeURIComponent(d.numero)}`}
+          target="_blank"
+          rel="noopener"
+        >
+          Le reçu en PDF
+        </a>{" "}
         <ImprimerLeRecu />
       </p>
     </section>
