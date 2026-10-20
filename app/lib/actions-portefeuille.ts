@@ -229,7 +229,16 @@ export async function choisirMonEntreprise(donnees: FormData): Promise<void> {
   const { cookies } = await import("next/headers");
   const niu = String(donnees.get("entreprise") ?? "").trim();
   if (/^[A-Z0-9]{8,20}$/.test(niu)) {
-    (await cookies()).set("cga_entreprise", niu, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
+    // 20 octobre 2026 (audit avant la production) : « Secure » comme le témoin de session.
+    // Le NIU choisi n'ouvre rien, mais il n'a pas à circuler en clair.
+    const secure = process.env.NODE_ENV === "production" && process.env.CGA_AUTORISER_HTTP !== "1";
+    (await cookies()).set("cga_entreprise", niu, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
   for (const page of ["", "/justificatifs", "/echeances", "/documents", "/entreprise", "/reglages"]) {
     revalidatePath(`/[locale]/mon-espace${page}`, "page");

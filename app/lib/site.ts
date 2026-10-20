@@ -11,5 +11,6 @@
  * chemins qu'on y accroche commencent par la leur.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.cga-brcgroup.com"
+  // `||` et non `??` : une image construite sans l'argument porte une chaîne vide.
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.cga-brcgroup.com"
 ).replace(/\/$/, "");
