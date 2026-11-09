@@ -71,6 +71,17 @@ export type MesDocumentsDeCreation = {
   proformas: ProformaDeLaCliente[];
   reglee: boolean;
   reglee_le: string | null;
+  /**
+   * 9 novembre 2026 : ce qu'elle a versé et ce qui reste. ⚠️ `total` et `reste` n'existent
+   * qu'une fois la proforma transmise, après l'échange avec le cabinet.
+   */
+  versements?: {
+    frais_verses: string;
+    total: string | null;
+    paye: string;
+    reste: string | null;
+    solde: boolean;
+  } | null;
 };
 
 export async function lireMesDocumentsDeCreation(): Promise<MesDocumentsDeCreation[]> {

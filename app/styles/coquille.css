@@ -5606,3 +5606,42 @@ thead .matrice__droit {
   margin: 0;
   color: var(--danger);
 }
+
+/* ── Ma création : versements (9 novembre 2026) ───────────────────────────── */
+.creation__versements {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.creation__versements > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.creation__versements dt,
+.creation__versements dd {
+  margin: 0;
+}
+
+/* Les champs des formulaires de rendez-vous et de versements : le même trait que la fiche. */
+.rdv__formulaire input:not([type="checkbox"]):not([type="radio"]),
+.rdv__formulaire select,
+.rdv__formulaire textarea,
+.rdv__constat input,
+.rdv__constat select,
+.versements__regle input,
+.versements__constat input {
+  box-sizing: border-box;
+  max-width: 420px;
+  padding: 5px 8px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-petit);
+  background: var(--surface);
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.rdv__formulaire > button,
+.versements__regle > button,
+.versements__constat > button {
+  align-self: flex-start;
+}

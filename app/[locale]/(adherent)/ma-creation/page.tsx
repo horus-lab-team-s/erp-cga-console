@@ -254,6 +254,48 @@ function UneCreation({
         </div>
       )}
 
+      {/* 9 novembre 2026 : ce qu'elle a versé, et ce qui reste. Le reste n'existe qu'après
+          l'échange : tant que la proforma n'est pas transmise, seuls les frais se lisent. */}
+      {documents?.versements && (
+        <div className="creation__bloc">
+          <h2 className="creation__intertitre">Vos versements</h2>
+          {documents.versements.total === null ? (
+            <p className="creation__progression">
+              {Number(documents.versements.frais_verses) > 0
+                ? `Frais de dossier versés : ${montantFcfa(documents.versements.frais_verses)}. `
+                : ""}
+              Le montant de votre procédure vous sera proposé après l&rsquo;échange avec le cabinet ; les frais de
+              dossier en seront déduits.
+            </p>
+          ) : (
+            <dl className="creation__versements">
+              <div>
+                <dt>Total de la procédure</dt>
+                <dd>{montantFcfa(documents.versements.total)}</dd>
+              </div>
+              {Number(documents.versements.frais_verses) > 0 && (
+                <div>
+                  <dt>dont frais de dossier versés</dt>
+                  <dd>{montantFcfa(documents.versements.frais_verses)}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Payé</dt>
+                <dd>{montantFcfa(documents.versements.paye)}</dd>
+              </div>
+              <div>
+                <dt>Reste à payer</dt>
+                <dd>
+                  <strong>
+                    {documents.versements.solde ? "☑ Soldé" : montantFcfa(documents.versements.reste ?? "0")}
+                  </strong>
+                </dd>
+              </div>
+            </dl>
+          )}
+        </div>
+      )}
+
       {documents && (documents.proformas.length > 0 || documents.reglee) && (
         <div className="creation__bloc">
           <h2 className="creation__intertitre">Proforma et reçu</h2>
