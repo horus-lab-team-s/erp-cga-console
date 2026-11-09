@@ -45,9 +45,22 @@ export function ConstatDeCaisse({ numero, montant }: { numero: string; montant: 
         Référence du reçu ou du virement
         <input name="reference_externe" maxLength={120} required className="caisse__champ" />
       </label>
+      {/* 9 novembre 2026 : une tranche. Vide : tout le reste à payer. */}
+      <label className="caisse__etiquette">
+        Montant reçu (FCFA)
+        <input
+          name="montant"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          step={1}
+          placeholder={`Vide : tout le reste, ${montant}`}
+          className="caisse__champ"
+        />
+      </label>
       <label className="caisse__attestation">
         <input type="checkbox" name="rapproche" value="oui" required />
-        <span>J&rsquo;ai constaté le versement de {montant}.</span>
+        <span>J&rsquo;ai constaté ce versement (tout le reste, {montant}, si le montant est vide).</span>
       </label>
       <button type="submit" className="bouton-primaire" disabled={enCours}>
         {enCours ? "…" : "Encaisser"}

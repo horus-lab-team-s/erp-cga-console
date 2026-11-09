@@ -361,11 +361,68 @@ export type ReglementDeCaisse = {
   service: string;
   proforma: string;
   montant: string;
-  etat: "A_ENCAISSER" | "ENCAISSE";
+  /** 9 novembre 2026 : `A_RESTITUER` pour un trop-perçu à rendre au client. */
+  etat: "A_ENCAISSER" | "ENCAISSE" | "A_RESTITUER";
   payee_le: string | null;
   /** Vrai seulement pour l'offre qui ouvre un espace : une adresse est alors due. */
   ouvre_un_espace: boolean;
+  /**
+   * 9 novembre 2026 : les tranches. `montant` est le reste tant que la proforma n'est
+   * pas soldée ; `engage` dit que le seuil de démarrage est atteint.
+   */
+  total?: string | null;
+  paye?: string;
+  reste?: string | null;
+  engage?: boolean;
+  /** `FRAIS_DE_TRAITEMENT` : des frais attendus avant toute proforma (`proforma` vide). */
+  objet?: "PROFORMA" | "FRAIS_DE_TRAITEMENT" | "PENALITE_RENDEZ_VOUS" | "TROP_PERCU";
 };
+
+/** Ce qui est versé sur un dossier commercial, et ce qu'il reste (9 novembre 2026). */
+export type SituationDesVersements = {
+  dossier: string;
+  total: string | null;
+  frais_verses: string;
+  tranches_versees: string;
+  paye: string;
+  reste: string | null;
+  solde: boolean;
+  seuil: string | null;
+  seuil_atteint: boolean;
+  seuil_pourcent: number;
+  versements: {
+    identifiant: string;
+    nature: "FRAIS_DE_TRAITEMENT" | "TRANCHE";
+    montant: string;
+    canal: "MOBILE_MONEY" | "GUICHET";
+    constate_le: string;
+  }[];
+};
+
+/** Frais de traitement par service et seuil de démarrage, fixés par le super administrateur. */
+export type RegleDesVersements = {
+  regle: {
+    frais_par_service: Record<string, string>;
+    seuil_demarrage_pourcent: number;
+    /** 9 novembre 2026 : la pénalité d'un rendez-vous manqué, ou `null`. */
+    penalite_rendez_vous?: string | null;
+    motif: string;
+    fixee_par: string;
+    fixee_le: string;
+  };
+  par_defaut: boolean;
+};
+
+export function lireLesVersements(reference: string) {
+  return appeler<SituationDesVersements>(
+    `/acquisition/dossiers/${encodeURIComponent(reference)}/versements`,
+    authentifie,
+  );
+}
+
+export function lireLaRegleDesVersements() {
+  return appeler<RegleDesVersements>("/souscription/versements/regle", authentifie);
+}
 
 export function lireLaCaisse() {
   return appeler<ReglementDeCaisse[]>("/acquisition/caisse", authentifie);

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 
+import {
+  ConstatDeLaPenalite,
+  ConstatDesFrais,
+  RestitutionDuTropPercu,
+} from "@/app/components/acquisition/Versements";
 import { ConstatDeCaisse } from "@/app/components/caisse/ConstatDeCaisse";
 import { ConstatDeFonds } from "@/app/components/caisse/ConstatDeFonds";
 import { ConstatDHonoraires } from "@/app/components/caisse/ConstatDHonoraires";
@@ -71,6 +76,8 @@ export default async function Caisse({ searchParams }: { searchParams: Promise<{
   const honorairesRegles = (honoraires ?? []).filter((l) => l.etat === "REGLEE");
   const dus = lignes.filter((l) => l.etat === "A_ENCAISSER");
   const regles = lignes.filter((l) => l.etat === "ENCAISSE");
+  // 9 novembre 2026 : l'argent reçu de l'opérateur que rien n'absorbait, à rendre.
+  const aRestituer = lignes.filter((l) => l.etat === "A_RESTITUER");
   const totalDu = dus.reduce((somme, l) => somme + Number(l.montant), 0);
   const totalRegle = regles.reduce((somme, l) => somme + Number(l.montant), 0);
 
@@ -131,9 +138,14 @@ export default async function Caisse({ searchParams }: { searchParams: Promise<{
           ) : (
             <ul className="caisse__file">
               {dus.map((ligne) => (
-                <li key={ligne.proforma} className="caisse__ligne">
+                <li key={`${ligne.dossier}-${ligne.proforma}`} className="caisse__ligne">
                   <Identite ligne={ligne} />
-                  {ligne.ouvre_un_espace ? (
+                  {ligne.objet === "FRAIS_DE_TRAITEMENT" ? (
+                    // 9 novembre 2026 : des frais de traitement, avant toute proforma.
+                    <ConstatDesFrais reference={ligne.dossier} montant={ligne.montant} />
+                  ) : ligne.objet === "PENALITE_RENDEZ_VOUS" ? (
+                    <ConstatDeLaPenalite reference={ligne.dossier} montant={ligne.montant} />
+                  ) : ligne.ouvre_un_espace ? (
                     // ⚠️ Une vente de plateforme ouvre un espace, dont l'adresse se
                     // choisit : ce n'est pas le métier de la caisse. Le dire vaut
                     // mieux qu'un bouton qui échouerait.
@@ -150,6 +162,22 @@ export default async function Caisse({ searchParams }: { searchParams: Promise<{
           )}
         </Panneau>
 
+        {aRestituer.length > 0 && (
+          <Panneau
+            titre="Trop-perçus à restituer"
+            aide="De l'argent reçu de l'opérateur que rien n'absorbait : au-delà du reste à payer, sur une proforma soldée, ou sur un dossier classé. Il n'est pas perdu : rendez-le au client, puis constatez la restitution."
+          >
+            <ul className="caisse__file">
+              {aRestituer.map((ligne) => (
+                <li key={`${ligne.dossier}-restitution`} className="caisse__ligne">
+                  <Identite ligne={ligne} />
+                  <RestitutionDuTropPercu reference={ligne.dossier} montant={ligne.montant} />
+                </li>
+              ))}
+            </ul>
+          </Panneau>
+        )}
+
         <Panneau
           titre="Encaissés"
           aide="Du plus récent au plus ancien, quel que soit le chemin : guichet, virement, ou mobile money notifié par l'opérateur."
@@ -159,7 +187,7 @@ export default async function Caisse({ searchParams }: { searchParams: Promise<{
           ) : (
             <ul className="caisse__file">
               {regles.map((ligne) => (
-                <li key={ligne.proforma} className="caisse__ligne caisse__ligne--reglee">
+                <li key={`${ligne.dossier}-${ligne.proforma}`} className="caisse__ligne caisse__ligne--reglee">
                   <Identite ligne={ligne} />
                   <p className="caisse__regle">
                     <span className="caisse__pastille">Encaissé</span>
@@ -265,9 +293,23 @@ function Identite({ ligne }: { ligne: ReglementDeCaisse }) {
     <div className="caisse__identite">
       <strong>{ligne.client}</strong>
       <span>
-        {ligne.proforma} · {ligne.telephone}
+        {ligne.objet === "FRAIS_DE_TRAITEMENT"
+          ? "Frais de traitement de dossier"
+          : ligne.objet === "PENALITE_RENDEZ_VOUS"
+            ? "Pénalité · rendez-vous manqué"
+            : ligne.objet === "TROP_PERCU"
+              ? "Trop-perçu à restituer"
+              : ligne.proforma}{" "}
+        · {ligne.telephone}
       </span>
       <b className="caisse__montant">{montantFcfa(ligne.montant)}</b>
+      {/* 9 novembre 2026 : payé en tranches, frais de traitement compris. */}
+      {ligne.etat === "A_ENCAISSER" && Number(ligne.paye ?? 0) > 0 && (
+        <span>
+          Déjà payé {montantFcfa(ligne.paye ?? "0")} sur {montantFcfa(ligne.total ?? ligne.montant)}
+          {ligne.engage ? " · dossier engagé" : ""}
+        </span>
+      )}
     </div>
   );
 }

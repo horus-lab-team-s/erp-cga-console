@@ -588,11 +588,14 @@ export function Reglement({
   telephone,
   slugRetenu,
   ouvreUnEspace,
+  reste,
 }: {
   numero: string;
   montant: string;
   telephone: string;
   slugRetenu: string | null;
+  /** 9 novembre 2026 : le reste à payer (frais et tranches déduits). Absent : `montant`. */
+  reste?: string | null;
   /**
    * ⚠️ Faux pour une prestation : il n'y a alors aucune adresse à choisir, et le
    * formulaire ne la demande pas. Le serveur le décide ; voir `sans_objet`.
@@ -621,7 +624,8 @@ export function Reglement({
   return (
     <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
       <p style={{ margin: 0, font: "600 14px/1.5 var(--police-texte)" }}>
-        {numero} · {francs(montant)} à régler
+        {numero} · {francs(reste ?? montant)} à régler
+        {reste != null && reste !== montant ? ` sur ${francs(montant)}` : ""}
       </p>
 
       <form action={demander} style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -630,6 +634,10 @@ export function Reglement({
         <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
           Téléphone à débiter
           <input name="telephone" defaultValue={telephone} style={{ ...champ, width: 170 }} />
+        </label>
+        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
+          Montant (vide : tout le reste)
+          <input name="montant" type="number" min={1} step={1} style={{ ...champ, width: 150 }} />
         </label>
         <button type="submit" className="bouton-discret" disabled={demandeEnCours}>
           {demandeEnCours ? "…" : "Demander le paiement par téléphone"}
@@ -646,10 +654,14 @@ export function Reglement({
           Référence du reçu ou du virement
           <input name="reference_externe" maxLength={120} style={{ ...champ, width: 220 }} />
         </label>
+        <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-700)" }}>
+          Montant reçu (vide : tout le reste)
+          <input name="montant" type="number" min={1} step={1} style={{ ...champ, width: 150 }} />
+        </label>
         <label style={{ ...note, display: "flex", gap: 6, alignItems: "flex-start", flexBasis: "100%" }}>
           <input type="checkbox" name="rapproche" value="oui" required />
           <span>
-            J&rsquo;ai constaté le règlement de {francs(montant)}. La confirmation ouvre{" "}
+            J&rsquo;ai constaté ce versement. Au seuil de démarrage, il ouvre{" "}
             {ouvreUnEspace ? "l’espace du client" : "le dossier du client"}.
           </span>
         </label>

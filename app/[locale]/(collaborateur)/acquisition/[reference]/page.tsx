@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Panneau } from "@/app/components/Tableau";
 import { Chiffrage, EmissionProforma, PremierContact, Qualification, Reglement } from "@/app/components/acquisition/FicheDossier";
+import { SituationDesVersementsDuDossier } from "@/app/components/acquisition/Versements";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
@@ -12,7 +13,9 @@ import { Link } from "@/i18n/navigation";
 import {
   LIBELLES_ETAT,
   lireFicheDossier,
+  lireLaRegleDesVersements,
   lireLeLienDeLaProforma,
+  lireLesVersements,
   lireLesCompositions,
   lireOuvertureDeLEspace,
   lireQualification,
@@ -98,6 +101,13 @@ export default async function FicheDossierCommercial({
   const termine = ["ACCEPTEE", "PAYEE", "SANS_SUITE"].includes(fiche.etat);
   const d = fiche.demande;
   const acceptee = fiche.proformas.find((p) => p.etat === "ACCEPTEE") ?? null;
+  // 9 novembre 2026 : frais de traitement, tranches, payé, reste. Une lecture qui échoue
+  // n'empêche pas la fiche : le panneau ne s'affiche simplement pas.
+  const [versements, regleDesVersements] = await Promise.all([
+    lireLesVersements(reference).catch(() => null),
+    lireLaRegleDesVersements().catch(() => null),
+  ]);
+  const fraisDuService = regleDesVersements?.regle.frais_par_service[d.service_souhaite] ?? null;
   // Les réponses que le client a données sur le site ET qui sont à la qualification.
   const declarees = Object.keys(fiche.demande.declarations ?? {}).filter(
     (code) => qualification?.faits?.[code] !== undefined,
@@ -302,7 +312,20 @@ export default async function FicheDossierCommercial({
             />
           </Panneau>
         )}
-        {fiche.etat === "ACCEPTEE" && acceptee && (
+        {versements && (fraisDuService !== null || versements.total !== null) && (
+          <Panneau
+            titre={versements.solde ? "Versements · soldé" : "Versements"}
+            aide="Frais de traitement versés à la demande, puis tranches de la proforma. Les frais sont déduits du total ; le dossier démarre au seuil fixé par la direction."
+          >
+            <SituationDesVersementsDuDossier
+              situation={versements}
+              frais={fraisDuService}
+              peutEncaisser={detient(acces, "ENCAISSER")}
+            />
+          </Panneau>
+        )}
+        {(fiche.etat === "ACCEPTEE" || (fiche.etat === "PAYEE" && versements !== null && !versements.solde)) &&
+          acceptee && (
           <Panneau
             titre="Règlement"
             aide={
@@ -318,6 +341,7 @@ export default async function FicheDossierCommercial({
                 telephone={d.telephone}
                 slugRetenu={fiche.slug_retenu}
                 ouvreUnEspace={ouvreUnEspace}
+                reste={versements?.reste ?? null}
               />
             ) : (
               <p style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>

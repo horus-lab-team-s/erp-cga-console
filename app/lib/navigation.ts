@@ -146,6 +146,12 @@ export const NAVIGATION: EntreeNav[] = [
     icone: "acquisition",
     permission: "LIRE_PROSPECT",
     construit: true,
+    // 9 novembre 2026 : les rendez-vous de création, et la saisie au cabinet.
+    enfants: [
+      { libelle: "Demandes", href: "/acquisition" },
+      { libelle: "Rendez-vous", href: "/acquisition/rendez-vous" },
+      { libelle: "Nouvelle demande au cabinet", href: "/acquisition/nouvelle" },
+    ],
   },
   {
     libelle: "Portefeuille",

@@ -46,7 +46,9 @@ export const ETAPES_DE_CREATION: readonly EtapeDeCreation[] = [
     code: "QUALIFICATION",
     nom: "Vos pièces",
     cabinet: "Nous réunissons les documents nécessaires à vos statuts.",
-    vous: "Envoyez les documents de la liste ci-dessous. Une photo nette suffit ; le cabinet vous dira si l’un d’eux doit être repris.",
+    // 9 novembre 2026 : l'entreprise n'existe pas encore. On ne demande que ce que le
+    // fondateur a déjà ; les statuts signés et le bail au nom de la société viennent ensuite.
+    vous: "Envoyez les documents « à fournir maintenant » ci-dessous : ceux que vous avez déjà. Une photo nette suffit ; le cabinet vous dira si l’un d’eux doit être repris. Les statuts signés et le bail au nom de la société se préparent ensuite, avec le cabinet.",
   },
   {
     code: "CONSTITUTION",

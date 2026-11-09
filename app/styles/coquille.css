@@ -5477,3 +5477,132 @@ thead .matrice__droit {
 .acces-client__suspendu p {
   margin: 0;
 }
+
+/* ── Versements du parcours (9 novembre 2026) ─────────────────────────────── */
+.versements,
+.versements__regle,
+.versements__constat {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.versements__chiffres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+.versements__chiffres dt {
+  color: var(--ink-500);
+  font-size: 12px;
+}
+.versements__chiffres dd {
+  margin: 0;
+}
+.versements__regle label,
+.versements__constat label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-700);
+}
+.versements__attestation {
+  flex-direction: row !important;
+  font-weight: 400 !important;
+}
+.versements__solde,
+.versements__fait {
+  margin: 0;
+  color: var(--success);
+  font-weight: 600;
+}
+.versements__echec {
+  margin: 0;
+  color: var(--danger);
+}
+.versements__note {
+  margin: 0;
+  color: var(--ink-500);
+}
+
+/* ── Rendez-vous de création (9 novembre 2026) ────────────────────────────── */
+.rdv__formulaire {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.rdv__formulaire label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-700);
+}
+.rdv__formulaire label.rdv__case {
+  flex-direction: row;
+  font-weight: 400;
+}
+.rdv__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rdv__ligne {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line-100);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 13px/1.5 var(--police-texte);
+}
+.rdv__constat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.rdv__jour {
+  padding: 8px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-100);
+  font: 400 13px/1.5 var(--police-texte);
+}
+.rdv__jour strong {
+  min-width: 190px;
+  text-transform: capitalize;
+}
+.rdv__creneau {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line-200, var(--line-100));
+  background: var(--surface);
+  cursor: pointer;
+}
+.rdv__creneau[data-ferme="oui"] {
+  text-decoration: line-through;
+  color: var(--ink-500);
+}
+.rdv__note {
+  margin: 0;
+  color: var(--ink-500);
+}
+.rdv__fait {
+  margin: 0;
+  padding: 12px 16px;
+  color: var(--success);
+  font-weight: 600;
+}
+.rdv__echec {
+  margin: 0;
+  color: var(--danger);
+}

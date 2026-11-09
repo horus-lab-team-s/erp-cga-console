@@ -9,6 +9,7 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { Affecter, ClasserSansSuite, RappelFait } from "@/app/components/acquisition/ActesDossier";
+import { RegleDesVersementsFormulaire } from "@/app/components/acquisition/Versements";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
@@ -19,6 +20,7 @@ import {
   lireDossiersEnSouffrance,
   lireMotifsDeClassement,
   lireEtatDesCanaux,
+  lireLaRegleDesVersements,
   lireRappels,
 } from "@/app/lib/console-acquisition";
 import { dateCourte } from "@/app/lib/formats";
@@ -88,6 +90,9 @@ export default async function ConsoleAcquisition() {
   }
   // Pas 90 : l'état des canaux, lu à côté ; sa panne ne fait pas tomber la console.
   const canaux = await lireEtatDesCanaux().catch(() => null);
+  const regleDesVersements = detient(acces, "ACCORDER_FAVEURS")
+    ? await lireLaRegleDesVersements().catch(() => null)
+    : null;
   const [dossiers, payes, enSouffrance, rappels, motifs] = await Promise.all([
     lireDossiersCommerciaux(),
     lireDossiersPayes(),
@@ -235,6 +240,21 @@ export default async function ConsoleAcquisition() {
                   </Cellule>
                 </LigneTableau>
               ))}
+          </Panneau>
+        )}
+
+        {/* 9 novembre 2026 : le super administrateur fixe les frais et le seuil. */}
+        {regleDesVersements && detient(acces, "ACCORDER_FAVEURS") && (
+          <Panneau
+            titre="Frais de traitement et seuil de démarrage"
+            aide="Les frais versés à la soumission d'une demande, par service, déduits ensuite du total de la proforma ; et la part du total versée à partir de laquelle le dossier démarre."
+          >
+            <RegleDesVersementsFormulaire
+              frais={regleDesVersements.regle.frais_par_service}
+              seuil={regleDesVersements.regle.seuil_demarrage_pourcent}
+              parDefaut={regleDesVersements.par_defaut}
+              penalite={regleDesVersements.regle.penalite_rendez_vous ?? null}
+            />
           </Panneau>
         )}
 

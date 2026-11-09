@@ -431,10 +431,16 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
   // vente de plateforme envoyée sans adresse.
   const sansEspace = donnees.get("sans_espace") === "oui";
   if (!numero || (!sansEspace && slug.length < 3)) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  const tranche = trancheDe(donnees);
+  if (tranche === false) return { echec: "Le montant s'écrit en francs, sans virgule.", fait: null };
   try {
     const r = await appeler<{ accepte: boolean; message: string; telephone: string; montant: string }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/reglement`,
-      { methode: "POST", authentifie: true, corps: sansEspace ? { telephone } : { slug, telephone } },
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: { ...(sansEspace ? { telephone } : { slug, telephone }), ...(tranche ? { montant: tranche } : {}) },
+      },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
     return r.accepte
@@ -452,6 +458,16 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
  * ⚠️ La case de confirmation est vérifiée ici : c'est un rapprochement fait par un humain,
  * et il ouvre un espace. L'adresse doit être celle déjà retenue, s'il y en a une (pas 68).
  */
+/**
+ * 9 novembre 2026 : le montant d'une tranche, ou `null` pour tout le reste. `false` : illisible.
+ * Le serveur borne (au plus le reste à payer).
+ */
+function trancheDe(donnees: FormData): string | null | false {
+  const brut = String(donnees.get("montant") ?? "").replace(/\s/g, "");
+  if (!brut) return null;
+  return /^\d+$/.test(brut) && Number(brut) > 0 ? brut : false;
+}
+
 export async function confirmerLEncaissement(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
   const numero = String(donnees.get("numero") ?? "").trim();
   const slug = String(donnees.get("slug") ?? "").trim().toLowerCase();
@@ -466,21 +482,146 @@ export async function confirmerLEncaissement(_precedent: EtatActe, donnees: Form
       fait: null,
     };
   }
+  const tranche = trancheDe(donnees);
+  if (tranche === false) return { echec: "Le montant s'écrit en francs, sans virgule.", fait: null };
+  if (tranche && !reference) return { echec: "Une tranche porte le numéro de son reçu de caisse.", fait: null };
   try {
-    const r = await appeler<{ etat: string; tenant: string | null; rejeu: boolean }>(
+    const r = await appeler<{ etat: string; tenant: string | null; slug: string | null; rejeu: boolean }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/encaissement`,
-      { methode: "POST", authentifie: true, corps: sansEspace ? { reference_externe: reference } : { slug, reference_externe: reference } },
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: {
+          ...(sansEspace ? { reference_externe: reference } : { slug, reference_externe: reference }),
+          ...(tranche ? { montant: tranche } : {}),
+        },
+      },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
     revalidatePath("/[locale]/caisse", "page");
+    // 9 novembre 2026 : un versement n'engage le dossier qu'au seuil de démarrage.
+    const engage = r.etat === "PAYEE";
     return {
       echec: null,
       fait: r.rejeu
-        ? "Ce règlement était déjà confirmé : aucun second espace n'est ouvert."
-        : sansEspace
-          ? "Règlement confirmé. Le dossier du client est ouvert ; cette prestation n'ouvre pas d'espace de plateforme."
-          : `Règlement confirmé. L'espace « ${slug} » s'ouvre.`,
+        ? "Ce versement était déjà constaté : rien n'est compté deux fois."
+        : !engage
+          ? "Versement constaté. Le seuil de démarrage n'est pas encore atteint : le dossier s'ouvrira au prochain versement suffisant."
+          : sansEspace
+            ? "Versement constaté. Le dossier du client est engagé ; cette prestation n'ouvre pas d'espace de plateforme."
+            : `Versement constaté. L'espace « ${slug} » s'ouvre.`,
     };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/** 9 novembre 2026 : la caisse constate des frais de traitement versés au guichet. */
+export async function encaisserLesFrais(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  if (!recu) return { echec: "Indiquez le numéro du reçu de caisse.", fait: null };
+  if (donnees.get("rapproche") !== "oui") return { echec: "Cochez la case : le versement doit avoir été constaté.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/frais-de-traitement/encaissement`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu },
+    });
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    revalidatePath("/[locale]/caisse", "page");
+    return { echec: null, fait: "Frais de traitement constatés. Ils seront déduits du total de la proforma." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * 9 novembre 2026 : le super administrateur fixe les frais de traitement par service et le seuil
+ * de démarrage. Un champ vide : pas de frais pour ce service. Le serveur exige le second facteur.
+ */
+export async function fixerLaRegleDesVersements(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  const seuil = Number(String(donnees.get("seuil_demarrage_pourcent") ?? "").trim());
+  if (!Number.isInteger(seuil) || seuil < 1 || seuil > 100) {
+    return { echec: "Le seuil de démarrage est un pourcentage entier, de 1 à 100.", fait: null };
+  }
+  const frais: Record<string, string> = {};
+  for (const [cle, valeur] of donnees.entries()) {
+    if (!cle.startsWith("frais_")) continue;
+    const montant = String(valeur).replace(/\s/g, "");
+    if (!montant) continue;
+    if (!/^\d+$/.test(montant) || Number(montant) <= 0) {
+      return { echec: `Frais de ${cle.slice(6)} : un montant en francs, positif.`, fait: null };
+    }
+    frais[cle.slice(6)] = montant;
+  }
+  // 9 novembre 2026 : la pénalité d'un rendez-vous manqué. Vide : aucune.
+  const penalite = String(donnees.get("penalite_rendez_vous") ?? "").replace(/\s/g, "");
+  if (penalite && (!/^\d+$/.test(penalite) || Number(penalite) <= 0)) {
+    return { echec: "La pénalité d'un rendez-vous manqué : un montant en francs, positif.", fait: null };
+  }
+  try {
+    await appeler("/souscription/versements/regle", {
+      methode: "PUT",
+      authentifie: true,
+      corps: {
+        frais_par_service: frais,
+        seuil_demarrage_pourcent: seuil,
+        ...(penalite ? { penalite_rendez_vous: penalite } : {}),
+        motif,
+      },
+    });
+    revalidatePath("/[locale]/acquisition", "page");
+    return { echec: null, fait: "Règle des versements enregistrée." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/** 9 novembre 2026 : la caisse reçoit la pénalité d'un rendez-vous manqué. */
+export async function encaisserLaPenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  if (!recu) return { echec: "Indiquez le numéro du reçu de caisse.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/penalite/encaissement`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu },
+    });
+    revalidatePath("/[locale]/caisse", "page");
+    return { echec: null, fait: "Pénalité encaissée : le client peut reprendre un rendez-vous." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * 9 novembre 2026 : la caisse constate qu'un trop-perçu a été rendu au client. C'est
+ * l'argent reçu de l'opérateur que rien n'absorbait (au-delà du reste, proforma soldée).
+ */
+export async function restituerLeTropPercu(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (!recu) return { echec: "Indiquez la référence de la restitution (reçu signé, transfert).", fait: null };
+  if (motif.length < 5) return { echec: "Dites comment l'argent a été rendu.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/trop-percu/restitution`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu, motif },
+    });
+    revalidatePath("/[locale]/caisse", "page");
+    return { echec: null, fait: "Restitution constatée." };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
