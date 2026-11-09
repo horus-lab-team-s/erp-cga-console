@@ -7,6 +7,7 @@ import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { lireLesHonoraires } from "@/app/lib/honoraires";
 import { exigerAcces } from "@/app/lib/session";
 import "@/app/styles/coquille.css";
+import "@/app/styles/moderne.css";
 
 /**
  * Coquille de l'espace adhérent.

@@ -159,7 +159,8 @@ export default async function SocialEtPaie({
         miettes={[{ libelle: "Social et paie" }, { libelle: courant.denomination }]}
       />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>
             Paie de {LIBELLES_MOIS[mois - 1]} {annee}
           </h1>
@@ -169,6 +170,12 @@ export default async function SocialEtPaie({
             {sortis.length > 0 && ` · ${sortis.length} sorti${sortis.length > 1 ? "s" : ""}`}
             {" · changez de dossier dans la barre latérale"}
           </p>
+          </div>
+          {saisit && (
+            <a href="#embaucher" className="action-principale">
+              + Embaucher un salarié
+            </a>
+          )}
         </div>
 
         {erreur ? (
@@ -299,7 +306,7 @@ export default async function SocialEtPaie({
             )}
 
             {saisit && (
-              <Panneau titre="Embaucher" aide="Inscrire le salarié et ouvrir son premier contrat. Un matricule ne se réattribue pas.">
+              <Panneau id="embaucher" titre="Embaucher" aide="Inscrire le salarié et ouvrir son premier contrat. Un matricule ne se réattribue pas.">
                 <EmbaucheSalarie dossier={niu} aujourdhui={jour} />
               </Panneau>
             )}

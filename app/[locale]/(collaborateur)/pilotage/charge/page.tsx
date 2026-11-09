@@ -59,7 +59,7 @@ export default async function ChargeEtProductionPage() {
               <h1>Charge et production</h1>
               <p>
                 {mois} · {vue.dossiers} dossiers · {vue.echeances_du_mois} échéance{vue.echeances_du_mois > 1 ? "s" : ""} ce mois ·
-                saturation au-delà de {vue.reglages.seuil_de_saturation} % ({vue.reglages.source})
+                saturation au-delà de {vue.reglages.seuil_de_saturation} %
               </p>
             </div>
 

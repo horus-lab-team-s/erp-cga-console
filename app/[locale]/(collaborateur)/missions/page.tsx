@@ -75,7 +75,14 @@ export default async function Missions() {
           {erreur ? (
             <EtatErreur titre="Les missions ne se lisent pas" detail={erreur} />
           ) : missions.length === 0 ? (
-            <EtatVide titre="Aucune mission" detail="Ouvrez la première ci-dessus." />
+            <EtatVide
+              titre="Aucune mission"
+              detail={
+                detient(acces, "TRAITER_MISSION")
+                  ? "Ouvrez la première ci-dessus."
+                  : "Les missions ouvertes par les collaborateurs apparaîtront ici, à valider."
+              }
+            />
           ) : (
             <ul className="mission__liste">
               {missions.map((m) => (

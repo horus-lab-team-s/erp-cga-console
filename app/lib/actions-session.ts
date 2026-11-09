@@ -139,9 +139,16 @@ export async function connexion(
     ? seulementSaCreation
       ? "/ma-creation"
       : "/mon-espace"
-    : seulementLaCaisse
-      ? "/caisse"
-      : "/tableau-de-bord";
+    : detient(acces, "LIRE_DOSSIER")
+      ? "/tableau-de-bord"
+      : // ⚠️ 9 novembre 2026 : l'administrateur ne lit aucun dossier et encaisse ; il
+        // arrivait sur la caisse, et le tableau de bord lui était fermé. Il arrive sur
+        // les comptes, qui sont son travail.
+        detient(acces, "GERER_COMPTES")
+        ? "/comptes"
+        : seulementLaCaisse
+          ? "/caisse"
+          : "/tableau-de-bord";
   redirect({ href: accueil, locale: langue });
 
   // `redirect` interrompt l'exécution en levant : la ligne suivante n'est jamais

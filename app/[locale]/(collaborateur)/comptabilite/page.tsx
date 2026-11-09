@@ -227,7 +227,7 @@ export default async function Comptabilite({
           </label>
           <label style={{ display: "grid", gap: 4, font: "600 12px/1.4 var(--police-texte)" }}>
             Journal
-            <select name="journal" defaultValue={filtres.journal ?? ""} style={{ padding: "6px 8px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)" }}>
+            <select name="journal" defaultValue={filtres.journal ?? ""} style={{ padding: "6px 30px 6px 8px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)" }}>
               <option value="">Tous</option>
               {journaux.map((j) => (
                 <option key={j.code} value={j.code}>

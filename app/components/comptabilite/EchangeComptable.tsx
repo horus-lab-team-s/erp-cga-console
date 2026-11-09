@@ -37,7 +37,7 @@ function ChoixCommuns({ exercice, profils }: { exercice: string; profils: Profil
       </label>
       <label style={etiquette}>
         Format
-        <select name="profil" required defaultValue={profils[0]?.code} style={champ}>
+        <select name="profil" required defaultValue={profils[0]?.code} style={{ ...champ, paddingRight: 30 }}>
           {profils.map((p) => (
             <option key={p.code} value={p.code}>
               {p.libelle} ({p.encodage})

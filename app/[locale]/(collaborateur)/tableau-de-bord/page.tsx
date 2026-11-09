@@ -125,8 +125,12 @@ const COLONNES_ECHEANCES: Colonne[] = [
   { cle: "date", libelle: "Échéance", largeur: "84px" },
   { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.3fr)" },
   { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.6fr)" },
-  { cle: "restant", libelle: "Délai", largeur: "100px", aDroite: true },
-  { cle: "statut", libelle: "Statut", largeur: "92px" },
+  // 9 novembre 2026 : « Délai » et « Statut » fusionnent. Une ligne en retard disait
+  // trois fois la même chose (liseré, « 86 j de retard », pastille « En retard ») et,
+  // dès que la colonne du montant s'ouvrait, six colonnes demandaient ~750 px dans un
+  // panneau de 650 : « Statut » était coupé. Le retard se lit au délai rouge ; la
+  // pastille ne reste que pour ce qui n'est pas en retard (à déposer, déposée…).
+  { cle: "restant", libelle: "Délai", largeur: "108px", aDroite: true },
 ];
 
 /**
@@ -139,7 +143,7 @@ const COLONNES_ECHEANCES: Colonne[] = [
  */
 const COLONNES_ECHEANCES_CHIFFREES: Colonne[] = [
   ...COLONNES_ECHEANCES.slice(0, 3),
-  { cle: "montant", libelle: "Montant estimé", largeur: "104px", aDroite: true },
+  { cle: "montant", libelle: "Montant estimé", largeur: "100px", aDroite: true },
   ...COLONNES_ECHEANCES.slice(3),
 ];
 
@@ -158,8 +162,8 @@ const COLONNES_ANOMALIES: Colonne[] = [
 
 const COLONNES_ATTENDUES: Colonne[] = [
   { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.5fr)" },
-  { cle: "demandes", libelle: "Demandées", largeur: "90px", aDroite: true },
-  { cle: "bloquantes", libelle: "Bloquantes", largeur: "90px", aDroite: true },
+  { cle: "demandes", libelle: "Demandées", largeur: "84px", aDroite: true },
+  { cle: "bloquantes", libelle: "Bloquantes", largeur: "84px", aDroite: true },
   { cle: "depuis", libelle: "Plus ancienne", largeur: "104px" },
 ];
 
@@ -297,16 +301,16 @@ export default async function TableauDeBord() {
                             )}
                           </Cellule>
                         )}
-                        <Cellule
-                          aDroite
-                          tabulaire
-                          gras
-                          couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
-                        >
-                          {ligne.en_retard ? `${retard} j de retard` : `${ligne.jours_restants} j`}
-                        </Cellule>
-                        <span>
-                          <PastilleStatut statut={ligne.en_retard ? "En retard" : STATUT_OBLIGATION[ligne.obligation.statut]} />
+                        <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                          <Cellule
+                            aDroite
+                            tabulaire
+                            gras
+                            couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
+                          >
+                            {ligne.en_retard ? `${retard} j de retard` : `${ligne.jours_restants} j`}
+                          </Cellule>
+                          {!ligne.en_retard && <PastilleStatut statut={STATUT_OBLIGATION[ligne.obligation.statut]} />}
                         </span>
                       </LigneTableau>
                     );

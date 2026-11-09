@@ -77,12 +77,19 @@ export default async function Immobilisations({
     <>
       <EnteteTravail miettes={miettes} />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>Immobilisations</h1>
           <p>
             {courant.denomination} · NIU {niu} · exercice {exercice}
             {dossiers.length > 1 && " · changez de dossier dans la barre latérale"}
           </p>
+          </div>
+          {peutSaisir && (
+            <a href="#registre" className="action-principale">
+              + Ajouter un bien
+            </a>
+          )}
         </div>
 
         <Panneau
@@ -97,6 +104,7 @@ export default async function Immobilisations({
         </Panneau>
 
         <Panneau
+          id="registre"
           titre="Registre des immobilisations"
           aide="Un bien par fiche ; un bien cédé ou saisi par erreur se sort, il ne s'efface pas"
         >

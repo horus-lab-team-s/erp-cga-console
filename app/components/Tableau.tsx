@@ -24,7 +24,10 @@ export function Panneau({
   action,
   children,
   style,
+  id,
 }: {
+  /** Ancre visée par le bouton d'en-tête de la page (« + Embaucher », « + Importer »…). */
+  id?: string;
   titre: string;
   aide?: string;
   action?: ReactNode;
@@ -32,44 +35,13 @@ export function Panneau({
   style?: CSSProperties;
 }) {
   return (
-    <section
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: 0,
-        overflow: "hidden",
-        border: "1px solid var(--line-200)",
-        borderRadius: "var(--rayon)",
-        background: "var(--surface)",
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          flex: "none",
-          // ⚠️ `minHeight` et non `height`, et le retour à la ligne permis (pas 100) : à
-          // largeur de téléphone, un titre long (« Ce qui compose le risque ») suivi de son
-          // aide ne tient pas sur une ligne. Avec une hauteur fixe et un interligne de 1, le
-          // texte débordait sur la bordure, sur tous les écrans. Sur ordinateur, l'en-tête
-          // garde ses 40 px.
-          minHeight: 40,
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: "4px 10px",
-          padding: "8px 14px",
-          borderBottom: "1px solid var(--line-200)",
-        }}
-      >
-        <h2 style={{ margin: 0, font: "600 16px/1.25 var(--police-texte)", color: "var(--ink-900)" }}>
-          {titre}
-        </h2>
-        {aide && (
-          <span style={{ font: "400 12px/1.35 var(--police-texte)", color: "var(--ink-500)" }}>
-            {aide}
-          </span>
-        )}
-        {action && <span style={{ marginLeft: "auto", flex: "none" }}>{action}</span>}
+    <section id={id} className="panneau" style={style}>
+      <div className="panneau__tete">
+        <div className="panneau__titres">
+          <h2 className="panneau__titre">{titre}</h2>
+          {aide && <p className="panneau__aide">{aide}</p>}
+        </div>
+        {action && <span className="panneau__action">{action}</span>}
       </div>
       {/* ⚠️ `overflowX: auto` EN PLUS DU DÉFILEMENT VERTICAL.
           Mesuré dans un cadre de 390 px : le tableau de bord comptait 210
@@ -81,11 +53,8 @@ export function Panneau({
           elles, la colonne de droite se coupe sans aucun signe et le lecteur
           croit le tableau tronqué. */}
       <div
+        className="panneau__corps"
         style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          overflowX: "auto",
           background:
             "linear-gradient(to right, var(--surface) 30%, rgb(0 0 0 / 0%)) left center / 24px 100% no-repeat local," +
             "linear-gradient(to left, var(--surface) 30%, rgb(0 0 0 / 0%)) right center / 24px 100% no-repeat local," +
@@ -134,6 +103,7 @@ export function EnteteTableau({ colonnes }: { colonnes: Colonne[] }) {
   return (
     <div
       role="row"
+      className="entete-tableau"
       style={{
         position: "sticky",
         top: 0,
@@ -145,15 +115,7 @@ export function EnteteTableau({ colonnes }: { colonnes: Colonne[] }) {
         // parent fait défiler.
         minWidth: largeurMinimale(colonnes),
         alignItems: "center",
-        height: "var(--entete-tableau)",
-        padding: "0 14px",
         gap: 8,
-        background: "var(--brand-indigo-100)",
-        borderBottom: "1px solid var(--line-200)",
-        font: "600 12px/1 var(--police-texte)",
-        letterSpacing: "var(--interlettrage-entete)",
-        textTransform: "uppercase",
-        color: "var(--ink-500)",
       }}
     >
       {colonnes.map((c) => (
@@ -305,18 +267,9 @@ export function Cellule({
  */
 export function EtatVide({ titre, detail }: { titre: string; detail?: string }) {
   return (
-    <div
-      style={{
-        padding: "36px 24px",
-        textAlign: "center",
-        font: "400 13px/1.7 var(--police-texte)",
-        color: "var(--ink-500)",
-      }}
-    >
-      <strong style={{ display: "block", color: "var(--ink-900)", fontWeight: 600 }}>
-        {titre}
-      </strong>
-      {detail}
+    <div className="etat-vide">
+      <strong className="etat-vide__titre">{titre}</strong>
+      {detail && <span className="etat-vide__detail">{detail}</span>}
     </div>
   );
 }

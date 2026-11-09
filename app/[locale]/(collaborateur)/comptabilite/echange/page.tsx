@@ -138,7 +138,7 @@ export default async function EchangeComptable({ searchParams }: { searchParams:
                     .map((r, rang) => (
                       <LigneTableau key={`${r.priorite}-${r.motif}`} colonnes={REGLES} ton={rang % 2 ? "alterne" : "normal"}>
                         <Cellule aDroite tabulaire>{r.priorite}</Cellule>
-                        <Cellule>{r.motif}</Cellule>
+                        <Cellule lignes={2} titre={r.motif}>{motsDuMotif(r.motif)}</Cellule>
                         <Cellule tabulaire gras>{r.compte}</Cellule>
                         <Cellule>{r.libelle}</Cellule>
                       </LigneTableau>
@@ -151,4 +151,18 @@ export default async function EchangeComptable({ searchParams }: { searchParams:
       </div>
     </>
   );
+}
+
+/**
+ * Le motif est une expression régulière (« (?i)ramette|cartouche ») : le cabinet lit des
+ * mots, pas une syntaxe. On retire le drapeau et on sépare les variantes (9 novembre 2026).
+ * Le motif exact reste au survol.
+ */
+function motsDuMotif(motif: string): string {
+  return motif
+    .replace(/^\(\?[a-z]+\)/, "")
+    .split("|")
+    .map((m) => m.replace(/\\b|[\^$\\]/g, "").trim())
+    .filter(Boolean)
+    .join(", ");
 }

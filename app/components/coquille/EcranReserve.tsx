@@ -1,3 +1,5 @@
+import { Link } from "@/i18n/navigation";
+
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { libelleRole, type Acces, type Permission } from "@/app/lib/acces";
 import { lireRoles } from "@/app/lib/administration";
@@ -78,34 +80,41 @@ export async function EcranReserve({
           <p>Accès réservé</p>
         </div>
 
-        <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
-          <span style={{ display: "block" }}>
-            <strong style={{ display: "inline", fontWeight: 600 }}>
-              Cet écran n&rsquo;est pas ouvert à votre rôle.
-            </strong>{" "}
-            Rien n&rsquo;a échoué : votre session est valide, mais cette page demande
-            une habilitation que vous n&rsquo;avez pas.
+        {/* 9 novembre 2026 : l'écran était un paragraphe d'excuse sans issue. Une carte
+            courte, qui dit qui l'ouvre, et deux portes de sortie. */}
+        <section className="ecran-reserve" role="status">
+          <span className="ecran-reserve__icone" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24">
+              <rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+            </svg>
           </span>
-          {profils.length > 0 && (
-            <span style={{ display: "block" }}>
-              Elle est ouverte {profils.length > 1 ? "aux profils" : "au profil"}{" "}
-              <strong style={{ display: "inline", fontWeight: 600 }}>
-                {profils.length > 1 ? `${profils.slice(0, -1).join(", ")} et ${profils.at(-1)}` : profils[0]}
-              </strong>
-              . Si vous devez y accéder, c&rsquo;est une habilitation à demander à
-              l&rsquo;administrateur du cabinet, elle est datée, et le journal
-              d&rsquo;audit en gardera la trace.
-            </span>
-          )}
-        </div>
-
-        {acces !== null && (
-          <p className="faits">
-            Connecté comme {acces.nom_complet} ·{" "}
-            {acces.roles.map((r) => libelleRole(r)).join(", ") ||
-              "aucun rôle actif à ce jour"}
+          <h2 className="ecran-reserve__titre">Cet écran n&rsquo;est pas ouvert à votre rôle</h2>
+          <p className="ecran-reserve__texte">
+            {profils.length > 0 ? (
+              <>
+                Il est réservé {profils.length > 1 ? "aux profils" : "au profil"}{" "}
+                <strong>
+                  {profils.length > 1 ? `${profils.slice(0, -1).join(", ")} et ${profils.at(-1)}` : profils[0]}
+                </strong>
+                . Pour y accéder, demandez l&rsquo;habilitation à l&rsquo;administrateur du cabinet.
+              </>
+            ) : (
+              <>Pour y accéder, demandez l&rsquo;habilitation à l&rsquo;administrateur du cabinet.</>
+            )}
           </p>
-        )}
+          {acces !== null && (
+            <p className="ecran-reserve__session">
+              Connecté comme {acces.nom_complet} ·{" "}
+              {acces.roles.map((r) => libelleRole(r)).join(", ") || "aucun rôle actif à ce jour"}
+            </p>
+          )}
+          <div className="ecran-reserve__actions">
+            <Link href="/" className="action-principale">
+              Aller à mon accueil
+            </Link>
+          </div>
+        </section>
       </div>
     </>
   );

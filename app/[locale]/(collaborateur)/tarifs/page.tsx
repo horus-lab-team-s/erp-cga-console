@@ -154,7 +154,10 @@ function intitule(l: Pick<LigneDeTarif, "libelle" | "libelle_formule">): string 
 function LignePrix({ l, rang, jour }: { l: LigneDeTarif; rang: number; jour: string }) {
   const fixe = l.statut === "FIXE";
   return (
-    <LigneTableau colonnes={PRIX} ton={!fixe && l.fixable ? "alerte" : rang % 2 ? "alterne" : "normal"} hauteur="auto">
+    <LigneTableau colonnes={PRIX} ton={rang % 2 ? "alterne" : "normal"}
+      // 9 novembre 2026 : un fond rose par prix à fixer teintait tout le tableau. Le
+      // liseré, le statut rouge « À fixer » et le bandeau du haut suffisent.
+      bord={!fixe && l.fixable ? "attention" : undefined} hauteur="auto">
       <Cellule gras lignes={2} titre={intitule(l)}>
         {intitule(l)}
       </Cellule>

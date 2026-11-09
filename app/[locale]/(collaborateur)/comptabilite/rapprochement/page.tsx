@@ -102,12 +102,19 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
     <>
       <EnteteTravail miettes={miettes} />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>Rapprochement bancaire</h1>
           <p>
             {courant.denomination} · NIU {niu}
             {dossiers.length > 1 && " · changez de dossier dans la barre latérale"}
           </p>
+          </div>
+          {peutImporter && (
+            <a href="#importer" className="action-principale">
+              + Importer un relevé
+            </a>
+          )}
         </div>
 
         <Panneau titre="Relevés importés" aide="Les plus récents d'abord ; ce qui reste à traiter et l'écart, en un coup d'œil">
@@ -142,7 +149,7 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
         </Panneau>
 
         {peutImporter && (
-          <Panneau titre="Importer un relevé" aide="Formats déclarés au référentiel ; les soldes recopiés contrôlent que le fichier est complet">
+          <Panneau id="importer" titre="Importer un relevé" aide="Formats déclarés au référentiel ; les soldes recopiés contrôlent que le fichier est complet">
             <ImporterUnReleve
               dossier={niu}
               journaux={journaux.filter((j) => j.nature === "BANQUE")}

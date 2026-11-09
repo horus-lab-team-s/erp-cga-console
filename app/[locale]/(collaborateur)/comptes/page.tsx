@@ -177,7 +177,8 @@ export default async function Comptes() {
     <>
       <EnteteTravail miettes={[{ libelle: "Comptes et habilitations" }]} />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>Comptes et habilitations</h1>
           <p>
             {comptes.length} comptes · rôles résolus au {dateCourte(jour)} ·{" "}
@@ -199,18 +200,35 @@ export default async function Comptes() {
               </>
             )}
           </p>
+          </div>
+          {/* 9 novembre 2026 : « il manque le bouton pour ajouter un utilisateur ». Il
+              existait, au bas d'un panneau, et seulement après le second facteur. Il est
+              maintenant en tête d'écran ; le panneau dit ce qu'il faut faire d'abord. */}
+          <a href="#inviter" className="action-principale">
+            + Inviter un collaborateur
+          </a>
         </div>
 
         {/* 19 octobre 2026 : inviter, suspendre, rétablir, fermer une habilitation ou
             retirer un second facteur exigent la session renforcée. Les gestes ne se
             montrent qu'une fois le code saisi : un bouton qui répond « refusé » à
             chaque clic ne dit pas ce qu'il faut faire. */}
-        {!acces.facteur_fort && (
-          <PorteSecondFacteur
-            enrole={acces.second_facteur_enrole}
-            geste="Inviter, suspendre ou rétablir un compte"
-          />
-        )}
+
+        <div id="inviter" style={{ scrollMarginTop: 16 }}>
+          <Panneau
+            titre="Inviter un collaborateur"
+            aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
+          >
+            {acces.facteur_fort ? (
+              <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
+            ) : (
+              <PorteSecondFacteur
+                enrole={acces.second_facteur_enrole}
+                geste="Inviter, suspendre ou rétablir un compte"
+              />
+            )}
+          </Panneau>
+        </div>
 
         {!verification.intacte && (
           <div className="avertissement-ecran" role="alert">
@@ -286,16 +304,6 @@ export default async function Comptes() {
           </Panneau>
         )}
 
-        <Panneau
-          titre="Inviter"
-          aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
-        >
-          {acces.facteur_fort ? (
-            <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
-          ) : (
-            <p style={{ margin: 0, color: "var(--ink-500)" }}>Renforcez d&rsquo;abord la session, ci-dessus.</p>
-          )}
-        </Panneau>
 
         <Panneau
           titre="Comptes"

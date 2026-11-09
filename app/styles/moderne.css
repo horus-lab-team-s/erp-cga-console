@@ -1,0 +1,828 @@
+/* =========================================================================
+   REFONTE VISUELLE — 9 novembre 2026, avant la livraison.
+
+   Demande de la responsable : « un rendu plus moderne », des boutons
+   qu'on voit, plus de contrôles au style brut du navigateur. Audit des
+   54 écrans de la console (captures de la copie locale) :
+
+   · 722 champs et 42 boutons SANS CLASSE : rendus au style natif (gris,
+     hauteurs disparates, « mm/dd/yyyy », « Choose File ») ;
+   · boutons secondaires blancs à filet fin sur cartes blanches : on ne les
+     voyait pas — c'est le « blanc sur blanc » signalé ;
+   · gris de 11–12 px sous le seuil de lecture confortable ;
+   · cartes plates, en-têtes de tableau en capitales grises, états vides
+     qui occupent l'écran.
+
+   Cette feuille est chargée APRÈS les autres et corrige à la base :
+   les sélecteurs `:where()` ont une spécificité nulle, donc tout
+   composant qui a SON style le garde ; seuls les contrôles nus héritent.
+
+   Ce qui déroge au § 10.7 du dossier de design (pas d'ombre portée) est
+   assumé : l'ombre douce sépare les cartes du fond sans filet de plus.
+   La hiérarchie de gravité et les deux teintes de marque sont inchangées.
+   ========================================================================= */
+
+:root {
+  /* Un fond un cran plus froid : les cartes blanches s'en détachent. */
+  --surface-alt: #f5f4f9;
+  /* Le gris secondaire remonte au-dessus de 6:1 sur blanc. */
+  --ink-500: #5d566f;
+  --ink-400: #6a6380;
+
+  --rayon: 10px;
+  --rayon-grand: 14px;
+  --rayon-petit: 6px;
+  --hauteur-controle: 36px;
+
+  --ombre-carte: 0 1px 2px rgb(30 20 50 / 4%), 0 4px 14px rgb(30 20 50 / 5%);
+  --ombre-carte-survol: 0 2px 4px rgb(30 20 50 / 6%), 0 10px 26px rgb(30 20 50 / 9%);
+  --ombre-bouton: 0 1px 2px rgb(30 20 50 / 8%);
+  --anneau: 0 0 0 3px rgb(140 45 134 / 18%);
+  --transition: 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-theme="sombre"] {
+  --ombre-carte: 0 0 0 1px var(--line-200);
+  --ombre-carte-survol: 0 0 0 1px var(--line-300);
+  --ombre-bouton: none;
+  --anneau: 0 0 0 3px rgb(192 95 184 / 28%);
+  /* Les liens indigo éclaircis passaient sous 4,5:1 sur les cartes. */
+  --brand-indigo-700: #d2bdf0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Titres de page ───────────────────────────────────────────────────── */
+
+:where(.contenu) :where(h1) {
+  letter-spacing: -0.015em;
+}
+
+/* ── Panneaux (composant Panneau) ─────────────────────────────────────── */
+
+.panneau {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+
+.panneau__tete {
+  flex: none;
+  min-height: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line-100);
+}
+
+.panneau__titres {
+  min-width: 0;
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panneau__titre {
+  margin: 0;
+  font: 600 15.5px/1.3 var(--police-texte);
+  letter-spacing: -0.005em;
+  color: var(--ink-900);
+}
+
+.panneau__aide {
+  margin: 0;
+  font: 400 12.5px/1.45 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.panneau__action {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panneau__corps {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ── En-têtes de tableau : casse de phrase, plus de capitales criardes ── */
+
+.entete-tableau {
+  height: var(--entete-tableau);
+  min-height: 36px;
+  padding: 0 14px;
+  background: var(--surface-2, #f7f5fb);
+  border-bottom: 1px solid var(--line-200);
+  font: 600 11.5px/1.2 var(--police-texte);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.ligne-tableau {
+  transition: background-color var(--transition);
+}
+
+/* ── États vides : compacts, avec une pastille ────────────────────────── */
+
+.etat-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 22px 24px;
+  text-align: center;
+  font: 400 13px/1.55 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.etat-vide::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--success) 0 4px, transparent 4.5px),
+    var(--success-100);
+}
+
+.etat-vide__titre {
+  color: var(--ink-900);
+  font-weight: 600;
+}
+
+.etat-vide__detail {
+  max-width: 560px;
+}
+
+/* ── Boutons : trois rôles, une hauteur ───────────────────────────────── */
+
+.action-principale,
+.action-secondaire,
+.bouton-primaire,
+.bouton-discret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--hauteur-controle);
+  height: auto;
+  padding: 0 16px;
+  border-radius: var(--rayon);
+  font: 600 13px/1.2 var(--police-texte);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--ombre-bouton);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+.action-principale:active:not(:disabled),
+.action-secondaire:active:not(:disabled),
+.bouton-primaire:active:not(:disabled),
+.bouton-discret:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Une seule couleur d'action principale : le magenta de la marque. Le bouton
+   « primaire » indigo et l'action principale magenta coexistaient. */
+.action-principale,
+.bouton-primaire {
+  border: 1px solid var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+.action-principale:hover:not(:disabled),
+.bouton-primaire:hover:not(:disabled) {
+  filter: none;
+  background: #7a2575;
+  border-color: #7a2575;
+  box-shadow: 0 4px 12px rgb(140 45 134 / 25%);
+}
+
+/* ⚠️ UN LIEN HABILLÉ EN BOUTON GARDE SA COULEUR DANS TOUS SES ÉTATS.
+   `a:hover` (globals.css) passe le texte en magenta souligné : sur le fond magenta
+   d'une action principale, « + Importer un relevé » devenait illisible au survol et
+   après le clic (9 novembre 2026). */
+a.action-principale,
+a.action-principale:is(:hover, :focus, :active, :visited),
+a.bouton-primaire,
+a.bouton-primaire:is(:hover, :focus, :active, :visited) {
+  color: #fff;
+  text-decoration: none;
+}
+a.action-secondaire,
+a.action-secondaire:is(:hover, :focus, :active, :visited),
+a.bouton-discret,
+a.bouton-discret:is(:hover, :focus, :active, :visited) {
+  color: var(--brand-indigo-700);
+  text-decoration: none;
+}
+.action-principale:focus-visible,
+.action-secondaire:focus-visible,
+.bouton-primaire:focus-visible,
+.bouton-discret:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau);
+}
+
+/* Le secondaire se VOIT : fond teinté, filet appuyé, texte indigo. */
+.action-secondaire,
+.bouton-discret {
+  border: 1px solid var(--line-300);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+}
+
+.action-secondaire:hover:not(:disabled),
+.bouton-discret:hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.bouton-discret {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.action-principale:disabled,
+.action-secondaire:disabled,
+.bouton-primaire:disabled,
+.bouton-discret:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Contrôles nus : ils prennent l'habit de la charte ────────────────── */
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"], .selecteur__panneau)
+  :where(button:not([class]), input[type="submit"]:not([class]), input[type="button"]:not([class])) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--hauteur-controle);
+  padding: 0 14px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 600 13px/1.2 var(--police-texte);
+  box-shadow: var(--ombre-bouton);
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(button:not([class]), input[type="submit"]:not([class]), input[type="button"]:not([class])):hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+}
+
+/* Le bouton d'envoi d'un formulaire est son action principale. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(form) :where(button[type="submit"]:not([class])) {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(form) :where(button[type="submit"]:not([class])):hover:not(:disabled) {
+  border-color: #7a2575;
+  background: #7a2575;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(button:not([class])):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="color"]),
+    select,
+    textarea
+  ) {
+  min-height: var(--hauteur-controle);
+  padding: 0 11px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background-color: var(--surface);
+  color: var(--ink-900);
+  font: 400 13px/1.4 var(--police-texte);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(textarea) {
+  padding: 9px 11px;
+  line-height: 1.5;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):hover:not(:disabled, :focus) {
+  border-color: var(--ink-300);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):focus {
+  outline: none;
+  border-color: var(--brand-magenta-600);
+  box-shadow: var(--anneau);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):disabled {
+  background-color: var(--surface-2, #f7f5fb);
+  color: var(--ink-400);
+}
+
+/* La liste déroulante perd la flèche du navigateur pour un chevron de la charte. */
+/* ⚠️ Spécificité VOULUE (et non `:where`) : plusieurs composants posent leur propre
+   `background:` sur leur liste ; ce raccourci effaçait le chevron, et la liste ne se
+   reconnaissait plus (contrôle visuel du 9 novembre : Service, filtres des pièces,
+   Mois et Statut de l'espace adhérent). Seules les propriétés du chevron sont ici. */
+.contenu select:not([multiple]),
+.coquille select:not([multiple]),
+.espace-adherent select:not([multiple]),
+[data-espace="adherent"] select:not([multiple]) {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%236b6480' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  text-overflow: ellipsis;
+}
+
+/* Cases et boutons radio : aux couleurs de la marque, plus de bleu système. */
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--brand-magenta-600);
+  width: 16px;
+  height: 16px;
+}
+
+/* L'icône de calendrier native était noire sur fond sombre. */
+:where(input[type="date"], input[type="month"], input[type="datetime-local"], input[type="time"])::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+/* Le champ fichier : un vrai bouton, plus « Choose File » gris. */
+:where(input[type="file"]) {
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+:where(input[type="file"])::file-selector-button {
+  margin-right: 10px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 600 12.5px/1 var(--police-texte);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+:where(input[type="file"])::file-selector-button:hover {
+  background: var(--brand-indigo-100);
+}
+
+/* Les dépliants : un chevron qui tourne, plus le triangle système. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary) {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand-indigo-700);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary)::-webkit-details-marker {
+  display: none;
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary)::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--transition);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details[open]) > :where(summary)::before {
+  transform: rotate(45deg);
+}
+
+/* Les fieldsets natifs perdent leur cadre gravé. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(fieldset) {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(legend) {
+  padding: 0 6px;
+  font: 600 12.5px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* Les libellés de champ, un cran plus lisibles. */
+.champ > span {
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* ── Sélecteur de dossier ─────────────────────────────────────────────── */
+
+.selecteur {
+  padding: 0 var(--espace-1);
+}
+
+.selecteur__declencheur {
+  min-height: 52px;
+  gap: 10px;
+  padding: 0 10px 0 8px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 7%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+.selecteur__declencheur:hover,
+.selecteur__declencheur[aria-expanded="true"] {
+  background: rgb(255 255 255 / 13%);
+  border-color: rgb(255 255 255 / 24%);
+}
+
+.selecteur__denomination {
+  font: 600 13px/1.3 var(--police-texte);
+  color: #fff;
+}
+
+.selecteur__niu {
+  font: 500 11px/1.4 var(--police-texte);
+  color: rgb(255 255 255 / 66%);
+}
+
+.selecteur__chevrons {
+  flex: none;
+  color: rgb(255 255 255 / 70%);
+}
+
+.selecteur__pastille {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font: 700 11.5px/1 var(--police-texte);
+  letter-spacing: 0.02em;
+}
+
+.selecteur__pastille--tous {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, var(--brand-magenta-600), #5b2a8c);
+  color: #fff;
+}
+
+.selecteur__panneau {
+  position: fixed;
+  z-index: 60;
+  width: min(380px, calc(100vw - 16px));
+  max-height: min(70vh, 560px);
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 32px rgb(30 20 50 / 18%),
+    0 2px 6px rgb(30 20 50 / 8%);
+  animation: selecteur-entree 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes selecteur-entree {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+.selecteur__barre-recherche {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line-100);
+  color: var(--ink-400);
+}
+
+.selecteur__recherche,
+:where(.selecteur__panneau) .selecteur__recherche {
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font: 400 14px/1 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.selecteur__recherche:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.selecteur__touche,
+.selecteur__pied kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--line-200);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface-2, #f7f5fb);
+  font: 600 10.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__liste {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.selecteur__section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 8px 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 11px/1.4 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.selecteur__compte {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--line-100);
+  letter-spacing: 0;
+  color: var(--ink-500);
+}
+
+.selecteur__option {
+  min-height: 48px;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  transition: background-color 80ms;
+}
+
+.selecteur__option:hover,
+.selecteur__option[data-actif] {
+  background: var(--surface-2, #f7f5fb);
+}
+
+.selecteur__option[aria-selected="true"] {
+  background: var(--brand-magenta-100);
+}
+
+.selecteur__texte {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.selecteur__nom {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 13px/1.3 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.selecteur__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__regime {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--line-100);
+  font: 600 10.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__regime--reel {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.selecteur__pied {
+  flex: none;
+  display: flex;
+  gap: 14px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--line-100);
+  background: var(--surface-2, #f7f5fb);
+  font: 400 11px/1.4 var(--police-texte);
+  color: var(--ink-400);
+}
+
+/* ── En-tête de la zone de travail ────────────────────────────────────── */
+
+.entete {
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: saturate(1.4) blur(10px);
+}
+
+:root[data-theme="sombre"] .entete {
+  background: rgb(34 28 48 / 85%);
+}
+
+/* ── Espace adhérent : la barre d'onglets ne masque plus le contenu ───── */
+
+.adherent__onglets {
+  margin-top: 12px;
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: saturate(1.4) blur(12px);
+  box-shadow: 0 -2px 16px rgb(30 20 50 / 8%);
+  z-index: 5;
+}
+
+:root[data-theme="sombre"] .adherent__onglets {
+  background: rgb(34 28 48 / 90%);
+}
+
+/* ── Mode sombre : lisibilité des pastilles et des liens ──────────────── */
+
+:root[data-theme="sombre"] .selecteur__regime--reel {
+  background: #3a2f57;
+  color: #e3d6f7;
+}
+
+:root[data-theme="sombre"] .selecteur__pastille:not(.selecteur__pastille--tous) {
+  filter: brightness(0.82) saturate(1.2);
+}
+
+/* ── Titre de page avec son action principale à droite ───────────────── */
+
+.page-travail__titre--avec-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+/* ── Écran réservé : une carte courte et deux issues ──────────────────── */
+
+.ecran-reserve {
+  align-self: center;
+  width: min(560px, 100%);
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 28px 28px;
+  text-align: center;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+
+.ecran-reserve__icone {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+}
+
+.ecran-reserve__titre {
+  margin: 0;
+  font: 600 17px/1.3 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.ecran-reserve__texte {
+  margin: 0;
+  font: 400 13.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.ecran-reserve__texte strong {
+  color: var(--ink-900);
+}
+
+.ecran-reserve__session {
+  margin: 4px 0 0;
+  font: 400 12px/1.5 var(--police-texte);
+  color: var(--ink-400);
+}
+
+.ecran-reserve__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Les panneaux visés par un bouton d'en-tête ne se collent pas au bord haut. */
+.panneau[id] {
+  scroll-margin-top: 16px;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Recherche globale : le champ dans la page, en plus de celui de l'en-tête. */
+.recherche__formulaire {
+  display: flex;
+  gap: 8px;
+  max-width: 640px;
+}
+.recherche__champ {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Une liste dont l'option la plus longue est longue (« CSV : date, libellé, débit,
+   crédit… ») imposait sa largeur à la grille du formulaire, qui débordait du panneau.
+   Un contrôle ne dépasse jamais son conteneur ; le texte long se coupe dans la liste. */
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(select, input:not([type="checkbox"], [type="radio"]), textarea) {
+  max-width: 100%;
+}
+
+/* Une source longue et sans espace (une adresse) élargissait la liste de faits au-delà
+   du panneau, au Référentiel. La valeur se coupe plutôt que de pousser la page. */
+.faits {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+.faits dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { EtatVide } from "@/app/components/Tableau";
 import { dateCourte } from "@/app/lib/formats";
 import { marquerMesNotificationsLues } from "@/app/lib/actions-notifications";
 import type { MesNotifications } from "@/app/lib/notifications";
@@ -31,10 +32,24 @@ export function ListeDesNotifications({
   const { notifications, non_lues } = lecture;
 
   if (notifications.length === 0) {
+    const sansAbonnement = lecture.source.startsWith("aucun");
+    // 9 novembre 2026 : sur l'écran de travail, une phrase grise seule faisait page cassée.
+    if (!espaceAdherent) {
+      return (
+        <section className="panneau">
+          <EtatVide
+            titre="Rien de nouveau"
+            detail={`Aucune notification sur les ${lecture.fenetre_jours} derniers jours.${
+              sansAbonnement ? " Aucun abonnement n'est configuré pour ce cabinet." : ""
+            }`}
+          />
+        </section>
+      );
+    }
     return (
       <p style={petit}>
         Aucune notification sur les {lecture.fenetre_jours} derniers jours.
-        {lecture.source.startsWith("aucun") ? " Aucun abonnement n'est configuré pour ce cabinet." : ""}
+        {sansAbonnement ? " Aucun abonnement n'est configuré pour ce cabinet." : ""}
       </p>
     );
   }
