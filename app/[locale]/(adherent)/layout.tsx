@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
 
+import { PorteDeLEspace, type AvisDAcces } from "@/app/components/adherent/PorteDeLEspace";
+import type { Acces } from "@/app/lib/acces";
+import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
+import { lireLesHonoraires } from "@/app/lib/honoraires";
 import { exigerAcces } from "@/app/lib/session";
 import "@/app/styles/coquille.css";
 
@@ -28,10 +33,29 @@ import "@/app/styles/coquille.css";
  */
 export default async function LayoutAdherent({ children }: { children: ReactNode }) {
   // Même garde que l'espace collaborateur : rien n'est rendu sans session.
-  await exigerAcces();
+  const acces = await exigerAcces();
+  const avis = await avisDAcces(acces);
   return (
     <div className="espace-adherent" data-espace="adherent">
-      {children}
+      <PorteDeLEspace avis={avis}>{children}</PorteDeLEspace>
     </div>
   );
+}
+
+/**
+ * Réunion du 4 novembre 2026 : l'accès du client averti, ou suspendu, après trois mois
+ * d'honoraires impayés. Une lecture qui échoue ne ferme rien : le serveur garde la porte.
+ */
+async function avisDAcces(acces: Acces): Promise<AvisDAcces | null> {
+  if (acces.interne) return null;
+  try {
+    const { principal } = await monEntrepriseChoisie(acces);
+    if (!principal) return null;
+    const situation = (await lireLesHonoraires(principal)).situation;
+    const etat = situation?.acces_client;
+    if (!situation || (etat !== "AVERTI" && etat !== "SUSPENDU") || !situation.acces_suspendu_le) return null;
+    return { etat, le: dateCourte(situation.acces_suspendu_le), du: montantFcfa(situation.du) };
+  } catch {
+    return null;
+  }
 }

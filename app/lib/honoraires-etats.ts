@@ -70,7 +70,16 @@ export type SituationDeReglement = {
   en_retard_depuis: string | null;
   bloque_le: string | null;
   grace: GraceDeReglement | null;
+  /** Réunion du 4 novembre 2026 : l'accès du client à son espace, distinct du traitement. */
+  acces_client?: EtatDAccesClient;
+  acces_suspendu_le?: string | null;
 };
+
+/**
+ * Trois mois après l'échéance impayée la plus ancienne, l'espace du client se suspend ;
+ * quinze jours avant, il en est averti. Suspendu, il ne garde que ses honoraires.
+ */
+export type EtatDAccesClient = "OUVERT" | "AVERTI" | "SUSPENDU";
 
 export const LIBELLES_SITUATION: Record<EtatDeReglement, string> = {
   SANS_CONTRAT: "Sans contrat",

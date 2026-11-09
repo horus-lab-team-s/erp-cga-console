@@ -22,6 +22,9 @@ export async function lireLesSituations(): Promise<{ denomination: string; situa
 }
 
 /** 18 octobre 2026 : la règle de dépassement du cabinet ; `d_office` si aucune n'est fixée. */
-export async function lireLaRegleDeDepassement(): Promise<{ regle: { delai_jours: number; motif: string }; d_office: boolean }> {
+export async function lireLaRegleDeDepassement(): Promise<{
+  regle: { delai_jours: number; acces_client_mois?: number; preavis_acces_jours?: number; motif: string };
+  d_office: boolean;
+}> {
   return appeler("/souscription/reglement/regle", { authentifie: true });
 }

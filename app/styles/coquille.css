@@ -5462,3 +5462,18 @@ thead .matrice__droit {
   color: var(--brand-indigo-700);
   font: 600 13px/1.4 var(--police-texte);
 }
+
+/* ── Accès du client suspendu ou averti (réunion du 4 novembre 2026) ───────── */
+.acces-client__avis a {
+  color: inherit;
+  font-weight: 600;
+}
+.acces-client__suspendu {
+  margin-top: var(--espace-4, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.acces-client__suspendu p {
+  margin: 0;
+}

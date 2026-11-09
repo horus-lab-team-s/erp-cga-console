@@ -85,7 +85,17 @@ export function ReviserLeTarif({ niu, aujourdhui }: { niu: string; aujourdhui: s
   );
 }
 
-export function RegleDeDepassement({ delai, dOffice }: { delai: number; dOffice: boolean }) {
+export function RegleDeDepassement({
+  delai,
+  dOffice,
+  accesClientMois = 3,
+  preavisAccesJours = 15,
+}: {
+  delai: number;
+  dOffice: boolean;
+  accesClientMois?: number;
+  preavisAccesJours?: number;
+}) {
   const [etat, agir, enCours] = useActionState(fixerLaRegleDeDepassement, ETAT_ACTE_INITIAL);
   return (
     <Geste
@@ -98,6 +108,15 @@ export function RegleDeDepassement({ delai, dOffice }: { delai: number; dOffice:
       <label>
         Jours de retard tolérés avant d&rsquo;arrêter le traitement
         <input name="delai_jours" type="number" min={0} max={365} required defaultValue={delai} />
+      </label>
+      {/* Réunion du 4 novembre 2026 : l'espace du client, distinct du traitement. */}
+      <label>
+        Mois d&rsquo;impayé avant de suspendre l&rsquo;espace du client
+        <input name="acces_client_mois" type="number" min={1} max={24} required defaultValue={accesClientMois} />
+      </label>
+      <label>
+        Jours de préavis affichés au client avant la suspension
+        <input name="preavis_acces_jours" type="number" min={0} max={90} required defaultValue={preavisAccesJours} />
       </label>
     </Geste>
   );

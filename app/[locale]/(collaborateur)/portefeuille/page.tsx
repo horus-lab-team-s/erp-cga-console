@@ -142,7 +142,7 @@ export default async function Portefeuille() {
               regle
                 ? regle.d_office
                   ? "Règle d'office : un dossier en retard ne se traite plus. Fixez un dépassement toléré, ou accordez une grâce depuis la fiche du dossier."
-                  : `Un retard de plus de ${regle.regle.delai_jours} jours arrête le traitement, sauf grâce.`
+                  : `Un retard de plus de ${regle.regle.delai_jours} jours arrête le traitement, sauf grâce. Après ${regle.regle.acces_client_mois ?? 3} mois d'impayé, l'espace du client se suspend ; le cabinet continue de traiter.`
                 : "Un dossier bloqué se lit, reçoit ses pièces et se règle ; il ne se traite plus."
             }
           >
@@ -156,12 +156,24 @@ export default async function Portefeuille() {
                       <span>
                         {montantFcfa(s.situation.du)} dus
                         {s.situation.en_retard_depuis ? `, en retard depuis le ${dateCourte(s.situation.en_retard_depuis)}` : ""}
+                        {s.situation.acces_client === "SUSPENDU" && s.situation.acces_suspendu_le
+                          ? ` · espace client suspendu depuis le ${dateCourte(s.situation.acces_suspendu_le)}`
+                          : s.situation.acces_client === "AVERTI" && s.situation.acces_suspendu_le
+                            ? ` · espace client suspendu le ${dateCourte(s.situation.acces_suspendu_le)} sans règlement`
+                            : ""}
                       </span>
                     </li>
                   ))}
                 </ul>
               )}
-              {regle && <RegleDeDepassement delai={regle.regle.delai_jours} dOffice={regle.d_office} />}
+              {regle && (
+                <RegleDeDepassement
+                  delai={regle.regle.delai_jours}
+                  dOffice={regle.d_office}
+                  accesClientMois={regle.regle.acces_client_mois}
+                  preavisAccesJours={regle.regle.preavis_acces_jours}
+                />
+              )}
             </div>
           </Panneau>
         )}

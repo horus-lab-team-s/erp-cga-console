@@ -51,7 +51,26 @@ export async function fixerLaRegleDeDepassement(_precedent: EtatActe, donnees: F
   if (!Number.isInteger(delai) || delai < 0 || delai > 365) {
     return { echec: "Le dépassement toléré se compte en jours, de 0 à 365.", fait: null };
   }
-  return geste("/souscription/reglement/regle", { delai_jours: delai, motif }, "Règle de dépassement enregistrée.");
+  // Réunion du 4 novembre 2026 : la suspension de l'espace client et son préavis. Absents, le
+  // serveur garde ceux en vigueur.
+  const corps: Record<string, unknown> = { delai_jours: delai, motif };
+  const mois = champ(donnees, "acces_client_mois");
+  if (mois) {
+    const n = Number(mois);
+    if (!Number.isInteger(n) || n < 1 || n > 24) {
+      return { echec: "La suspension de l'espace client se compte en mois, de 1 à 24.", fait: null };
+    }
+    corps.acces_client_mois = n;
+  }
+  const preavis = champ(donnees, "preavis_acces_jours");
+  if (preavis) {
+    const n = Number(preavis);
+    if (!Number.isInteger(n) || n < 0 || n > 90) {
+      return { echec: "Le préavis se compte en jours, de 0 à 90.", fait: null };
+    }
+    corps.preavis_acces_jours = n;
+  }
+  return geste("/souscription/reglement/regle", corps, "Règle de dépassement enregistrée.");
 }
 
 export async function accorderUneGrace(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {

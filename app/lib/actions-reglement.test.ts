@@ -48,6 +48,18 @@ describe("Le règlement", () => {
     expect(appel(f)[1].method).toBe("PUT");
   });
 
+  it("envoie la suspension de l'espace client et son préavis, bornés (4 novembre 2026)", async () => {
+    expect(
+      (await fixerLaRegleDeDepassement(VIDE, formulaire({ delai_jours: "30", acces_client_mois: "0", motif: MOTIF }))).echec,
+    ).toContain("mois");
+    const f = doublerFetch();
+    await fixerLaRegleDeDepassement(
+      VIDE,
+      formulaire({ delai_jours: "30", acces_client_mois: "3", preavis_acces_jours: "15", motif: MOTIF }),
+    );
+    expect(JSON.parse(String(appel(f)[1].body))).toMatchObject({ acces_client_mois: 3, preavis_acces_jours: 15 });
+  });
+
   it("n'accorde pas un mandat sans obligation cochée", async () => {
     const f = doublerFetch();
     const etat = await accorderLeMandat(VIDE, formulaire({ niu: "M1", motif: MOTIF }));

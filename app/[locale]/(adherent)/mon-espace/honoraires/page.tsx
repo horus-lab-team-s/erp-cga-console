@@ -92,7 +92,8 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
         <p className="honoraires__alerte" role="alert">
           <strong>Le traitement de votre dossier est suspendu.</strong> Vos honoraires sont en retard depuis le{" "}
           {situation.en_retard_depuis ? dateCourte(situation.en_retard_depuis) : TIRET} : le cabinet reprend votre
-          comptabilité et vos déclarations dès le règlement. Vous pouvez toujours déposer vos pièces.
+          comptabilité et vos déclarations dès le règlement.
+          {situation.acces_client !== "SUSPENDU" && " Vous pouvez toujours déposer vos pièces."}
         </p>
       )}
       {situation?.etat === "EN_RETARD" && situation.bloque_le && (
