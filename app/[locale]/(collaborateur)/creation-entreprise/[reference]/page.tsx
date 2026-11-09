@@ -6,6 +6,7 @@ import {
   FranchirEtape,
   Identifiants,
   LienDeSuiviDeLaCliente,
+  MarquerUnJalon,
   RecevoirPiece,
 } from "@/app/components/creations/GestesCreation";
 import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
@@ -140,6 +141,34 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
                 ))
               )}
               <Abandon reference={dossier.reference} />
+            </div>
+          </Panneau>
+        )}
+
+        {/* Lot 4 (9 novembre 2026) : les jalons qui ouvrent et ferment les délais. */}
+        {(dossier.etape === "CONSTITUTION" ||
+          dossier.etape === "LIVRAISON" ||
+          dossier.statuts_transmis_le ||
+          dossier.originaux_remis_le) && (
+          <Panneau
+            titre="Statuts et originaux"
+            aide="Datés du jour. Les délais fixés par la direction courent de là ; un dépassement remonte dans « Retards »."
+          >
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {dossier.statuts_transmis_le ? (
+                <p style={texte}>Statuts transmis au client le {dateCourte(dossier.statuts_transmis_le)}.</p>
+              ) : (
+                dossier.etape === "CONSTITUTION" && (
+                  <MarquerUnJalon reference={dossier.reference} geste="statuts-transmis" libelle="Statuts transmis au client" />
+                )
+              )}
+              {dossier.originaux_remis_le ? (
+                <p style={texte}>Originaux remis au client le {dateCourte(dossier.originaux_remis_le)}.</p>
+              ) : (
+                (dossier.etape === "LIVRAISON" || dossier.etape === "CONVERTI") && (
+                  <MarquerUnJalon reference={dossier.reference} geste="originaux-remis" libelle="Originaux remis au client" />
+                )
+              )}
             </div>
           </Panneau>
         )}

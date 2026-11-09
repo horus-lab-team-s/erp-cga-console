@@ -5,7 +5,9 @@ import { useActionState, useState } from "react";
 import {
   abandonnerLeDossier,
   convertirLeDossier,
+  fixerLaRegleDesDelais,
   franchirUneEtape,
+  marquerUnJalon,
   ouvrirUnDossierDeCreation,
   porterLesIdentifiants,
   recevoirUnePiece,
@@ -367,5 +369,76 @@ export function LienDeSuiviDeLaCliente({
         </button>
       </div>
     </div>
+  );
+}
+
+
+/** Lot 4 (9 novembre 2026) : « statuts transmis » ou « originaux remis », datés du jour. */
+export function MarquerUnJalon({
+  reference,
+  geste,
+  libelle,
+}: {
+  reference: string;
+  geste: "statuts-transmis" | "originaux-remis";
+  libelle: string;
+}) {
+  const [etat, marquer, enCours] = useActionState(marquerUnJalon, ETAT_ACTE_INITIAL);
+  return (
+    <form action={marquer} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+      <input type="hidden" name="reference" value={reference} />
+      <input type="hidden" name="geste" value={geste} />
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : libelle}
+      </button>
+      <Retour etat={etat} />
+    </form>
+  );
+}
+
+/**
+ * Lot 4 : les délais de la création, fixés par le super administrateur. ⚠️ Aucun délai par
+ * défaut : un délai vide n'est pas suivi, et rien ne se signale.
+ */
+export function RegleDesDelaisFormulaire({
+  redaction,
+  validation,
+  retrait,
+  parDefaut,
+}: {
+  redaction: number | null;
+  validation: number | null;
+  retrait: number | null;
+  parDefaut: boolean;
+}) {
+  const [etat, fixer, enCours] = useActionState(fixerLaRegleDesDelais, ETAT_ACTE_INITIAL);
+  return (
+    <form action={fixer} className="versements__regle">
+      <p className="versements__note">
+        {parDefaut
+          ? "Aucun délai fixé : rien n'est suivi ni signalé."
+          : "Un délai vide n'est pas suivi. Les dépassements remontent dans « Retards »."}
+      </p>
+      <label>
+        Rédaction des statuts par le cabinet (jours, depuis l&rsquo;étape « Constitution »)
+        <input name="delai_redaction_statuts_jours" type="number" min={1} max={365} step={1} defaultValue={redaction ?? ""} />
+      </label>
+      <label>
+        Validation et signature des statuts par le client (jours, depuis leur transmission)
+        <input name="delai_validation_statuts_jours" type="number" min={1} max={365} step={1} defaultValue={validation ?? ""} />
+      </label>
+      <label>
+        Retrait des originaux par le client (jours, depuis l&rsquo;étape « Remise »)
+        <input name="delai_retrait_originaux_jours" type="number" min={1} max={730} step={1} defaultValue={retrait ?? ""} />
+      </label>
+      <label>
+        Motif
+        <input name="motif" minLength={10} maxLength={500} required />
+      </label>
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : "Enregistrer les délais"}
+      </button>
+      <Retour etat={etat} />
+    </form>
   );
 }

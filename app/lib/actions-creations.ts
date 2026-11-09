@@ -256,3 +256,53 @@ export async function lireLeDocumentDeLaPiece(
     throw erreur;
   }
 }
+
+
+/**
+ * Lot 4 (9 novembre 2026) : deux gestes datés du jour. « Statuts transmis » ouvre le délai
+ * de validation du client ; « originaux remis » ferme le délai de retrait.
+ */
+export async function marquerUnJalon(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = champ(donnees, "reference");
+  const geste_ = champ(donnees, "geste");
+  if (geste_ !== "statuts-transmis" && geste_ !== "originaux-remis") {
+    return { echec: "Geste inconnu.", fait: null };
+  }
+  return geste(
+    () =>
+      appeler<DossierCreation>(`/creations/${encodeURIComponent(reference)}/${geste_}`, {
+        methode: "POST",
+        authentifie: true,
+      }),
+    geste_ === "statuts-transmis"
+      ? "Statuts marqués transmis : le délai de validation du client court."
+      : "Originaux marqués remis au client.",
+  );
+}
+
+/** Lot 4 : le super administrateur fixe les délais de la création, avec un motif. */
+export async function fixerLaRegleDesDelais(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const motif = champ(donnees, "motif");
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  const corps: Record<string, number | string | null> = { motif };
+  for (const cle of [
+    "delai_redaction_statuts_jours",
+    "delai_validation_statuts_jours",
+    "delai_retrait_originaux_jours",
+  ]) {
+    const valeur = champ(donnees, cle);
+    if (!valeur) {
+      corps[cle] = null;
+      continue;
+    }
+    const jours = Number(valeur);
+    if (!Number.isInteger(jours) || jours < 1) {
+      return { echec: "Un délai se compte en jours entiers, un au moins ; vide : pas suivi.", fait: null };
+    }
+    corps[cle] = jours;
+  }
+  return geste(
+    () => appeler("/creations/regle-des-delais", { methode: "PUT", authentifie: true, corps }),
+    "Délais de la création enregistrés.",
+  );
+}

@@ -360,7 +360,34 @@ describe("Les versements du parcours", () => {
     expect(corpsDe(f)).toEqual({
       frais_par_service: { CREATION: "25000" },
       seuil_demarrage_pourcent: 70,
+      penalites_de_retard: {},
       motif: "décision du 9 novembre",
     });
+  });
+
+  it("lot 4 : les pénalités par défaut, remplies seulement, hors rendez-vous manqué", async () => {
+    const f = doublerFetch({});
+    await fixerLaRegleDesVersements(
+      VIDE,
+      champs({
+        seuil_demarrage_pourcent: "100",
+        penalite_rendez_vous: "5000",
+        penalite_PROFORMA_EXPIREE: "15000",
+        penalite_AUTRE: "",
+        motif: "décision du 9 novembre",
+      }),
+    );
+    expect(corpsDe(f)).toMatchObject({
+      penalite_rendez_vous: "5000",
+      penalites_de_retard: { PROFORMA_EXPIREE: "15000" },
+    });
+    expect(
+      (
+        await fixerLaRegleDesVersements(
+          VIDE,
+          champs({ seuil_demarrage_pourcent: "100", penalite_AUTRE: "-3", motif: "décision du 9 novembre" }),
+        )
+      ).echec,
+    ).toContain("positif");
   });
 });

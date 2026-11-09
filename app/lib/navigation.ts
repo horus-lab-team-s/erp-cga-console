@@ -131,6 +131,15 @@ export const NAVIGATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // Lot 4 (9 novembre 2026) : les retards en rouge, par responsable, avec leurs délais.
+    libelle: "Retards",
+    href: "/retards",
+    icone: "pilotage",
+    permission: "LIRE_PILOTAGE",
+    ouAussi: ["SAISIR_ECRITURE", "SUIVRE_FORMALITE", "LIRE_PROSPECT", "ENCAISSER"],
+    construit: true,
+  },
+  {
     // Pas 104 : « par quoi je commence ? », pour qui tient des dossiers (comptable, réviseur).
     libelle: "Mon plan de travail",
     href: "/plan-de-travail",

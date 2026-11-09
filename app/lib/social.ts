@@ -19,6 +19,8 @@ export type LigneSalarie = {
   salaire_base: string | null;
   /** Aucun contrat ne couvre la date : sorti, ou pas encore entré. */
   sans_contrat: boolean;
+  /** 9 novembre 2026 : ce qui manque pour l'immatriculer (liste du responsable juridique). */
+  a_completer?: string[];
 };
 
 export type LigneRetenue = {

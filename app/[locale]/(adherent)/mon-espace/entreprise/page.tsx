@@ -10,6 +10,8 @@ import type { VueDeLaFiche } from "@/app/lib/fiche-dsf-etats";
 import { dateCourte } from "@/app/lib/formats";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { exigerAcces } from "@/app/lib/session";
+import { DocumentsAEcheance } from "@/app/components/documents/DocumentsAEcheance";
+import { lireLeCatalogueDesDocuments, lireLesDocumentsAEcheance } from "@/app/lib/documents-a-echeance";
 import { Link } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
@@ -49,6 +51,11 @@ export default async function PageMonEntreprise() {
   }
   const fiche = await lireMonEntreprise(principal).catch(() => null);
   const ficheDsf = await lireLaFicheDsf(principal).catch(() => null);
+  // Lot 4 (9 novembre 2026) : ses documents à échéance, qu'il peut renouveler lui-même.
+  const [documentsAEcheance, catalogueDesDocuments] = await Promise.all([
+    lireLesDocumentsAEcheance(principal).catch(() => null),
+    lireLeCatalogueDesDocuments().catch(() => null),
+  ]);
   return (
     <main className="adherent">
       <header className="adherent__entete">
@@ -67,6 +74,21 @@ export default async function PageMonEntreprise() {
       ) : (
         <>
           <Fiche fiche={fiche} peutSignaler={detient(acces, "SIGNALER_UN_CHANGEMENT")} />
+          {documentsAEcheance && catalogueDesDocuments && (
+            <section className="adherent__section" id="documents-a-echeance">
+              <h2 className="adherent__titre">Vos documents à échéance</h2>
+              <p className="adherent__texte">
+                Vos attestations datées. Le cabinet et vous êtes prévenus avant qu&rsquo;elles expirent ; enregistrez
+                ici la nouvelle quand vous l&rsquo;obtenez.
+              </p>
+              <DocumentsAEcheance
+                niu={fiche.niu}
+                documents={documentsAEcheance}
+                catalogue={catalogueDesDocuments}
+                peutEnregistrer={detient(acces, "RENSEIGNER_FICHE_DSF")}
+              />
+            </section>
+          )}
           {ficheDsf && <SectionFicheDsf dossier={fiche.niu} vue={ficheDsf} peutRenseigner={detient(acces, "RENSEIGNER_FICHE_DSF")} />}
         </>
       )}

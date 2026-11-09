@@ -12,7 +12,9 @@ import { Affecter, ClasserSansSuite, RappelFait } from "@/app/components/acquisi
 import { RegleDesVersementsFormulaire } from "@/app/components/acquisition/Versements";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { RegleDesDelaisFormulaire } from "@/app/components/creations/GestesCreation";
 import { detient } from "@/app/lib/acces";
+import { lireLaRegleDesDelais } from "@/app/lib/creations";
 import {
   LIBELLES_ETAT,
   lireDossiersCommerciaux,
@@ -92,6 +94,10 @@ export default async function ConsoleAcquisition() {
   const canaux = await lireEtatDesCanaux().catch(() => null);
   const regleDesVersements = detient(acces, "ACCORDER_FAVEURS")
     ? await lireLaRegleDesVersements().catch(() => null)
+    : null;
+  // Lot 4 (9 novembre 2026) : les délais de la création, réglés au même endroit.
+  const regleDesDelais = detient(acces, "ACCORDER_FAVEURS")
+    ? await lireLaRegleDesDelais().catch(() => null)
     : null;
   const [dossiers, payes, enSouffrance, rappels, motifs] = await Promise.all([
     lireDossiersCommerciaux(),
@@ -254,6 +260,22 @@ export default async function ConsoleAcquisition() {
               seuil={regleDesVersements.regle.seuil_demarrage_pourcent}
               parDefaut={regleDesVersements.par_defaut}
               penalite={regleDesVersements.regle.penalite_rendez_vous ?? null}
+              penalitesDeRetard={regleDesVersements.regle.penalites_de_retard ?? {}}
+            />
+          </Panneau>
+        )}
+
+        {/* Lot 4 (9 novembre 2026) : les délais de la création, suivis dans « Retards ». */}
+        {regleDesDelais && detient(acces, "ACCORDER_FAVEURS") && (
+          <Panneau
+            titre="Délais de la création"
+            aide="Rédaction des statuts, validation par le client, retrait des originaux. Un délai dépassé remonte dans « Retards » ; une pénalité se décide sur la fiche du dossier."
+          >
+            <RegleDesDelaisFormulaire
+              redaction={regleDesDelais.regle.delai_redaction_statuts_jours}
+              validation={regleDesDelais.regle.delai_validation_statuts_jours}
+              retrait={regleDesDelais.regle.delai_retrait_originaux_jours}
+              parDefaut={regleDesDelais.par_defaut}
             />
           </Panneau>
         )}

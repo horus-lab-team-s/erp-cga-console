@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Panneau } from "@/app/components/Tableau";
 import { Chiffrage, EmissionProforma, PremierContact, Qualification, Reglement } from "@/app/components/acquisition/FicheDossier";
 import { SituationDesVersementsDuDossier } from "@/app/components/acquisition/Versements";
+import { PenalitesDuDossier } from "@/app/components/acquisition/Penalites";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
@@ -321,6 +322,23 @@ export default async function FicheDossierCommercial({
               situation={versements}
               frais={fraisDuService}
               peutEncaisser={detient(acces, "ENCAISSER")}
+            />
+          </Panneau>
+        )}
+        {/* Lot 4 (9 novembre 2026) : les pénalités de retard, décidées par un responsable. */}
+        {((fiche.penalites?.length ?? 0) > 0 ||
+          detient(acces, "SUIVRE_FORMALITE") ||
+          detient(acces, "LIRE_PILOTAGE")) && (
+          <Panneau
+            titre="Pénalités de retard"
+            aide="La vue « Retards » signale les délais dépassés ; la pénalité se décide ici, avec une explication que le client reçoit par courriel. Elle se règle à la caisse."
+          >
+            <PenalitesDuDossier
+              reference={reference}
+              penalites={fiche.penalites ?? []}
+              montantsParDefaut={regleDesVersements?.regle.penalites_de_retard ?? {}}
+              peutInfliger={detient(acces, "SUIVRE_FORMALITE") || detient(acces, "LIRE_PILOTAGE")}
+              peutLever={detient(acces, "ACCORDER_FAVEURS")}
             />
           </Panneau>
         )}

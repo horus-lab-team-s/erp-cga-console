@@ -434,7 +434,13 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
   const tranche = trancheDe(donnees);
   if (tranche === false) return { echec: "Le montant s'écrit en francs, sans virgule.", fait: null };
   try {
-    const r = await appeler<{ accepte: boolean; message: string; telephone: string; montant: string }>(
+    const r = await appeler<{
+      accepte: boolean;
+      message: string;
+      telephone: string;
+      montant: string;
+      valide_d_office?: boolean;
+    }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/reglement`,
       {
         methode: "POST",
@@ -443,6 +449,10 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
       },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
+    // 9 novembre 2026 : période d'essai — validé d'office, sans débit réel.
+    if (r.accepte && r.valide_d_office) {
+      return { echec: null, fait: `Paiement d'essai de ${r.montant} FCFA validé automatiquement : aucun débit réel.` };
+    }
     return r.accepte
       ? { echec: null, fait: `Demande envoyée au ${r.telephone} : le client doit valider sur son téléphone. ${r.message}`.trim() }
       : { echec: `L'opérateur n'a pas accepté la demande : ${r.message}`, fait: null };
@@ -565,6 +575,17 @@ export async function fixerLaRegleDesVersements(_precedent: EtatActe, donnees: F
   if (penalite && (!/^\d+$/.test(penalite) || Number(penalite) <= 0)) {
     return { echec: "La pénalité d'un rendez-vous manqué : un montant en francs, positif.", fait: null };
   }
+  // Lot 4 : les montants par défaut des pénalités de retard. Vide : saisi au cas par cas.
+  const penalitesDeRetard: Record<string, string> = {};
+  for (const [cle, valeur] of donnees.entries()) {
+    if (!cle.startsWith("penalite_") || cle === "penalite_rendez_vous") continue;
+    const montant = String(valeur).replace(/\s/g, "");
+    if (!montant) continue;
+    if (!/^\d+$/.test(montant) || Number(montant) <= 0) {
+      return { echec: "Une pénalité par défaut : un montant en francs, positif.", fait: null };
+    }
+    penalitesDeRetard[cle.slice(9)] = montant;
+  }
   try {
     await appeler("/souscription/versements/regle", {
       methode: "PUT",
@@ -573,6 +594,7 @@ export async function fixerLaRegleDesVersements(_precedent: EtatActe, donnees: F
         frais_par_service: frais,
         seuil_demarrage_pourcent: seuil,
         ...(penalite ? { penalite_rendez_vous: penalite } : {}),
+        penalites_de_retard: penalitesDeRetard,
         motif,
       },
     });
@@ -591,13 +613,21 @@ export async function encaisserLaPenalite(_precedent: EtatActe, donnees: FormDat
   const recu = String(donnees.get("reference_externe") ?? "").trim();
   if (!recu) return { echec: "Indiquez le numéro du reçu de caisse.", fait: null };
   try {
-    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/penalite/encaissement`, {
+    // Lot 4 : une pénalité de retard s'encaisse à sa propre adresse.
+    const deRetard = donnees.get("sorte") === "retard";
+    const chemin = deRetard ? "penalite-de-retard/encaissement" : "penalite/encaissement";
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/${chemin}`, {
       methode: "POST",
       authentifie: true,
       corps: { reference_externe: recu },
     });
     revalidatePath("/[locale]/caisse", "page");
-    return { echec: null, fait: "Pénalité encaissée : le client peut reprendre un rendez-vous." };
+    return {
+      echec: null,
+      fait: deRetard
+        ? "Pénalité de retard encaissée."
+        : "Pénalité encaissée : le client peut reprendre un rendez-vous.",
+    };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
@@ -622,6 +652,64 @@ export async function restituerLeTropPercu(_precedent: EtatActe, donnees: FormDa
     });
     revalidatePath("/[locale]/caisse", "page");
     return { echec: null, fait: "Restitution constatée." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/**
+ * Lot 4 (9 novembre 2026) : un responsable inflige une pénalité de retard, avec une
+ * explication que le client lira. Le montant vide prend celui fixé par défaut pour le motif.
+ */
+export async function infligerUnePenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  const explication = String(donnees.get("explication") ?? "").trim();
+  const montant = String(donnees.get("montant") ?? "").replace(/\s/g, "");
+  if (explication.length < 10) {
+    return { echec: "L'explication, que le client lira, s'écrit en dix caractères au moins.", fait: null };
+  }
+  if (montant && (!/^\d+$/.test(montant) || Number(montant) <= 0)) {
+    return { echec: "Le montant : des francs, positif ; ou vide pour le montant par défaut.", fait: null };
+  }
+  try {
+    const reponse = await appeler<{ client_prevenu: boolean | null }>(
+      `/acquisition/dossiers/${encodeURIComponent(reference)}/penalites`,
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: { motif, explication, ...(montant ? { montant } : {}) },
+      },
+    );
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    return {
+      echec: null,
+      fait: reponse.client_prevenu
+        ? "Pénalité appliquée : le client en est prévenu par courriel."
+        : "Pénalité appliquée. Aucun courriel n'est parti : prévenez le client de vive voix.",
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/** Lot 4 : le super administrateur lève une pénalité (jamais une pénalité déjà versée). */
+export async function leverUnePenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const numero = String(donnees.get("numero") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/penalites/${numero}/levee`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { motif },
+    });
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    return { echec: null, fait: "Pénalité levée." };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;

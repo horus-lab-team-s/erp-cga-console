@@ -121,6 +121,14 @@ const SERVICES: { code: string; libelle: string }[] = [
   { code: "AUTRE", libelle: "Autre demande" },
 ];
 
+/** Lot 4 (9 novembre 2026) : les motifs d'une pénalité de retard, comme le serveur. */
+export const MOTIFS_DE_PENALITE = [
+  { code: "RETARD_VALIDATION_STATUTS", libelle: "Retard de validation des statuts" },
+  { code: "RETARD_RETRAIT_ORIGINAUX", libelle: "Retard de retrait des originaux" },
+  { code: "PROFORMA_EXPIREE", libelle: "Proforma expirée (réémission)" },
+  { code: "AUTRE", libelle: "Autre retard" },
+] as const;
+
 /**
  * Le réglage du super administrateur : frais par service, et seuil de démarrage.
  *
@@ -132,12 +140,15 @@ export function RegleDesVersementsFormulaire({
   seuil,
   parDefaut,
   penalite = null,
+  penalitesDeRetard = {},
 }: {
   frais: Record<string, string>;
   seuil: number;
   parDefaut: boolean;
   /** 9 novembre 2026 : la pénalité d'un rendez-vous manqué. */
   penalite?: string | null;
+  /** Lot 4 : le montant par défaut d'une pénalité de retard, par motif. */
+  penalitesDeRetard?: Record<string, string>;
 }) {
   const [etat, fixer, enCours] = useActionState(fixerLaRegleDesVersements, ETAT_ACTE_INITIAL);
   return (
@@ -161,6 +172,18 @@ export function RegleDesVersementsFormulaire({
         Pénalité d&rsquo;un rendez-vous manqué (FCFA, vide : aucune)
         <input name="penalite_rendez_vous" type="number" min={1} step={1} defaultValue={penalite ?? ""} />
       </label>
+      {MOTIFS_DE_PENALITE.map((m) => (
+        <label key={m.code}>
+          Pénalité par défaut · {m.libelle.toLowerCase()} (FCFA, vide : saisie au cas par cas)
+          <input
+            name={`penalite_${m.code}`}
+            type="number"
+            min={1}
+            step={1}
+            defaultValue={penalitesDeRetard[m.code] ?? ""}
+          />
+        </label>
+      ))}
       <label>
         Motif
         <input name="motif" minLength={10} maxLength={500} required />
@@ -184,7 +207,16 @@ export function RegleDesVersementsFormulaire({
 
 
 /** 9 novembre 2026 : la pénalité d'un rendez-vous manqué, reçue au guichet. */
-export function ConstatDeLaPenalite({ reference, montant }: { reference: string; montant: string }) {
+export function ConstatDeLaPenalite({
+  reference,
+  montant,
+  deRetard = false,
+}: {
+  reference: string;
+  montant: string;
+  /** Lot 4 : des pénalités de retard plutôt qu'un rendez-vous manqué. */
+  deRetard?: boolean;
+}) {
   const [etat, encaisser, enCours] = useActionState(encaisserLaPenalite, ETAT_ACTE_INITIAL);
   if (etat.fait) {
     return (
@@ -196,6 +228,7 @@ export function ConstatDeLaPenalite({ reference, montant }: { reference: string;
   return (
     <form action={encaisser} className="versements__constat">
       <input type="hidden" name="reference" value={reference} />
+      {deRetard && <input type="hidden" name="sorte" value="retard" />}
       <label>
         Reçu de caisse de la pénalité ({montantFcfa(montant)})
         <input name="reference_externe" maxLength={120} required />

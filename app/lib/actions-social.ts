@@ -73,6 +73,12 @@ export async function embaucherUnSalarie(_precedent: EtatActe, donnees: FormData
         matricule_cnps: texte(donnees, "matricule_cnps"),
         date_naissance: texte(donnees, "date_naissance"),
         enfants_a_charge: Number(enfants) || 0,
+        // 9 novembre 2026 : ce que son immatriculation demande. Tout est facultatif ici.
+        telephone: texte(donnees, "telephone"),
+        quartier: texte(donnees, "quartier"),
+        courriel: texte(donnees, "courriel"),
+        arrondissement_naissance_pere: texte(donnees, "arrondissement_naissance_pere"),
+        arrondissement_naissance_mere: texte(donnees, "arrondissement_naissance_mere"),
       },
     });
   } catch (erreur) {

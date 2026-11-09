@@ -171,6 +171,21 @@ export type FicheDossier = {
      */
     consentement?: { accorde: boolean; revoque_le: string | null };
   };
+  /** Lot 4 (9 novembre 2026) : les pénalités de retard, levées comprises. */
+  penalites?: PenaliteInfligee[];
+};
+
+/** Lot 4 : une pénalité de retard décidée par un responsable. Levée, elle reste listée. */
+export type PenaliteInfligee = {
+  numero: number;
+  motif: "RETARD_VALIDATION_STATUTS" | "RETARD_RETRAIT_ORIGINAUX" | "PROFORMA_EXPIREE" | "AUTRE";
+  montant: string;
+  explication: string;
+  infligee_par: string;
+  infligee_le: string;
+  levee_le: string | null;
+  levee_par: string | null;
+  motif_de_levee: string | null;
 };
 
 export type LigneDeProposition = { code: string; libelle: string; montant: string; fondement: string };
@@ -375,7 +390,7 @@ export type ReglementDeCaisse = {
   reste?: string | null;
   engage?: boolean;
   /** `FRAIS_DE_TRAITEMENT` : des frais attendus avant toute proforma (`proforma` vide). */
-  objet?: "PROFORMA" | "FRAIS_DE_TRAITEMENT" | "PENALITE_RENDEZ_VOUS" | "TROP_PERCU";
+  objet?: "PROFORMA" | "FRAIS_DE_TRAITEMENT" | "PENALITE_RENDEZ_VOUS" | "PENALITE_DE_RETARD" | "TROP_PERCU";
 };
 
 /** Ce qui est versé sur un dossier commercial, et ce qu'il reste (9 novembre 2026). */
@@ -406,6 +421,8 @@ export type RegleDesVersements = {
     seuil_demarrage_pourcent: number;
     /** 9 novembre 2026 : la pénalité d'un rendez-vous manqué, ou `null`. */
     penalite_rendez_vous?: string | null;
+    /** Lot 4 : le montant par défaut d'une pénalité de retard, par motif. */
+    penalites_de_retard?: Record<string, string>;
     motif: string;
     fixee_par: string;
     fixee_le: string;

@@ -114,11 +114,14 @@ function UneCreation({
   const etape = ETAPES_DE_CREATION[position.courante];
   // 9 novembre 2026 : l'entreprise n'existe pas encore. Ce qui se prépare avec le cabinet
   // (statuts signés, bail au nom de la société…) n'est pas compté comme « à fournir ».
-  const plusTard = (p: { moment?: string }) => p.moment === "CONSTITUTION";
+  const plusTard = (p: { moment?: string }) =>
+    p.moment === "CONSTITUTION" || p.moment === "IMMATRICULATION";
   const attendues = creation.pieces.filter((p) => p.obligatoire && !plusTard(p));
   const recues = attendues.filter((p) => p.fournie).length;
   const manquantes = creation.pieces.filter((p) => !p.fournie && !plusTard(p));
-  const aConstituer = creation.pieces.filter((p) => !p.fournie && plusTard(p));
+  const aConstituer = creation.pieces.filter((p) => !p.fournie && p.moment === "CONSTITUTION");
+  // 9 novembre 2026 : l'immatriculation de l'entreprise et du personnel, après la création.
+  const aImmatriculer = creation.pieces.filter((p) => !p.fournie && p.moment === "IMMATRICULATION");
   const fournies = creation.pieces.filter((p) => p.fournie);
 
   return (
@@ -220,6 +223,21 @@ function UneCreation({
               <p className="creation__progression">Elles se préparent avec le cabinet, une fois vos statuts prêts : statuts signés, bail au nom de la société, actes de constitution. Rien à faire pour l’instant ; si vous en avez déjà une (vos propres statuts, par exemple), vous pouvez la déposer.</p>
               <ul className="creation__pieces">
                 {aConstituer.map((piece) => (
+                  <li key={piece.code} className="creation__piece">
+                    <span>{piece.libelle}</span>
+                    <DepotSurMaCreation reference={creation.reference} code={piece.code} libelle={piece.libelle} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {!creation.clos && aImmatriculer.length > 0 && (
+            <>
+              <h3 className="creation__intertitre">Pour l&rsquo;immatriculation, après la création</h3>
+              <p className="creation__progression">Elles servent à immatriculer votre entreprise et votre personnel, une fois la société créée. Pour chaque employé, le cabinet vous demandera aussi ses pièces et ses coordonnées.</p>
+              <ul className="creation__pieces">
+                {aImmatriculer.map((piece) => (
                   <li key={piece.code} className="creation__piece">
                     <span>{piece.libelle}</span>
                     <DepotSurMaCreation reference={creation.reference} code={piece.code} libelle={piece.libelle} />

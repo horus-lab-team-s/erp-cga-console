@@ -127,6 +127,10 @@ export type DossierCreation = {
     cnps_obtenu_le: string | null;
   };
   jalons: Jalon[];
+  /** Lot 4 : les statuts partis chez le client (début du délai de validation). */
+  statuts_transmis_le?: string | null;
+  /** Lot 4 : les originaux retirés par le client (fin du délai de retrait). */
+  originaux_remis_le?: string | null;
   converti_en: string | null;
   motif_abandon: string | null;
 };
@@ -179,3 +183,22 @@ export function lireChecklist(forme: string) {
 }
 
 export const FORMES_JURIDIQUES = ["ETS", "SARLU", "SARL", "SAS", "SA", "SCI"] as const;
+
+
+/** Lot 4 (9 novembre 2026) : les délais de la création, fixés par la direction. */
+export type RegleDesDelaisDeCreation = {
+  regle: {
+    delai_redaction_statuts_jours: number | null;
+    delai_validation_statuts_jours: number | null;
+    delai_retrait_originaux_jours: number | null;
+    motif: string;
+    fixee_par: string;
+    fixee_le: string;
+  };
+  /** Rien de fixé : aucun délai n'est suivi. */
+  par_defaut: boolean;
+};
+
+export async function lireLaRegleDesDelais(): Promise<RegleDesDelaisDeCreation> {
+  return appeler<RegleDesDelaisDeCreation>("/creations/regle-des-delais", { authentifie: true });
+}

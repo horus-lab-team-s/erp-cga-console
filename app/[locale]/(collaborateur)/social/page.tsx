@@ -328,7 +328,15 @@ export default async function SocialEtPaie({
                       <Cellule>
                         {salarie.depuis ? dateCourte(salarie.depuis) : TIRET}
                       </Cellule>
-                      <Cellule>{salarie.matricule_cnps ?? "à obtenir"}</Cellule>
+                      <Cellule>
+                        {salarie.matricule_cnps ?? "à obtenir"}
+                        {/* 9 novembre 2026 : ce qui manque pour l'immatriculer. */}
+                        {(salarie.a_completer?.length ?? 0) > 0 && (
+                          <span style={{ display: "block", font: "400 11.5px/1.4 var(--police-texte)", color: "var(--warning, #8a5a00)" }}>
+                            À compléter : {salarie.a_completer!.join(", ")}
+                          </span>
+                        )}
+                      </Cellule>
                       <Cellule aDroite>
                         {salarie.salaire_base ? (
                           <Montant valeur={Number(salarie.salaire_base)} />

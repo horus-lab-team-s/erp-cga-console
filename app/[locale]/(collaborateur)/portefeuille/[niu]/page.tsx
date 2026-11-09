@@ -30,6 +30,8 @@ import {
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { lireLaFicheDsf } from "@/app/lib/fiche-dsf";
 import { lireLesGraces, lireLesHonoraires } from "@/app/lib/honoraires";
+import { DocumentsAEcheance } from "@/app/components/documents/DocumentsAEcheance";
+import { lireLeCatalogueDesDocuments, lireLesDocumentsAEcheance } from "@/app/lib/documents-a-echeance";
 import { LIBELLES_PERIODICITE } from "@/app/lib/honoraires-etats";
 import { LIBELLES_NIVEAU, lireDecisionsDuDossier, type DecisionLue } from "@/app/lib/pilotage";
 import { aujourdhui, lireLesAccesAdherents } from "@/app/lib/portefeuille";
@@ -153,6 +155,11 @@ export default async function FicheDuDossier({
   // 15 octobre 2026 : la fiche signalétique de la DSF, que le client renseigne et que le cabinet valide.
   const ficheDsf = acces.interne ? await lirePanneau(() => lireLaFicheDsf(niu)) : null;
   const siennes = "valeur" in anomalies ? anomalies.valeur.filter((a) => a.niu_entreprise === niu) : [];
+  // Lot 4 (9 novembre 2026) : les documents à échéance, et le catalogue sourcé du cabinet.
+  const [documentsAEcheance, catalogueDesDocuments] = await Promise.all([
+    lireLesDocumentsAEcheance(niu).catch(() => null),
+    lireLeCatalogueDesDocuments().catch(() => null),
+  ]);
 
   return (
     <>
@@ -264,6 +271,20 @@ export default async function FicheDuDossier({
                 />
               </div>
             )}
+          </Panneau>
+        )}
+
+        {documentsAEcheance && catalogueDesDocuments && (
+          <Panneau
+            titre="Documents à échéance"
+            aide="Les attestations datées (ACF, CNPS…). Le gestionnaire et l'adhérent sont prévenus avant l'expiration, aux paliers réglés par le cabinet."
+          >
+            <DocumentsAEcheance
+              niu={niu}
+              documents={documentsAEcheance}
+              catalogue={catalogueDesDocuments}
+              peutEnregistrer={detient(acces, "SAISIR_ECRITURE")}
+            />
           </Panneau>
         )}
 

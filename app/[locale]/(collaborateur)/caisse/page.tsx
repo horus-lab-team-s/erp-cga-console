@@ -145,6 +145,9 @@ export default async function Caisse({ searchParams }: { searchParams: Promise<{
                     <ConstatDesFrais reference={ligne.dossier} montant={ligne.montant} />
                   ) : ligne.objet === "PENALITE_RENDEZ_VOUS" ? (
                     <ConstatDeLaPenalite reference={ligne.dossier} montant={ligne.montant} />
+                  ) : ligne.objet === "PENALITE_DE_RETARD" ? (
+                    // Lot 4 : des pénalités de retard infligées par un responsable.
+                    <ConstatDeLaPenalite reference={ligne.dossier} montant={ligne.montant} deRetard />
                   ) : ligne.ouvre_un_espace ? (
                     // ⚠️ Une vente de plateforme ouvre un espace, dont l'adresse se
                     // choisit : ce n'est pas le métier de la caisse. Le dire vaut
@@ -297,6 +300,8 @@ function Identite({ ligne }: { ligne: ReglementDeCaisse }) {
           ? "Frais de traitement de dossier"
           : ligne.objet === "PENALITE_RENDEZ_VOUS"
             ? "Pénalité · rendez-vous manqué"
+            : ligne.objet === "PENALITE_DE_RETARD"
+              ? "Pénalité · retard"
             : ligne.objet === "TROP_PERCU"
               ? "Trop-perçu à restituer"
               : ligne.proforma}{" "}
