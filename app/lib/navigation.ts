@@ -361,6 +361,15 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 10 novembre 2026 : les frais, le seuil et les délais du super administrateur, qui ne lit
+    // pas les demandes et n'avait donc aucun chemin vers ses réglages.
+    libelle: "Réglages de l'acquisition",
+    href: "/acquisition",
+    icone: "acquisition",
+    permission: "ACCORDER_FAVEURS",
+    construit: true,
+  },
+  {
     // Les prix de l'offre. La direction seule : le prix est une décision humaine, et
     // tant qu'elle ne l'a pas prise, rien ne se paie en ligne.
     libelle: "Tarifs de l'offre",
