@@ -7,6 +7,7 @@ import {
 } from "@/app/components/comptabilite/RegistreDesImmobilisations";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { exerciceCourant } from "@/app/lib/comptabilite";
@@ -76,6 +77,7 @@ export default async function Immobilisations({
   return (
     <>
       <EnteteTravail miettes={miettes} />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre page-travail__titre--avec-action">
           <div>

@@ -36,6 +36,7 @@ import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { depuisUtc } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Comptes et habilitations · Plateforme CGA" };
 
@@ -347,7 +348,7 @@ export default async function Comptes() {
           aide="Un rôle, un périmètre, un intervalle. Confier un dossier vaut à compter d'aujourd'hui : l'historique antérieur n'est pas réécrit."
         >
           <EnteteTableau colonnes={HABILITATIONS} />
-          {comptes
+          <Paginer>{comptes
             .flatMap((l) => l.habilitations.map((h) => ({ h, compte: l.compte })))
             .map(({ h, compte }, rang) => (
               <LigneTableau key={h.identifiant} colonnes={HABILITATIONS} ton={rang % 2 ? "alterne" : "normal"}>
@@ -376,7 +377,7 @@ export default async function Comptes() {
                   </span>
                 </Cellule>
               </LigneTableau>
-            ))}
+            ))}</Paginer>
         </Panneau>
 
         <Panneau
@@ -391,7 +392,7 @@ export default async function Comptes() {
           ) : (
             <>
               <EnteteTableau colonnes={AUDIT} />
-              {entrees
+              <Paginer>{entrees
                 .slice(-40)
                 .reverse()
                 .map((entree) => (
@@ -425,7 +426,7 @@ export default async function Comptes() {
                       {entree.mandat ? `mandat ${entree.mandat}` : "chez lui"}
                     </Cellule>
                   </LigneTableau>
-                ))}
+                ))}</Paginer>
             </>
           )}
         </Panneau>

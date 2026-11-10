@@ -294,3 +294,27 @@ export async function lireLeRapportMensuel(identifiant: string): Promise<Rapport
     authentifie: true,
   });
 }
+
+/** CGI 2026, art. 118 et 119 : ce que la loi impose au Centre lui-même (10 novembre 2026). */
+export type Fourchette = { minimum: string; maximum: string };
+export type Professionnel = { nom: string; inscription: string };
+export type ConformiteDuCentre = {
+  a_la_date: string;
+  adherents_actifs: number;
+  seuil_adherents_actifs: number;
+  seuil_atteint: boolean;
+  manque_pour_le_seuil: number;
+  professionnels_requis: number;
+  conseils_fiscaux: Professionnel[];
+  experts_comptables: Professionnel[];
+  professionnels_conformes: boolean;
+  droits_d_adhesion: Fourchette;
+  cotisation_igs: Fourchette;
+  cotisation_reel: Fourchette;
+  a_faire: string[];
+  source: string;
+};
+
+export async function lireLaConformiteDuCentre(): Promise<ConformiteDuCentre> {
+  return appeler<ConformiteDuCentre>("/pilotage/conformite-du-centre", { authentifie: true });
+}

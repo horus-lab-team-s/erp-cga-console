@@ -55,7 +55,7 @@ function Inscription({ etat, finDAnnee }: { etat: EtatDeLInscription; finDAnnee:
           <input type="hidden" name="reference" value={etat.reference} />
           <label>
             NIU
-            <input name="niu" required minLength={10} maxLength={20} placeholder="sur la carte de contribuable" />
+            <input name="niu" required minLength={10} maxLength={20} placeholder="sur la carte de contribuable" defaultValue={p.niu ?? ""} />
           </label>
           <label>
             Raison sociale

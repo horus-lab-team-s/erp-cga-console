@@ -4,6 +4,8 @@
  */
 
 export type PropositionDInscription = {
+  /** 10 novembre 2026 : connu d'une souscription en ligne, sur lequel l'accès est ouvert. */
+  niu?: string | null;
   denomination: string | null;
   telephone: string | null;
   regime: "REEL" | "IGS" | null;

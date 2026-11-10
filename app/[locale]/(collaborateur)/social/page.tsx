@@ -12,6 +12,7 @@ import {
 import { Montant } from "@/app/components/Montant";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { dateCourte, TIRET } from "@/app/lib/formats";
@@ -34,6 +35,7 @@ import { ContratDuSalarie, EmbaucheSalarie } from "@/app/components/social/Geste
 import { GroupeDeRisque } from "@/app/components/social/GroupeDeRisque";
 import { ArreterLesCharges } from "@/app/components/social/ArreterLesCharges";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Social et paie · Plateforme CGA" };
 
@@ -158,6 +160,7 @@ export default async function SocialEtPaie({
       <EnteteTravail
         miettes={[{ libelle: "Social et paie" }, { libelle: courant.denomination }]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre page-travail__titre--avec-action">
           <div>
@@ -323,7 +326,7 @@ export default async function SocialEtPaie({
               ) : (
                 <>
                   <EnteteTableau colonnes={COLONNES} />
-                  {personnel.map((salarie) => (
+                  <Paginer>{personnel.map((salarie) => (
                     <LigneTableau key={salarie.matricule} colonnes={COLONNES} hauteur="auto">
                       <Cellule>
                         <strong style={{ fontWeight: 600 }}>
@@ -367,7 +370,7 @@ export default async function SocialEtPaie({
                         )}
                       </span>
                     </LigneTableau>
-                  ))}
+                  ))}</Paginer>
                 </>
               )}
             </Panneau>

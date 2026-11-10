@@ -9,6 +9,7 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
 import { Admission, Resiliation } from "@/app/components/portefeuille/GestesDAdhesion";
 import { InscriptionsEnAttente } from "@/app/components/portefeuille/InscriptionsEnAttente";
 import { RegleDeDepassement } from "@/app/components/portefeuille/GestesDeReglement";
@@ -22,6 +23,7 @@ import { Link } from "@/i18n/navigation";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Portefeuille · Plateforme CGA" };
 
@@ -67,18 +69,21 @@ const COLONNES: Colonne[] = [
   { cle: "exercice", libelle: "Exercice", largeur: "84px", aDroite: true },
 ];
 
-export default async function Portefeuille() {
+export default async function Portefeuille({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   // ⚠️ Garde avant tout appel : sinon l'API rend 403 et le visiteur voit un 500.
   if (!detient(acces, "LIRE_DOSSIER")) {
     return <EcranReserve titre="Portefeuille" permission="LIRE_DOSSIER" acces={acces} />;
   }
   const jour = aujourdhui();
-  const dossiers = await lireDossiers(jour);
+  const tous = await lireDossiers(jour);
+  // 9 novembre 2026 : le dossier choisi au sélecteur filtre la liste.
+  const choisi = dossierFiltre((await searchParams).dossier, tous);
+  const dossiers = choisi ? [choisi] : tous;
   // Une anomalie illisible ne doit pas empêcher la liste : le panneau le dit.
   let anomalies: Awaited<ReturnType<typeof lireAnomaliesDuPortefeuille>> | string;
   try {
-    anomalies = await lireAnomaliesDuPortefeuille(jour);
+    anomalies = (await lireAnomaliesDuPortefeuille(jour)).filter((a) => !choisi || a.niu_entreprise === choisi.niu);
   } catch (erreur) {
     if (!(erreur instanceof ErreurApi)) throw erreur;
     anomalies = erreur.message;
@@ -90,7 +95,11 @@ export default async function Portefeuille() {
   const voitLaFile = peutInscrire || detient(acces, "QUALIFIER_PROSPECT");
   const enAttente = voitLaFile ? await lireInscriptionsEnAttente().catch(() => []) : [];
   // 18 octobre 2026 : qui est en règle. Une panne ne cache pas la liste des dossiers.
-  const situations = acces.interne ? await lireLesSituations().catch(() => null) : null;
+  const situations = acces.interne
+    ? await lireLesSituations()
+        .then((liste) => liste.filter((s) => !choisi || s.situation.niu === choisi.niu))
+        .catch(() => null)
+    : null;
   const regle = detient(acces, "ACCORDER_FAVEURS") ? await lireLaRegleDeDepassement().catch(() => null) : null;
   const horsRegle = (situations ?? []).filter((s) => ["BLOQUE", "SOUS_GRACE", "EN_RETARD"].includes(s.situation.etat));
 
@@ -101,10 +110,10 @@ export default async function Portefeuille() {
         <div className="page-travail__titre">
           <h1>Portefeuille</h1>
           <p>
-            {dossiers.length} dossier{dossiers.length > 1 ? "s" : ""}
+            {tous.length} dossier{tous.length > 1 ? "s" : ""}
             {acces.dossiers === null
               ? ", vous couvrez tout le cabinet"
-              : " affecté" + (dossiers.length > 1 ? "s" : "") + " à votre portefeuille"}
+              : " affecté" + (tous.length > 1 ? "s" : "") + " à votre portefeuille"}
             {" · statuts résolus au "}
             {new Date(jour).toLocaleDateString("fr-FR", {
               day: "numeric",
@@ -113,6 +122,8 @@ export default async function Portefeuille() {
             })}
           </p>
         </div>
+
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/portefeuille" />}
 
         {typeof anomalies === "string" ? (
           <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
@@ -149,7 +160,7 @@ export default async function Portefeuille() {
             <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
               {horsRegle.length > 0 && (
                 <ul className="situations">
-                  {horsRegle.map((s) => (
+                  <Paginer commeElementDeListe>{horsRegle.map((s) => (
                     <li key={s.situation.niu}>
                       <PastilleDeSituation situation={s.situation} />
                       <Link href={`/portefeuille/${s.situation.niu}`}>{s.denomination}</Link>
@@ -163,7 +174,7 @@ export default async function Portefeuille() {
                             : ""}
                       </span>
                     </li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
               )}
               {regle && (
@@ -260,7 +271,7 @@ function IdentifiantsDouteux({ anomalies }: { anomalies: AnomalieIdentifiant[] }
         <span className="anomalies__bascule" aria-hidden="true" />
       </summary>
       <ul className="anomalies__liste">
-        {entreprises.map(([niu, groupe]) => (
+        <Paginer commeElementDeListe>{entreprises.map(([niu, groupe]) => (
           <li key={niu} className="anomalies__entreprise">
             <Link className="anomalies__nom" href={`/portefeuille/${encodeURIComponent(niu)}`}>
               {groupe.denomination}
@@ -281,7 +292,7 @@ function IdentifiantsDouteux({ anomalies }: { anomalies: AnomalieIdentifiant[] }
               ))}
             </span>
           </li>
-        ))}
+        ))}</Paginer>
       </ul>
     </details>
   );

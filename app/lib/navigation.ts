@@ -286,6 +286,8 @@ export const NAVIGATION: EntreeNav[] = [
     href: "/creation-entreprise",
     icone: "creation",
     permission: "SUIVRE_FORMALITE",
+    // 9 novembre 2026 : la direction suit les créations, en lecture.
+    ouAussi: ["LIRE_PILOTAGE"],
     construit: true,
   },
   {

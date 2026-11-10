@@ -1,16 +1,17 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition} from "react";
 
 import { constaterDesFonds } from "@/app/lib/actions-fonds";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /**
  * Constater au guichet les fonds qu'un adhérent remet pour l'administration (14 octobre 2026).
  * ⚠️ Ce ne sont pas des honoraires : le message de fin le rappelle à la caissière.
  */
 export function ConstatDeFonds({ niu, appel, montant }: { niu: string; appel: string; montant: string }) {
-  const [etat, constater, enCours] = useActionState(constaterDesFonds, ETAT_ACTE_INITIAL);
+  const [etat, constater, enCours] = useActionAnnoncee(constaterDesFonds, ETAT_ACTE_INITIAL);
   if (etat.fait) {
     return (
       <p role="status" className="caisse__fait">

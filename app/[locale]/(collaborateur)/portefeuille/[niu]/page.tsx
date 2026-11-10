@@ -14,6 +14,7 @@ import { lireLesFondsConfies } from "@/app/lib/fonds";
 import { notFound } from "next/navigation";
 
 import { Cellule, EnteteTableau, EtatErreur, EtatVide, LigneTableau, Panneau, type Colonne } from "@/app/components/Tableau";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { libelleRole, detient } from "@/app/lib/acces";
@@ -37,6 +38,7 @@ import { LIBELLES_NIVEAU, lireDecisionsDuDossier, type DecisionLue } from "@/app
 import { aujourdhui, lireLesAccesAdherents } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Fiche du dossier · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -382,11 +384,11 @@ export default async function FicheDuDossier({
               )}
               {!("echec" in honoraires) && (honoraires.valeur.contrat?.revisions?.length ?? 0) > 0 && (
                 <ul className="revisions-tarif">
-                  {honoraires.valeur.contrat!.revisions!.map((r) => (
+                  <Paginer commeElementDeListe>{honoraires.valeur.contrat!.revisions!.map((r) => (
                     <li key={r.a_partir_du}>
                       {montantFcfa(r.montant)} à partir du {dateCourte(r.a_partir_du)} · « {r.motif} »
                     </li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
               )}
               {/* 19 octobre 2026 : un contrat révisé ne se refait plus (le serveur le refuse) ;
@@ -409,6 +411,11 @@ export default async function FicheDuDossier({
             aide="Des écarts à la règle commune, accordés à cet adhérent par le super administrateur. Chacun reste au journal d'audit avec son motif."
           >
             <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* 10 novembre 2026 : chaque faveur exige le second facteur ; le refus ne venait
+                  qu'après le geste (constaté à la recette). La porte se montre d'abord. */}
+              {!acces.facteur_fort && (
+                <PorteSecondFacteur enrole={acces.second_facteur_enrole} geste="Accorder ou lever une faveur" />
+              )}
               <h3 className="faveurs__titre">Grâce de règlement</h3>
               {"echec" in faveurs.graces ? (
                 <EtatErreur titre="Les grâces ne se lisent pas" detail={faveurs.graces.echec} />
@@ -418,13 +425,13 @@ export default async function FicheDuDossier({
                     <p className="faveurs__vide">Aucune grâce accordée.</p>
                   ) : (
                     <ul className="faveurs__liste">
-                      {faveurs.graces.valeur.graces.map((g) => (
+                      <Paginer commeElementDeListe>{faveurs.graces.valeur.graces.map((g) => (
                         <li key={g.identifiant}>
                           Jusqu&rsquo;au {dateCourte(g.jusqu_au)} · « {g.motif} »
                           {g.levee_le ? ` · levée le ${dateCourte(g.levee_le.slice(0, 10))}` : ""}
                           {!g.levee_le && <LeverUneGrace niu={niu} grace={g.identifiant} />}
                         </li>
-                      ))}
+                      ))}</Paginer>
                     </ul>
                   )}
                   {faveurs.graces.valeur.situation.etat !== "SANS_CONTRAT" && <AccorderUneGrace niu={niu} aujourdhui={jour} />}
@@ -455,7 +462,7 @@ export default async function FicheDuDossier({
           ) : (
             <>
               <EnteteTableau colonnes={ACCES} />
-              {[...habilitations.valeur]
+              <Paginer>{[...habilitations.valeur]
                 .sort((a, b) => Number(a.transverse) - Number(b.transverse) || a.role.localeCompare(b.role))
                 .map((h, rang) => (
                   <LigneTableau key={h.identifiant} colonnes={ACCES} ton={rang % 2 ? "alterne" : "normal"}>
@@ -467,7 +474,7 @@ export default async function FicheDuDossier({
                       {h.motif.toLowerCase().replaceAll("_", " ")} par {h.accordee_par}
                     </Cellule>
                   </LigneTableau>
-                ))}
+                ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -496,7 +503,7 @@ function Historique({ fiche }: { fiche: FicheEntreprise }) {
   return (
     <Panneau titre="Histoire des statuts" aide="Une entreprise n'est pas au réel : elle y est depuis une date, pour un motif.">
       <EnteteTableau colonnes={PERIODES} />
-      {lignes.map((l, rang) => (
+      <Paginer>{lignes.map((l, rang) => (
         <LigneTableau key={`${l.valeur}-${l.debut}`} colonnes={PERIODES} ton={rang % 2 ? "alterne" : "normal"}>
           <Cellule gras>{l.valeur}</Cellule>
           <Cellule tabulaire>{dateCourte(l.debut)}</Cellule>
@@ -506,7 +513,7 @@ function Historique({ fiche }: { fiche: FicheEntreprise }) {
             {l.precision ? ` : ${l.precision}` : ""}
           </Cellule>
         </LigneTableau>
-      ))}
+      ))}</Paginer>
     </Panneau>
   );
 }

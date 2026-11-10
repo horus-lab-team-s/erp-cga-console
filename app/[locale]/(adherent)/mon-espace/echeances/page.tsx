@@ -18,6 +18,7 @@ import { dateCourte, dateLongue, montantFcfa } from "@/app/lib/formats";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = {
   title: "Mes échéances · CGA Broad Range Consulting Group",
@@ -132,7 +133,7 @@ function ListeDesEcheances({ vue, fonds }: { vue: VueDesEcheances; fonds: MesFon
   return (
     <section className="adherent__section">
       <ul className="adherent__echeances">
-        {vue.echeances.map((e) => (
+        <Paginer commeElementDeListe>{vue.echeances.map((e) => (
           <li key={cleDEcheance(e)} data-etat={e.etat}>
             <Link href={`/mon-espace/echeances?echeance=${encodeURIComponent(cleDEcheance(e))}`}>
               <strong>{e.titre}</strong>
@@ -161,7 +162,7 @@ function ListeDesEcheances({ vue, fonds }: { vue: VueDesEcheances; fonds: MesFon
               )}
             </Link>
           </li>
-        ))}
+        ))}</Paginer>
       </ul>
     </section>
   );

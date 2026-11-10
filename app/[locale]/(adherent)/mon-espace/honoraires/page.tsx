@@ -16,6 +16,7 @@ import {
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { jourADouala, jourDuFait } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = {
   title: "Mes honoraires · CGA Broad Range Consulting Group",
@@ -127,13 +128,13 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
         <section className="adherent__section">
           <h2 className="adherent__titre">À régler</h2>
           <ul className="honoraires__liste">
-            {dues.map((e) => (
+            <Paginer commeElementDeListe>{dues.map((e) => (
               <li key={e.debut} className="honoraires__ligne" data-etat={e.etat}>
                 <Periode echeance={e} periodicite={contrat.periodicite} />
                 <NoteDHonoraires niu={e.niu} periode={e.debut} />
                 <ReglerUnePeriode niu={niu} periode={e.debut} montant={montantFcfa(e.montant)} telephone={null} />
               </li>
-            ))}
+            ))}</Paginer>
           </ul>
           <p className="adherent__note">
             Vous pouvez aussi régler au cabinet, en espèces ou par virement : la responsable de caisse le
@@ -145,7 +146,7 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
       <section className="adherent__section">
         <h2 className="adherent__titre">Échéancier</h2>
         <ul className="honoraires__liste">
-          {autres.map((e) => (
+          <Paginer commeElementDeListe>{autres.map((e) => (
             <li key={e.debut} className="honoraires__ligne" data-etat={e.etat}>
               <Periode echeance={e} periodicite={contrat.periodicite} />
               {e.reglement && (
@@ -166,7 +167,7 @@ function Echeancier({ vue, niu }: { vue: MesHonoraires; niu: string }) {
                 <FactureDefinitive niu={e.niu} periode={e.debut} />
               )}
             </li>
-          ))}
+          ))}</Paginer>
         </ul>
       </section>
     </>

@@ -6,6 +6,7 @@ import { BoiteReception, type LignePiece } from "@/app/components/collecte/Boite
 import type { Severite } from "@/app/components/Gravite";
 import type { Statut } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
 import { ErreurApi, controlerToutLeFlux, type ReponseControle } from "@/app/lib/api";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
@@ -51,7 +52,7 @@ export const dynamic = "force-dynamic";
  * La jointure se fait sur le serveur : le navigateur reçoit des lignes résolues, et
  * ne recalcule aucun état.
  */
-export default async function BoiteReceptionPieces() {
+export default async function BoiteReceptionPieces({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   // ⚠️ Garde avant tout appel. Sans elle, cet écran s'ouvrait à quiconque tenait
   // une session — administrateur compris, alors que c'est le seul rôle
@@ -61,6 +62,8 @@ export default async function BoiteReceptionPieces() {
     return <EcranReserve titre="Pièces justificatives" permission="LIRE_PIECE" acces={acces} />;
   }
 
+  const demande = (await searchParams).dossier;
+  let choisi: { niu: string; denomination: string } | null = null;
   let lignes: LignePiece[] = [];
   let erreur: string | null = null;
   let dossiersDuPortefeuille: { niu: string; denomination: string }[] = [];
@@ -86,7 +89,7 @@ export default async function BoiteReceptionPieces() {
   }
 
   try {
-    const [pieces, rapports, demandes, noms] = await Promise.all([
+    const [toutesLesPieces, rapports, toutesLesDemandes, noms] = await Promise.all([
       lirePieces({}),
       controlerToutLeFlux(),
       lireDemandes(),
@@ -99,6 +102,10 @@ export default async function BoiteReceptionPieces() {
         })
         .catch(() => new Map<string, string>()),
     ]);
+    // 9 novembre 2026 : le dossier choisi au sélecteur filtre la boîte de réception.
+    choisi = dossierFiltre(demande, dossiersDuPortefeuille);
+    const pieces = choisi ? toutesLesPieces.filter((x) => x.entreprise === choisi!.niu) : toutesLesPieces;
+    const demandes = choisi ? toutesLesDemandes.filter((x) => x.entreprise === choisi!.niu) : toutesLesDemandes;
     lignes = construireLignes(pieces, rapports, demandes, noms);
     aIdentifier = pieces.filter((p) => p.etat === "RECUE");
     aTerminer = pieces.filter((p) => p.etat === "LUE" || p.etat === "RAPPROCHEE");
@@ -146,6 +153,8 @@ export default async function BoiteReceptionPieces() {
             <ImportAuCabinet dossiers={dossiersDuPortefeuille} aujourdhui={aujourdhui()} />
           )}
         </div>
+
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/pieces" />}
 
         {enAttente.length > 0 && (
           <details style={{ flex: "none", border: "1px solid var(--warning)", borderRadius: "var(--rayon)", background: "var(--surface)", padding: "8px 12px" }}>

@@ -75,12 +75,15 @@ export function BarreLaterale({
   dossiers,
   compteurs,
   entrepriseCourante,
+  dossierRetenu = null,
   onChangementEntreprise,
 }: {
   acces: Acces;
   dossiers: Dossier[];
   compteurs: Compteurs;
   entrepriseCourante: Dossier | null;
+  /** Le dossier choisi, que chaque lien de la barre emporte (`?dossier=`). */
+  dossierRetenu?: string | null;
   onChangementEntreprise: (entreprise: Dossier | null) => void;
 }) {
   const chemin = usePathname();
@@ -137,6 +140,7 @@ export function BarreLaterale({
           chemin={chemin}
           repliee={repliee}
           compteurs={compteurs}
+          dossier={dossierRetenu}
         />
       ))}
 
@@ -153,6 +157,7 @@ export function BarreLaterale({
               chemin={chemin}
               repliee={repliee}
               compteurs={compteurs}
+              dossier={dossierRetenu}
             />
           ))}
         </>
@@ -238,12 +243,16 @@ function Entree({
   chemin,
   repliee,
   compteurs,
+  dossier,
 }: {
   entree: EntreeNav;
   chemin: string;
   repliee: boolean;
   compteurs: Compteurs;
+  dossier: string | null;
 }) {
+  // Le dossier choisi suit la navigation : sans lui, chaque écran repartait du premier.
+  const vers = (href: string) => (dossier ? `${href}?dossier=${encodeURIComponent(dossier)}` : href);
   // Une entrée est active sur son propre chemin et sur ses sous-chemins, sinon
   // « Comptabilité » s'éteindrait dès qu'on ouvre « Saisie ».
   const actif = chemin === entree.href || chemin.startsWith(`${entree.href}/`);
@@ -277,7 +286,7 @@ function Entree({
   return (
     <>
       <Link
-        href={entree.href}
+        href={vers(entree.href)}
         className="lien-nav"
         aria-current={actif ? "page" : undefined}
         title={repliee ? entree.libelle : undefined}
@@ -301,7 +310,7 @@ function Entree({
         entree.enfants?.map((enfant) => (
           <Link
             key={enfant.href}
-            href={enfant.href}
+            href={vers(enfant.href)}
             className="lien-nav lien-nav--enfant"
             aria-current={chemin === enfant.href ? "page" : undefined}
           >

@@ -19,6 +19,7 @@ import { NatureDActivite } from "@/app/components/cloture/NatureDActivite";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
@@ -26,7 +27,8 @@ import {
   lireLeFormatDgi,
   lireLesFournisseursDeclares,
   lireLesPiecesDsf,
-  lireLesVersionsDsf,
+  lireLaDsfDeLExercice,
+  type DepotHorsPlateforme,
   type FormatDgi,
   type VersionDsf,
 } from "@/app/lib/dsf";
@@ -47,6 +49,7 @@ import {
   type Liasse,
   type SystemeDsf,
 } from "@/app/lib/cloture";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Clôture et DSF · Plateforme CGA" };
 
@@ -135,13 +138,14 @@ export default async function ClotureEtDsf({
 
   // La DSF de l'exercice, version par version (14 octobre 2026).
   let versionsDsf: VersionDsf[] = [];
+  let depotHorsPlateforme: DepotHorsPlateforme | null = null;
   let erreurDsf: string | null = null;
   let formatDgi: FormatDgi | null = null;
   let piecesDsf: PiecesDeLaDsf | null = null;
   let fournisseurs: DeclarationParTiers | null = null;
   if (liasse) {
     try {
-      versionsDsf = await lireLesVersionsDsf(niu, exercice);
+      ({ versions: versionsDsf, depot_hors_plateforme: depotHorsPlateforme } = await lireLaDsfDeLExercice(niu, exercice));
       // 15 octobre 2026 : le format DGI, modèle Normal seulement ; une panne ici ne cache pas la DSF.
       formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
       // 15 octobre 2026 : les pièces à joindre, Normal ou SMT ; une panne ne cache pas la DSF.
@@ -161,6 +165,7 @@ export default async function ClotureEtDsf({
           { libelle: liasse?.denomination ?? dossiers.find((d) => d.niu === niu)!.denomination },
         ]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Liasse fiscale {exercice}</h1>
@@ -186,7 +191,7 @@ export default async function ClotureEtDsf({
               />
               <Controles liasse={liasse} />
               <TableauDePassage liasse={liasse} />
-              {ORDRE_SENS.map((sens) => {
+              <Paginer>{ORDRE_SENS.map((sens) => {
                 const lignes = liasse.lignes.filter((l) => l.sens === sens);
                 if (lignes.length === 0) return null;
                 const total = lignes.reduce((n, l) => n + Number(l.montant), 0);
@@ -223,7 +228,7 @@ export default async function ClotureEtDsf({
                     ))}
                   </Panneau>
                 );
-              })}
+              })}</Paginer>
               {peutClore && (
                 <Panneau
                   titre="Clôture de l’exercice"
@@ -248,6 +253,7 @@ export default async function ClotureEtDsf({
                     dossier={niu}
                     exercice={exercice}
                     versions={versionsDsf}
+                    depotHorsPlateforme={depotHorsPlateforme}
                     peutPreparer={detient(acces, "PREPARER_DSF")}
                     peutValider={detient(acces, "REVISER_DOSSIER")}
                     peutDeposer={detient(acces, "DEPOSER_DECLARATION")}
@@ -281,6 +287,7 @@ export default async function ClotureEtDsf({
         )}
 
         <Panneau
+          repliable
           titre={`Plan de la liasse, système ${systemeDsf === "NORMAL" ? "normal" : "minimal de trésorerie"}`}
           aide="Ce qui alimente quoi : chaque poste de la liasse et les comptes qui s'y ventilent. Aucune donnée d'adhérent."
         >

@@ -55,7 +55,10 @@ export async function generateMetadata({ params }: { params: Promise<{ reference
 export default async function FicheCreationPage({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = await params;
   const acces = await exigerAcces();
-  if (!detient(acces, "SUIVRE_FORMALITE")) {
+  // 9 novembre 2026 : la direction lit la fiche (LIRE_PILOTAGE) ; les gestes et le lien de
+  // suivi de la cliente restent au chargé des formalités, comme côté serveur.
+  const mene = detient(acces, "SUIVRE_FORMALITE");
+  if (!mene && !detient(acces, "LIRE_PILOTAGE")) {
     return <EcranReserve titre="Création d’entreprise" permission="SUIVRE_FORMALITE" acces={acces} />;
   }
   let fiche: FicheCreation | null = null;
@@ -68,7 +71,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
   // ⚠️ Tolérante : un lien qu'on ne peut pas relire ne doit pas emporter la
   // fiche entière. Le panneau disparaît, le reste du dossier s'ouvre.
   let lienDeSuivi: LienDeSuivi | null = null;
-  if (fiche) {
+  if (fiche && mene) {
     try {
       lienDeSuivi = await lireLeLienDeSuivi(reference);
     } catch (cause) {
@@ -130,7 +133,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
           </Panneau>
         )}
 
-        {!clos && (
+        {!clos && mene && (
           <Panneau titre="Étape suivante" aide="Un cran à la fois ; l'abandon reste toujours ouvert">
             <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
               {dossier.etape === "LIVRAISON" ? (
@@ -158,14 +161,14 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
               {dossier.statuts_transmis_le ? (
                 <p style={texte}>Statuts transmis au client le {dateCourte(dossier.statuts_transmis_le)}.</p>
               ) : (
-                dossier.etape === "CONSTITUTION" && (
+                mene && dossier.etape === "CONSTITUTION" && (
                   <MarquerUnJalon reference={dossier.reference} geste="statuts-transmis" libelle="Statuts transmis au client" />
                 )
               )}
               {dossier.originaux_remis_le ? (
                 <p style={texte}>Originaux remis au client le {dateCourte(dossier.originaux_remis_le)}.</p>
               ) : (
-                (dossier.etape === "LIVRAISON" || dossier.etape === "CONVERTI") && (
+                mene && (dossier.etape === "LIVRAISON" || dossier.etape === "CONVERTI") && (
                   <MarquerUnJalon reference={dossier.reference} geste="originaux-remis" libelle="Originaux remis au client" />
                 )
               )}
@@ -205,7 +208,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
                     {p.empreinte && (
                       <DocumentDeLaPiece champs={{ reference: dossier.reference, code: p.code }} libelle={p.libelle} lire={lireLeDocumentDeLaPiece} />
                     )}
-                    {!clos && (
+                    {!clos && mene && (
                       <details>
                         <summary style={{ ...texte, color: "var(--brand-indigo-700)", cursor: "pointer" }}>
                           {p.empreinte ? "Remplacer le document" : "Joindre le document"}
@@ -214,7 +217,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
                       </details>
                     )}
                   </span>
-                ) : clos ? (
+                ) : clos || !mene ? (
                   <span style={{ ...texte, color: "var(--ink-500)" }}>Non reçue</span>
                 ) : (
                   <RecevoirPiece reference={dossier.reference} code={p.code} libelle={p.libelle} />
@@ -223,7 +226,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
             ))}
           </ul>
           {/* 18 octobre 2026 : un document reçu par WhatsApp que la liste n'a pas prévu. */}
-          {!clos && (
+          {!clos && mene && (
             <details style={{ padding: "8px 16px", borderTop: "1px solid var(--line-100)" }}>
               <summary style={{ ...texte, color: "var(--brand-indigo-700)", cursor: "pointer" }}>Ajouter une pièce hors liste</summary>
               <div style={{ marginTop: 8 }}>
@@ -239,7 +242,7 @@ export default async function FicheCreationPage({ params }: { params: Promise<{ 
               RCCM {im.rccm ?? TIRET}{im.rccm_obtenu_le && ` (${dateCourte(im.rccm_obtenu_le)})`} · NIU {im.niu ?? TIRET}
               {im.niu_obtenu_le && ` (${dateCourte(im.niu_obtenu_le)})`} · Patente {im.patente ?? TIRET} · CNPS {im.cnps ?? TIRET}
             </p>
-            {!clos && <Identifiants reference={dossier.reference} />}
+            {!clos && mene && <Identifiants reference={dossier.reference} />}
           </div>
         </Panneau>
 

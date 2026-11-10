@@ -14,6 +14,7 @@ import { BalanceAuxiliaire } from "@/app/components/comptabilite/BalanceAuxiliai
 import { LivresObligatoires } from "@/app/components/comptabilite/LivresObligatoires";
 import { SoldesARegarder } from "@/app/components/comptabilite/SoldesARegarder";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { Link } from "@/i18n/navigation";
 import { DetailDuCompte } from "@/app/components/comptabilite/DetailDuCompte";
 import { ErreurApi } from "@/app/lib/api";
@@ -169,6 +170,7 @@ export default async function Comptabilite({
       <EnteteTravail
         miettes={[{ libelle: "Comptabilité" }, { libelle: courant.denomination }]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Balance générale</h1>
@@ -193,7 +195,14 @@ export default async function Comptabilite({
           />
         )}
 
-        <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
+        {/* 9 novembre 2026 : six exports empilés repoussaient la balance, sujet de l'écran. */}
+        <Panneau
+          repliable
+          titre="Livres et exports"
+          aide="Livre-journal, grand livre et balance en PDF ; balances auxiliaires et annexes DGI en Excel"
+        >
+          <LivresObligatoires dossier={niu} exercice={exercice} du={filtres.du} au={filtres.au} />
+        </Panneau>
 
         {auxiliaire && lignesAuxiliaires ? (
           <BalanceAuxiliaire

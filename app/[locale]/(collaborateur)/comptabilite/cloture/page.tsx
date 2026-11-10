@@ -5,6 +5,7 @@ import { EtatErreur, EtatVide, Panneau } from "@/app/components/Tableau";
 import { TransmettreDepuisLaCloture } from "@/app/components/comptabilite/GestesCloture";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { lireLaCloture, type CodePoint, type PointDeCloture, type VueDeCloture } from "@/app/lib/cloture-mensuelle";
@@ -134,6 +135,7 @@ export default async function ClotureMensuelle({ searchParams }: { searchParams:
     return (
       <>
         <EnteteTravail miettes={miettes} />
+        <DossierDeLaPage niu={dossier} />
         <div className="page-travail">
           <div className="page-travail__titre">
             <h1>Clôture mensuelle</h1>

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Panneau } from "@/app/components/Tableau";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
+import { lireDossiers } from "@/app/lib/portefeuille";
 import { detient } from "@/app/lib/acces";
 import { dateCourte } from "@/app/lib/formats";
 import {
@@ -16,6 +18,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { lireLesExpirations } from "@/app/lib/documents-a-echeance";
 import { tonDeLEcheance } from "@/app/lib/documents-a-echeance-etats";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Retards · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -33,7 +36,7 @@ export const dynamic = "force-dynamic";
  * qui permet de les traiter. Une source qui ne répond pas n'efface pas l'autre.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export default async function Retards() {
+export default async function Retards({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   const autorise = ["LIRE_PILOTAGE", "SAISIR_ECRITURE", "SUIVRE_FORMALITE", "LIRE_PROSPECT", "ENCAISSER"].some(
     (p) => detient(acces, p as Parameters<typeof detient>[1]),
@@ -41,13 +44,20 @@ export default async function Retards() {
   if (!autorise) {
     return <EcranReserve titre="Retards" permission="LIRE_PILOTAGE" acces={acces} />;
   }
-  const [pilotage, commerce, expirations] = await Promise.all([
+  const demande = (await searchParams).dossier;
+  const [pilotage, commerce, toutesLesExpirations, portefeuille] = await Promise.all([
     lireLesRetardsDuPilotage().catch(() => null),
     lireLesRetardsDuCommerce().catch(() => null),
     // Lot 4 (9 novembre 2026) : ce qui expire au portefeuille, à côté de ce qui est en retard.
     lireLesExpirations().catch(() => null),
+    // Le dossier choisi au sélecteur ne filtre que s'il est du portefeuille visible.
+    demande ? lireDossiers().catch(() => []) : Promise.resolve([]),
   ]);
-  const retards: Retard[] = [...(pilotage?.retards ?? []), ...(commerce?.retards ?? [])].sort(
+  // 9 novembre 2026 : le dossier choisi au sélecteur filtre les retards et les expirations.
+  const choisi = dossierFiltre(demande, portefeuille);
+  const garde = <T extends { dossier: string }>(liste: T[]) => (choisi ? liste.filter((x) => x.dossier === choisi.niu) : liste);
+  const expirations = toutesLesExpirations && { ...toutesLesExpirations, expirations: garde(toutesLesExpirations.expirations) };
+  const retards: Retard[] = garde([...(pilotage?.retards ?? []), ...(commerce?.retards ?? [])]).sort(
     (a, b) => b.jours_de_retard - a.jours_de_retard,
   );
   const direction = detient(acces, "LIRE_PILOTAGE");
@@ -61,6 +71,7 @@ export default async function Retards() {
         <div className="page-travail__titre">
           <h1>Retards</h1>
         </div>
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/retards" />}
         <p className="retards__resume">
           <strong className="retards__total" data-rouge={retards.length > 0 ? "oui" : "non"}>
             {retards.length === 0 ? "Aucun retard" : `${retards.length} retard${retards.length > 1 ? "s" : ""}`}
@@ -84,7 +95,7 @@ export default async function Retards() {
             aide="Documents à échéance, adhésions et mandats datés : expirés depuis peu, ou qui expirent bientôt. L'adhérent en est prévenu par courriel aux paliers réglés par le cabinet."
           >
             <ul className="retards__liste">
-              {expirations.expirations.map((e) => (
+              <Paginer commeElementDeListe>{expirations.expirations.map((e) => (
                 <li key={`${e.dossier}-${e.objet}-${e.libelle}`} className="retards__ligne">
                   <span className="echeances__pastille" data-ton={tonDeLEcheance(e.jours_restants)}>
                     {e.jours_restants < 0 ? "Expiré" : e.jours_restants === 0 ? "Aujourd'hui" : `J-${e.jours_restants}`}
@@ -95,7 +106,7 @@ export default async function Retards() {
                     <span className="retards__echeance"> · le {dateCourte(e.expire_le)}</span>
                   </span>
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           </Panneau>
         )}
@@ -126,7 +137,7 @@ function ListeDesRetards({ retards }: { retards: Retard[] }) {
   }
   return (
     <ul className="retards__liste">
-      {retards.map((r, i) => (
+      <Paginer commeElementDeListe>{retards.map((r, i) => (
         <li key={`${r.categorie}-${r.dossier}-${r.libelle}-${i}`} className="retards__ligne">
           <span className="retards__jours" title={`Dû le ${dateCourte(r.echeance)}`}>
             +{r.jours_de_retard} j
@@ -137,7 +148,7 @@ function ListeDesRetards({ retards }: { retards: Retard[] }) {
             <span className="retards__echeance"> · dû le {dateCourte(r.echeance)}</span>
           </span>
         </li>
-      ))}
+      ))}</Paginer>
     </ul>
   );
 }

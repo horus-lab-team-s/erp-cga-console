@@ -14,6 +14,7 @@ import {
 } from "@/app/lib/actions-creations";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
 import { ChampFichier } from "@/app/components/ChampFichier";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /**
  * Les gestes du tunnel de création (pas 82).
@@ -117,7 +118,7 @@ export function OuvertureDossier({
 }
 
 export function FranchirEtape({ reference, vers, libelle }: { reference: string; vers: string; libelle: string }) {
-  const [etat, franchir, enCours] = useActionState(franchirUneEtape, ETAT_ACTE_INITIAL);
+  const [etat, franchir, enCours] = useActionAnnoncee(franchirUneEtape, ETAT_ACTE_INITIAL);
   return (
     <form action={franchir} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />
@@ -155,7 +156,7 @@ export function RecevoirPiece({
   /** 18 octobre 2026 : une pièce que la liste n'a pas prévue, que le collaborateur nomme. */
   horsListe?: boolean;
 }) {
-  const [etat, recevoir, enCours] = useActionState(recevoirUnePiece, ETAT_ACTE_INITIAL);
+  const [etat, recevoir, enCours] = useActionAnnoncee(recevoirUnePiece, ETAT_ACTE_INITIAL);
   const [avecFichier, setAvecFichier] = useState(false);
   if (etat.fait) return <Retour etat={etat} />;
   return (
@@ -229,7 +230,7 @@ export function Identifiants({ reference }: { reference: string }) {
 }
 
 export function Abandon({ reference }: { reference: string }) {
-  const [etat, abandonner, enCours] = useActionState(abandonnerLeDossier, ETAT_ACTE_INITIAL);
+  const [etat, abandonner, enCours] = useActionAnnoncee(abandonnerLeDossier, ETAT_ACTE_INITIAL);
   const [ouvert, setOuvert] = useState(false);
   if (etat.fait) return <Retour etat={etat} />;
   if (!ouvert) {
@@ -257,7 +258,7 @@ export function Abandon({ reference }: { reference: string }) {
 }
 
 export function Conversion({ reference }: { reference: string }) {
-  const [etat, convertir, enCours] = useActionState(convertirLeDossier, ETAT_ACTE_INITIAL);
+  const [etat, convertir, enCours] = useActionAnnoncee(convertirLeDossier, ETAT_ACTE_INITIAL);
   if (etat.fait) return <Retour etat={etat} />;
   return (
     <form action={convertir} style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 460 }}>
@@ -383,7 +384,7 @@ export function MarquerUnJalon({
   geste: "statuts-transmis" | "originaux-remis";
   libelle: string;
 }) {
-  const [etat, marquer, enCours] = useActionState(marquerUnJalon, ETAT_ACTE_INITIAL);
+  const [etat, marquer, enCours] = useActionAnnoncee(marquerUnJalon, ETAT_ACTE_INITIAL);
   return (
     <form action={marquer} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />

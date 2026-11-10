@@ -7,6 +7,7 @@ import {
   type JournalDeCaisse as Journal,
   type NotificationNonRattachee,
 } from "@/app/lib/journal-de-caisse-etats";
+import { Paginer } from "@/app/components/Paginer";
 
 const TOUTES: FamilleDeVersement[] = ["COMMERCE", "HONORAIRES", "FONDS_DE_TIERS"];
 const LIGNES_MONTREES = 40;
@@ -120,7 +121,7 @@ export function NonRattaches({ notifications }: { notifications: NotificationNon
   }
   return (
     <ul className="caisse__file">
-      {notifications.map((n, rang) => (
+      <Paginer commeElementDeListe>{notifications.map((n, rang) => (
         <li key={`${n.recue_le}-${rang}`} className="caisse__ligne">
           <div className="caisse__identite">
             <strong>{n.telephone ?? "numéro inconnu"}</strong>
@@ -132,7 +133,7 @@ export function NonRattaches({ notifications }: { notifications: NotificationNon
             {n.montant && <b className="caisse__montant">{montantFcfa(n.montant)}</b>}
           </div>
         </li>
-      ))}
+      ))}</Paginer>
     </ul>
   );
 }

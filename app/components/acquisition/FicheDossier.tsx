@@ -81,6 +81,11 @@ function Champ({ question, valeur }: { question: Question; valeur: string }) {
     <input
       name={nom}
       defaultValue={valeur}
+      // 10 novembre 2026 : un entier se saisit dans un champ numérique, qui refuse le texte
+      // avant l'envoi. Un montant reste en texte : « 1 000 000 » avec ses espaces est accepté.
+      type={question.type === "ENTIER" ? "number" : undefined}
+      min={question.type === "ENTIER" ? 0 : undefined}
+      step={question.type === "ENTIER" ? 1 : undefined}
       inputMode={question.type === "ENTIER" || question.type === "DECIMAL" ? "numeric" : undefined}
       placeholder={question.type === "LISTE" ? "séparées par des virgules" : question.unite ?? undefined}
       style={champ}

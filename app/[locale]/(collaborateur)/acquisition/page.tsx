@@ -29,6 +29,7 @@ import { dateCourte } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { jourDuFait } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Demandes entrantes · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -131,13 +132,13 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_RAPPELS} />
-              {rappels.map((r, rang) => (
+              <Paginer>{rappels.map((r, rang) => (
                 <LigneTableau key={r.identifiant} colonnes={COLONNES_RAPPELS} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule titre={r.dossier}>{r.motif}</Cellule>
                   <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(jourDuFait(r.cree_le))}</Cellule>
                   <Cellule>{peutQualifier ? <RappelFait identifiant={r.identifiant} /> : null}</Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -151,7 +152,7 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_SOUFFRANCE} />
-              {enSouffrance.map((d, rang) => (
+              <Paginer>{enSouffrance.map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_SOUFFRANCE} ton={rang === 0 ? "alerte" : rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras titre={d.reference}>{d.nom}</Cellule>
                   <Cellule>{LIBELLES_ETAT[d.etat]}</Cellule>
@@ -160,7 +161,7 @@ export default async function ConsoleAcquisition() {
                   </Cellule>
                   <Cellule couleur="var(--ink-500)">{d.signale_le ? dateCourte(jourDuFait(d.signale_le)) : "pas encore"}</Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -174,7 +175,7 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_DOSSIERS} />
-              {dossiers.map((d, rang) => (
+              <Paginer>{dossiers.map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_DOSSIERS} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras titre={d.reference}>
                     <Link href={`/acquisition/${d.reference}`} style={{ color: "var(--brand-indigo-700)" }}>
@@ -205,7 +206,7 @@ export default async function ConsoleAcquisition() {
                     </div>
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -231,7 +232,7 @@ export default async function ConsoleAcquisition() {
             aide="Elles ont quitté la file. Ouvrir la fiche dit si le dossier de formalité s'est bien ouvert."
           >
             <EnteteTableau colonnes={COLONNES_PAYES} />
-            {payes
+            <Paginer>{payes
               .filter((d) => d.service_souhaite === "CREATION")
               .map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_PAYES} ton={rang % 2 ? "alterne" : "normal"}>
@@ -245,7 +246,7 @@ export default async function ConsoleAcquisition() {
                     payé depuis le {dateCourte(jourDuFait(d.depuis_le))}
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
           </Panneau>
         )}
 

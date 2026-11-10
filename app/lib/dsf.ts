@@ -6,12 +6,22 @@ import type { DeclarationParTiers } from "./tiers-dsf-etats";
 export type { EtatDsf, VersionDsf } from "./dsf-etats";
 export { LIBELLES_ETAT_DSF } from "./dsf-etats";
 
-export async function lireLesVersionsDsf(niu: string, exercice: string): Promise<VersionDsf[]> {
-  const r = await appeler<{ versions: VersionDsf[] }>(
+/** Une DSF consignée à l'échéancier sans version préparée ici (10 novembre 2026). */
+export type DepotHorsPlateforme = { numero: string; depose_le: string };
+
+export async function lireLaDsfDeLExercice(
+  niu: string,
+  exercice: string,
+): Promise<{ versions: VersionDsf[]; depot_hors_plateforme: DepotHorsPlateforme | null }> {
+  const r = await appeler<{ versions: VersionDsf[]; depot_hors_plateforme?: DepotHorsPlateforme | null }>(
     `/cloture/dossiers/${encodeURIComponent(niu)}/dsf/${encodeURIComponent(exercice)}`,
     { authentifie: true },
   );
-  return r.versions;
+  return { versions: r.versions, depot_hors_plateforme: r.depot_hors_plateforme ?? null };
+}
+
+export async function lireLesVersionsDsf(niu: string, exercice: string): Promise<VersionDsf[]> {
+  return (await lireLaDsfDeLExercice(niu, exercice)).versions;
 }
 
 /** La DSF au format DGI : prête ou non, et pourquoi (15 octobre 2026). Voir `routes_dsf.py`. */

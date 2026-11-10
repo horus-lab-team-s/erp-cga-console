@@ -15,6 +15,7 @@ import {
 } from "@/app/components/Tableau";
 import { Montant, PastilleStatut, type Statut } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { Link } from "@/i18n/navigation";
 import { montantFcfa, dateCourte, TIRET } from "@/app/lib/formats";
 import {
@@ -34,6 +35,7 @@ import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 import { lireMesEcheances } from "@/app/lib/espace-adherent";
 import { jourDuFait } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Obligations · Plateforme CGA" };
 
@@ -203,6 +205,7 @@ export default async function Obligations({
           { libelle: courant.denomination },
         ]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Échéancier {exercice}</h1>
@@ -264,7 +267,7 @@ export default async function Obligations({
           ) : (
             <>
               <EnteteTableau colonnes={RELANCES} />
-              {relances.map((r, rang) => (
+              <Paginer>{relances.map((r, rang) => (
                 <LigneTableau
                   key={`${r.obligation.entreprise}-${r.obligation.code_obligation}-${r.obligation.periode_fin}`}
                   colonnes={RELANCES}
@@ -284,7 +287,7 @@ export default async function Obligations({
                     {r.depassee ? "Pénalité en cours" : r.urgente ? "Urgente" : "À rappeler"}
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -311,7 +314,7 @@ export default async function Obligations({
             aide="Une quittance envoyée ne déclare rien : la lire, dire si elle règle l'échéance (l'adhérent lit « Payée », ou le motif du refus), puis consigner le dépôt avec la pièce en pièce jointe."
           >
             <ul style={{ margin: 0, padding: "10px 16px", display: "flex", flexDirection: "column", gap: 6, font: "400 13px/1.5 var(--police-texte)" }}>
-              {preuves.map((p) => (
+              <Paginer commeElementDeListe>{preuves.map((p) => (
                 <li key={`${p.code_obligation}-${p.periode_debut}`}>
                   {/* ⚠️ Pas de lien vers `/pieces/[reference]` : cette fiche est désignée par la référence
                       d'une facture, et une quittance n'en a pas. La pièce se lit dans la boîte de réception. */}
@@ -339,7 +342,7 @@ export default async function Obligations({
                     )}
                   </div>
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           </Panneau>
         )}
@@ -350,7 +353,7 @@ export default async function Obligations({
             aide={`L'adhérent a confié au cabinet le paiement de : ${fonds.obligations_mandatees.join(", ")}. Arrêter le montant, attendre ses fonds (mobile money ou guichet), payer l'administration, porter la quittance. Ces fonds ne sont pas des honoraires.`}
           >
             <ul style={{ margin: 0, padding: "10px 16px", display: "flex", flexDirection: "column", gap: 12, font: "400 13px/1.5 var(--police-texte)" }}>
-              {sousMandat.map((o) => {
+              <Paginer commeElementDeListe>{sousMandat.map((o) => {
                 const appel = fonds.appels.find((a) => a.code_obligation === o.code_obligation && a.periode_debut === o.periode_debut);
                 return (
                   <li key={`${o.code_obligation}-${o.periode_debut}`} className="fonds-sous-mandat">
@@ -391,7 +394,7 @@ export default async function Obligations({
                     </div>
                   </li>
                 );
-              })}
+              })}</Paginer>
             </ul>
           </Panneau>
         )}
@@ -411,13 +414,13 @@ export default async function Obligations({
             )}
           </Panneau>
         )}
-        <Panneau titre="Catalogue des obligations" aide="Ce qui fonde le calendrier : un type d'obligation, son guichet, sa périodicité et son jour limite.">
+        <Panneau repliable titre="Catalogue des obligations" aide="Ce qui fonde le calendrier : un type d'obligation, son guichet, sa périodicité et son jour limite.">
           {typeof catalogue === "string" ? (
             <EtatVide titre="Le catalogue ne se lit pas" detail={catalogue} />
           ) : (
             <>
               <EnteteTableau colonnes={CATALOGUE} />
-              {catalogue.map((t, rang) => (
+              <Paginer>{catalogue.map((t, rang) => (
                 <LigneTableau key={t.code} colonnes={CATALOGUE} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras titre={t.code}>{t.libelle}</Cellule>
                   <Cellule>{t.portail.replaceAll("_", " ")}</Cellule>
@@ -442,7 +445,7 @@ export default async function Obligations({
                       .join(" · ")}
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>

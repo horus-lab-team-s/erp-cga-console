@@ -18,6 +18,38 @@ export type Colonne = {
   aDroite?: boolean;
 };
 
+/**
+ * Couper une aide longue après sa première phrase (9 novembre 2026).
+ *
+ * ⚠️ Cinquante aides dépassaient 110 caractères : sous chaque titre, un paragraphe que
+ * personne ne lisait et qui repoussait le contenu. On ne réécrit pas ces textes — ils
+ * portent des règles métier — : la première phrase reste visible, la suite se déplie.
+ * Seuls le point et le point-virgule coupent ; « : » laisserait une phrase en suspens.
+ */
+export function couperLAide(aide: string): [string, string | null] {
+  if (aide.length <= 110) return [aide, null];
+  for (const separateur of [". ", " ; "]) {
+    const i = aide.indexOf(separateur);
+    if (i >= 25 && i <= 130) {
+      return [aide.slice(0, i).trimEnd() + ".", aide.slice(i + separateur.length).trim()];
+    }
+  }
+  return [aide, null];
+}
+
+function AideDuPanneau({ aide }: { aide: string }) {
+  const [tete, suite] = couperLAide(aide);
+  if (!suite) return <p className="panneau__aide">{aide}</p>;
+  return (
+    <details className="panneau__aide panneau__aide--repliee">
+      <summary>
+        {tete} <span className="panneau__plus">En savoir plus</span>
+      </summary>
+      <span className="panneau__suite">{suite.charAt(0).toUpperCase() + suite.slice(1)}</span>
+    </details>
+  );
+}
+
 export function Panneau({
   titre,
   aide,
@@ -25,7 +57,14 @@ export function Panneau({
   children,
   style,
   id,
+  repliable = false,
 }: {
+  /**
+   * Fermé par défaut, ouvert d'un clic (9 novembre 2026) : pour ce qui se consulte et ne
+   * se travaille pas — un plan de référence, un catalogue, des exports. Les écrans denses
+   * gardent ainsi leur sujet en tête ; rien n'est retiré.
+   */
+  repliable?: boolean;
   /** Ancre visée par le bouton d'en-tête de la page (« + Embaucher », « + Importer »…). */
   id?: string;
   titre: string;
@@ -34,12 +73,28 @@ export function Panneau({
   children: ReactNode;
   style?: CSSProperties;
 }) {
+  if (repliable) {
+    return (
+      <details id={id} className="panneau panneau--repliable" style={style}>
+        <summary className="panneau__tete">
+          <span className="panneau__titres">
+            <span className="panneau__titre" role="heading" aria-level={2}>
+              {titre}
+            </span>
+            {aide && <span className="panneau__aide">{aide}</span>}
+          </span>
+          <span className="panneau__bascule" aria-hidden="true" />
+        </summary>
+        <div className="panneau__corps">{children}</div>
+      </details>
+    );
+  }
   return (
     <section id={id} className="panneau" style={style}>
       <div className="panneau__tete">
         <div className="panneau__titres">
           <h2 className="panneau__titre">{titre}</h2>
-          {aide && <p className="panneau__aide">{aide}</p>}
+          {aide && <AideDuPanneau aide={aide} />}
         </div>
         {action && <span className="panneau__action">{action}</span>}
       </div>

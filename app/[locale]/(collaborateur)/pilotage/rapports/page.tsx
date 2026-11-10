@@ -11,6 +11,7 @@ import { lireLesRapportsMensuels, type ResumeDeRapport } from "@/app/lib/pilotag
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { moisPrecedentADouala } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Rapports mensuels · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -61,7 +62,7 @@ export default async function RapportsMensuels() {
             <EtatVide titre="Aucun rapport archivé" />
           ) : (
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-              {rapports.map((r) => (
+              <Paginer commeElementDeListe>{rapports.map((r) => (
                 <li key={r.identifiant} style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "2px 12px", padding: "10px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.45 var(--police-texte)" }}>
                   <Link href={`/pilotage/rapports/${r.identifiant}`} style={{ flex: "1 1 200px", fontWeight: 600 }}>
                     {libelleDuMois(r.mois)} · version {r.version}
@@ -74,7 +75,7 @@ export default async function RapportsMensuels() {
                     <code>{r.empreinte.slice(0, 16)}…</code>
                   </span>
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           )}
         </Panneau>

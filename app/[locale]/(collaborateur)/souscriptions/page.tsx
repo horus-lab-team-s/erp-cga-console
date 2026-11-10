@@ -132,7 +132,7 @@ export default async function Souscriptions() {
           <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
             <strong style={{ display: "inline", fontWeight: 600 }}>
               {enAttente} client{enAttente > 1 ? "s ont" : " a"} payé et attend{enAttente > 1 ? "ent" : ""} l&rsquo;ouverture
-              de son accès.
+              de {enAttente > 1 ? "leur" : "son"} accès.
             </strong>{" "}
             L&rsquo;accès s&rsquo;ouvre après vérification de l&rsquo;identité : un NIU se lit sur chaque facture, il ne prouve pas
             qu&rsquo;on représente l&rsquo;entreprise.

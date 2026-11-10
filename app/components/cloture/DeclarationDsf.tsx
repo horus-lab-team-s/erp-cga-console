@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+
 
 import { constaterLeDepotDeLaDsf } from "@/app/lib/actions-collecte";
 import { preparerLaDsf, validerLaDsf } from "@/app/lib/actions-dsf";
@@ -10,6 +10,7 @@ import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { montantFcfa } from "@/app/lib/formats";
 import { ChampFichier } from "@/app/components/ChampFichier";
 import { RelectureDeLAgent } from "@/app/components/cloture/RelectureDeLAgent";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /** Un horodatage UTC du backend, lu à l'heure de Douala : « 14/10/2026 11:05 ». */
 const fr = (utc: string) => {
@@ -50,6 +51,7 @@ export function DeclarationDsf({
   dossier,
   exercice,
   versions,
+  depotHorsPlateforme = null,
   peutPreparer,
   peutValider,
   peutDeposer,
@@ -59,6 +61,8 @@ export function DeclarationDsf({
   dossier: string;
   exercice: string;
   versions: VersionDsf[];
+  /** Déposée hors de ce parcours : l'écran le dit au lieu d'offrir une préparation refusée. */
+  depotHorsPlateforme?: { numero: string; depose_le: string } | null;
   peutPreparer: boolean;
   peutValider: boolean;
   peutDeposer: boolean;
@@ -67,9 +71,9 @@ export function DeclarationDsf({
   /** Rendue par la page quand la session n'est pas renforcée : sinon `null`. */
   porteDuSecondFacteur: React.ReactNode;
 }) {
-  const [preparation, preparer, enPreparation] = useActionState(preparerLaDsf, ETAT_ACTE_INITIAL);
-  const [validation, valider, enValidation] = useActionState(validerLaDsf, ETAT_ACTE_INITIAL);
-  const [depot, deposer, enDepot] = useActionState(constaterLeDepotDeLaDsf, ETAT_ACTE_INITIAL);
+  const [preparation, preparer, enPreparation] = useActionAnnoncee(preparerLaDsf, ETAT_ACTE_INITIAL);
+  const [validation, valider, enValidation] = useActionAnnoncee(validerLaDsf, ETAT_ACTE_INITIAL);
+  const [depot, deposer, enDepot] = useActionAnnoncee(constaterLeDepotDeLaDsf, ETAT_ACTE_INITIAL);
 
   const courante = [...versions].reverse().find((v) => v.etat !== "REMPLACEE") ?? null;
   const remplacees = versions.filter((v) => v.etat === "REMPLACEE");
@@ -179,10 +183,18 @@ export function DeclarationDsf({
             ))}
         </div>
       ) : (
-        <p className="dsf__note">Aucune version préparée pour l&rsquo;exercice {exercice}.</p>
+        depotHorsPlateforme ? (
+          <p className="dsf__note">
+            <strong>Déposée à la DGI</strong> le {new Date(depotHorsPlateforme.depose_le).toLocaleDateString("fr-FR")}, accusé{" "}
+            {depotHorsPlateforme.numero}, consigné à l&rsquo;échéancier hors de ce parcours. Une DSF rectificative se fait
+            sur le portail de la DGI.
+          </p>
+        ) : (
+          <p className="dsf__note">Aucune version préparée pour l&rsquo;exercice {exercice}.</p>
+        )
       )}
 
-      {peutPreparer && !deposee && (
+      {peutPreparer && !deposee && !depotHorsPlateforme && (
         <form action={preparer} className="dsf__geste">
           <input type="hidden" name="dossier" value={dossier} />
           <input type="hidden" name="exercice" value={exercice} />

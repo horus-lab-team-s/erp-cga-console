@@ -1,9 +1,10 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition} from "react";
 
 import { confirmerLEncaissement } from "@/app/lib/actions-acquisition";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /**
  * Le constat d'un versement reçu au guichet ou par virement.
@@ -21,7 +22,7 @@ import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
  * formulaire.
  */
 export function ConstatDeCaisse({ numero, montant }: { numero: string; montant: string }) {
-  const [etat, confirmer, enCours] = useActionState(confirmerLEncaissement, ETAT_ACTE_INITIAL);
+  const [etat, confirmer, enCours] = useActionAnnoncee(confirmerLEncaissement, ETAT_ACTE_INITIAL);
 
   if (etat.fait) {
     return (

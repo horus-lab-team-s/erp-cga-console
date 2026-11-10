@@ -826,3 +826,547 @@ html {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* Aide repliée du panneau : la première phrase, puis « En savoir plus ». */
+.panneau__aide--repliee > summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  font-weight: inherit;
+  color: inherit;
+}
+.panneau__aide--repliee > summary::-webkit-details-marker {
+  display: none;
+}
+.panneau__aide--repliee > summary::before {
+  content: none;
+}
+.panneau__plus {
+  margin-left: 4px;
+  color: var(--brand-indigo-700);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.panneau__aide--repliee[open] .panneau__plus {
+  display: none;
+}
+.panneau__suite {
+  display: block;
+  margin-top: 4px;
+}
+
+/* ══ Vue de direction (tableau de bord, 9 novembre 2026) ═════════════════════
+   Une série, une teinte (magenta de la marque) ; la piste est le magenta pâle de la
+   même rampe. Les textes portent l'encre, jamais la couleur de la donnée. */
+.tdb-direction {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  flex: none;
+}
+@media (max-width: 1100px) {
+  .tdb-direction {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .tdb-direction__carte--large {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .tdb-direction {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.tdb-direction__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+.tdb-direction__tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tdb-direction__tete h2 {
+  margin: 0;
+  font: 600 13px/1.3 var(--police-texte);
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tdb-direction__lien {
+  font: 500 12.5px/1 var(--police-texte);
+  white-space: nowrap;
+}
+.tdb-direction__chiffre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tdb-direction__valeur {
+  font: 600 26px/1.15 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.tdb-direction__sous,
+.tdb-direction__motif {
+  margin: 0;
+  font: 400 12.5px/1.45 var(--police-texte);
+  color: var(--ink-500);
+}
+.tdb-direction__liste {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.tdb-direction__liste > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 400 12.5px/1.4 var(--police-texte);
+}
+.tdb-direction__liste dt {
+  color: var(--ink-500);
+}
+.tdb-direction__liste dd {
+  margin: 0;
+  color: var(--ink-900);
+  text-align: right;
+}
+.tdb-direction__fort {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tdb-direction__creations {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.tdb-direction__creations strong {
+  font-weight: 600;
+}
+
+/* Colonnes mensuelles : ≤ 24 px, bout arrondi de 4 px, carré à la base. */
+.colonnes {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  height: 168px;
+}
+.colonnes__axe {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  font: 400 11px/1 var(--police-texte);
+  color: var(--ink-500);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.colonnes__trace {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+  background:
+    linear-gradient(var(--line-100), var(--line-100)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(var(--line-100), var(--line-100)) 0 calc((100% - 20px) / 2) / 100% 1px no-repeat,
+    linear-gradient(var(--line-200), var(--line-200)) 0 calc(100% - 20px) / 100% 1px no-repeat;
+}
+.colonnes__mois {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  outline: none;
+  border-radius: 6px;
+}
+.colonnes__barre-zone {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+.colonnes__barre {
+  width: min(24px, 70%);
+  min-height: 0;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--brand-magenta-600) 55%, var(--surface));
+  transition: background var(--transition);
+}
+.colonnes__mois--courant .colonnes__barre {
+  background: var(--brand-magenta-600);
+}
+.colonnes__etiquette {
+  margin-bottom: 3px;
+  font: 600 11px/1 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.colonnes__libelle {
+  height: 20px;
+  padding-top: 5px;
+  font: 400 11px/1 var(--police-texte);
+  color: var(--ink-500);
+  white-space: nowrap;
+}
+.colonnes__mois:is(:hover, :focus-visible) {
+  background: var(--brand-magenta-100);
+}
+.colonnes__mois:is(:hover, :focus-visible) .colonnes__barre {
+  background: var(--brand-magenta-600);
+}
+
+/* Infobulle commune : colonnes et barres. */
+.colonnes__mois[data-info]:is(:hover, :focus-visible)::after,
+.barres__ligne[data-info]:is(:hover, :focus-visible)::after {
+  content: attr(data-info);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 10;
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--ink-900);
+  color: var(--surface);
+  font: 500 11.5px/1.3 var(--police-texte);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Barres horizontales par activité : triées, valeur au bout. */
+.barres {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.barres__ligne {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  font: 400 12.5px/1.3 var(--police-texte);
+}
+.barres__libelle {
+  overflow: hidden;
+  color: var(--ink-900);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.barres__piste {
+  height: 10px;
+}
+.barres__barre {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--brand-magenta-600);
+}
+.barres__valeur {
+  white-space: nowrap;
+  color: var(--ink-900);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Jauge d'une teinte : le plein porte la part à jour, la piste la même rampe, pâle. */
+.jauge {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--brand-magenta-100);
+}
+.jauge__plein {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-magenta-600);
+}
+
+/* Sous la vue de direction, la grille des listes ne se cale plus sur le reste de
+   l'écran (elle n'y aurait plus qu'une ligne par panneau) : hauteur propre, la page
+   défile, chaque panneau garde son défilement. */
+.tdb-direction + .grille-panneaux {
+  flex: none;
+  height: 640px;
+}
+/* Le cadre coupe tout débordement (.coquille { overflow: hidden }) et le tableau de
+   bord tenait dans l'écran : avec la vue de direction, sa zone de contenu défile. */
+.contenu:has(> .tdb-direction) {
+  overflow-y: auto;
+}
+@media (max-width: 1100px) {
+  .tdb-direction + .grille-panneaux {
+    height: auto;
+  }
+}
+
+/* ── Pagination : dix lignes à la fois ──────────────────────────────────── */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line-100);
+  font: 400 12.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+.pagination__element {
+  list-style: none;
+}
+.pagination__position {
+  font-variant-numeric: tabular-nums;
+}
+.pagination__boutons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.pagination__boutons button {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line-200);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 500 12.5px/1 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.pagination__boutons button:hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+}
+.pagination__boutons button[aria-current="page"] {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+.pagination__boutons button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pagination__ellipse {
+  padding: 0 4px;
+}
+
+/* Les indicateurs du tableau de bord sont des raccourcis : ils se soulèvent au survol. */
+.carte-indicateur {
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.carte-indicateur:hover,
+.carte-indicateur:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--brand-indigo-700) !important;
+  outline: none;
+}
+.carte-indicateur:hover h2,
+.carte-indicateur:focus-visible h2 {
+  color: var(--brand-indigo-700) !important;
+}
+.carte-indicateur__icone {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+.tdb-direction__bloc {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+}
+.tdb-direction__sous-titre {
+  margin: 0;
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Bandeau du filtre par dossier : dit ce qui est retenu, ramène au tout. */
+.bandeau-filtre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--brand-indigo-100);
+  border-left: 3px solid var(--brand-indigo-700);
+  border-radius: var(--rayon);
+  background: var(--brand-indigo-100);
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+  flex: none;
+}
+.bandeau-filtre a {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Panneau repliable : l'en-tête d'un panneau, un indicateur « Afficher / Masquer ». */
+.panneau--repliable > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+}
+.panneau--repliable > summary::-webkit-details-marker {
+  display: none;
+}
+.panneau--repliable > summary::before {
+  content: none !important;
+}
+.panneau--repliable > summary .panneau__titres {
+  display: flex;
+  flex-direction: column;
+}
+.panneau--repliable:not([open]) > summary {
+  border-bottom: 0;
+}
+.panneau__bascule {
+  margin-left: auto;
+  align-self: center;
+  font: 500 12.5px/1 var(--police-texte);
+  color: var(--brand-indigo-700);
+  white-space: nowrap;
+}
+.panneau__bascule::after {
+  content: "Afficher ▾";
+}
+.panneau--repliable[open] .panneau__bascule::after {
+  content: "Masquer ▴";
+}
+.panneau--repliable > summary:hover .panneau__titre {
+  color: var(--brand-indigo-700);
+}
+
+/* Annonce de la coquille : le résultat d'un geste dont le bloc a quitté l'écran. */
+.annonce-coquille {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  max-width: min(440px, calc(100vw - 40px));
+  pointer-events: none;
+}
+.annonce-coquille__texte {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--success);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: 0 10px 30px -12px rgb(26 21 35 / 35%);
+  font: 500 13px/1.45 var(--police-texte);
+  color: var(--ink-900);
+  pointer-events: auto;
+  animation: annonce-coquille-entree 180ms ease-out;
+}
+.annonce-coquille__texte > span {
+  color: var(--success);
+  font-weight: 700;
+}
+.annonce-coquille__texte button {
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-500);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+@keyframes annonce-coquille-entree {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .annonce-coquille__texte { animation: none; }
+}
+
+/* Conformité du centre (CGI art. 118 et 119) : une ligne par obligation, l'état en pastille
+   libellée (jamais la couleur seule). */
+.conformite-centre__ligne {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-100);
+}
+.conformite-centre__etat {
+  justify-self: start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font: 600 11.5px/1.4 var(--police-texte);
+  white-space: nowrap;
+}
+.conformite-centre__etat--ok {
+  background: var(--success-100);
+  color: var(--success);
+}
+.conformite-centre__etat--info {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+.conformite-centre__etat--alerte {
+  background: var(--danger-100);
+  color: var(--danger);
+}
+.conformite-centre__corps p {
+  margin: 0;
+}
+.conformite-centre__titre {
+  font: 600 13.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.conformite-centre__article {
+  margin-left: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.conformite-centre__valeur {
+  font: 500 13px/1.5 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.conformite-centre__detail {
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}

@@ -11,6 +11,7 @@ import { lireLaFileDAnomalies, type VueDeLaFile } from "@/app/lib/conformite-rev
 import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "File d'anomalies · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -46,13 +47,24 @@ const COLONNES: Colonne[] = [
 export default async function FileDAnomalies({
   searchParams,
 }: {
-  searchParams: Promise<{ gravite?: string; entreprise?: string; regle?: string; depose_par?: string; du?: string; au?: string }>;
+  searchParams: Promise<{
+    gravite?: string;
+    entreprise?: string;
+    regle?: string;
+    depose_par?: string;
+    du?: string;
+    au?: string;
+    dossier?: string;
+  }>;
 }) {
   const acces = await exigerAcces();
   if (!detient(acces, "CONTROLER_CONFORMITE")) {
     return <EcranReserve titre="File d'anomalies" permission="CONTROLER_CONFORMITE" acces={acces} />;
   }
-  const filtres = await searchParams;
+  // 9 novembre 2026 : le dossier choisi au sélecteur devient le filtre « entreprise »,
+  // sauf si l'écran en a déjà un ; le filtre se voit et se retire dans la barre de filtres.
+  const { dossier, ...lus } = await searchParams;
+  const filtres = { ...lus, entreprise: lus.entreprise ?? dossier };
   let vue: VueDeLaFile | string;
   try {
     vue = await lireLaFileDAnomalies(filtres);
@@ -146,7 +158,7 @@ export default async function FileDAnomalies({
                 <>
                   <FileAuClavier nombre={vue.lignes.length} />
                   <EnteteTableau colonnes={COLONNES} />
-                  {vue.lignes.map((l, rang) => (
+                  <Paginer>{vue.lignes.map((l, rang) => (
                     <LigneTableau key={`${l.piece}-${l.code_regle}`} colonnes={COLONNES} ton={rang % 2 ? "alterne" : "normal"}>
                       <Cellule>
                         <BadgeGravite severite={l.gravite} court />
@@ -169,7 +181,7 @@ export default async function FileDAnomalies({
                       </Cellule>
                       <Cellule>{l.depose_par ?? "inconnu"}</Cellule>
                     </LigneTableau>
-                  ))}
+                  ))}</Paginer>
                 </>
               )}
             </Panneau>
@@ -182,7 +194,7 @@ export default async function FileDAnomalies({
                 <EtatVide titre="Aucune règle en cause" />
               ) : (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                  {vue.groupes.map((g) => (
+                  <Paginer commeElementDeListe>{vue.groupes.map((g) => (
                     <li key={g.code_regle} style={{ padding: "10px 16px", borderTop: "1px solid var(--line-100)", font: "400 13px/1.5 var(--police-texte)" }}>
                       <Link href={`/conformite/regles/${encodeURIComponent(g.code_regle)}`}>
                         <strong>{g.code_regle}</strong> · {g.libelle_regle}
@@ -191,7 +203,7 @@ export default async function FileDAnomalies({
                       enjeu cumulé {montantFcfa(g.enjeu_cumule)} ·{" "}
                       <Link href={`/conformite/file?regle=${encodeURIComponent(g.code_regle)}`}>ne voir que cette règle</Link>
                     </li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
               )}
             </Panneau>

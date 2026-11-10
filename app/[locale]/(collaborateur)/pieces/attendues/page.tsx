@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { ClasserLaDemande, RattacherLaPiece, TracerLaRelance } from "@/app/components/collecte/GestesDemandes";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { lireDossiers } from "@/app/lib/portefeuille";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EtatVide, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
@@ -10,6 +12,7 @@ import { LIBELLES_CANAL,
 import { ErreurApi } from "@/app/lib/api";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Pièces attendues · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -32,12 +35,16 @@ export const dynamic = "force-dynamic";
  * `RELANCER_ADHERENT`. Le backend vérifie aussi le dossier de chaque demande.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-export default async function PiecesAttendues() {
+export default async function PiecesAttendues({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   if (!detient(acces, "LIRE_PIECE")) {
     return <EcranReserve titre="Pièces attendues" permission="LIRE_PIECE" acces={acces} />;
   }
-  const demandes = await lireDemandes();
+  // 9 novembre 2026 : le dossier choisi au sélecteur filtre les demandes.
+  const demande = (await searchParams).dossier;
+  const [toutes, portefeuille] = await Promise.all([lireDemandes(), demande ? lireDossiers().catch(() => []) : Promise.resolve([])]);
+  const choisi = dossierFiltre(demande, portefeuille);
+  const demandes = choisi ? toutes.filter((d) => d.entreprise === choisi.niu) : toutes;
   const rattache = detient(acces, "IDENTIFIER_PIECE");
   const relance = detient(acces, "RELANCER_ADHERENT");
   // Pas 88 : la liste de travail du jour du chargé de clientèle. Lue seulement avec la
@@ -65,6 +72,7 @@ export default async function PiecesAttendues() {
             )}
           </p>
         </div>
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/pieces/attendues" />}
         {relancesDuJour !== null && (
           <Panneau
             titre="Relances à émettre aujourd'hui"
@@ -95,7 +103,7 @@ export default async function PiecesAttendues() {
           {demandes.length === 0 ? (
             <EtatVide titre="Rien n'est attendu" detail="Aucune demande de pièce ouverte sur votre portefeuille." />
           ) : (
-            demandes.map((d) => (
+            <Paginer>{demandes.map((d) => (
               <article key={d.identifiant} id={d.identifiant} style={{ borderBottom: "1px solid var(--line-100)", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
                 <header style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
                   <strong style={{ font: "600 13px/1.3 var(--police-texte)" }}>{d.identifiant}</strong>
@@ -130,7 +138,7 @@ export default async function PiecesAttendues() {
                   )}
                 </div>
               </article>
-            ))
+            ))}</Paginer>
           )}
         </Panneau>
       </div>

@@ -2,6 +2,7 @@ import { Montant } from "@/app/components/Montant";
 import { Cellule, EnteteTableau, EtatVide, LigneTableau, Panneau, type Colonne } from "@/app/components/Tableau";
 import type { LigneAuxiliaire, NatureAuxiliaire } from "@/app/lib/comptabilite";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 const COLONNES: Colonne[] = [
   { cle: "tiers", libelle: "Tiers", largeur: "minmax(0, 2fr)" },
@@ -53,7 +54,7 @@ export function BalanceAuxiliaire({
         <div style={{ overflowX: "auto" }}>
           <div style={{ minWidth: 760 }}>
             <EnteteTableau colonnes={COLONNES} />
-            {lignes.map((l, rang) => (
+            <Paginer>{lignes.map((l, rang) => (
               <LigneTableau key={l.tiers ?? "sans-tiers"} colonnes={COLONNES} ton={rang % 2 ? "alterne" : "normal"}>
                 <Cellule gras={l.tiers !== null} couleur={l.tiers === null ? "var(--danger)" : undefined}>
                   {l.tiers === null ? "Sans tiers" : l.denomination || l.tiers}
@@ -74,7 +75,7 @@ export function BalanceAuxiliaire({
                   <Montant valeur={l.solde} />
                 </Cellule>
               </LigneTableau>
-            ))}
+            ))}</Paginer>
           </div>
         </div>
       )}

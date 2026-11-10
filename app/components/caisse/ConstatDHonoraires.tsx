@@ -1,9 +1,10 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition} from "react";
 
 import { constaterDesHonoraires } from "@/app/lib/actions-honoraires";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /**
  * Constater au guichet le règlement d'une période d'honoraires (14 octobre 2026).
@@ -12,7 +13,7 @@ import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
  * l'attestation. Le même geste que pour une proposition (`ConstatDeCaisse`).
  */
 export function ConstatDHonoraires({ niu, periode, montant }: { niu: string; periode: string; montant: string }) {
-  const [etat, constater, enCours] = useActionState(constaterDesHonoraires, ETAT_ACTE_INITIAL);
+  const [etat, constater, enCours] = useActionAnnoncee(constaterDesHonoraires, ETAT_ACTE_INITIAL);
 
   if (etat.fait) {
     return (

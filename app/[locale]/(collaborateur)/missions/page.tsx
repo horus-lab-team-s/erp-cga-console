@@ -12,6 +12,7 @@ import { LIBELLES_ETAT, LIBELLES_TYPE } from "@/app/lib/missions-etats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { jourDuFait } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Prestations ponctuelles · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ export default async function Missions() {
             aide="Venues de la vitrine, chiffrées et réglées : il reste à choisir la prestation. Le client reçoit un courriel à l'ouverture."
           >
             <ul className="mission__liste">
-              {aOuvrir.map((d) => (
+              <Paginer commeElementDeListe>{aOuvrir.map((d) => (
                 <li key={d.reference}>
                   <strong>{d.client}</strong>
                   <span>
@@ -62,7 +63,7 @@ export default async function Missions() {
                   {d.message && <span className="mission__note">« {d.message} »</span>}
                   <OuvrirDepuisUneDemande demande={d} />
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           </Panneau>
         )}
@@ -85,7 +86,7 @@ export default async function Missions() {
             />
           ) : (
             <ul className="mission__liste">
-              {missions.map((m) => (
+              <Paginer commeElementDeListe>{missions.map((m) => (
                 <li key={m.identifiant} data-etat={m.etat}>
                   <Link href={`/missions/${encodeURIComponent(m.identifiant)}`}>
                     <strong>{LIBELLES_TYPE[m.type]}</strong> · {m.client}
@@ -99,7 +100,7 @@ export default async function Missions() {
                     {m.identifiant} · ouverte le {dateCourte(jourDuFait(m.ouverte_le))}
                   </span>
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           )}
         </Panneau>

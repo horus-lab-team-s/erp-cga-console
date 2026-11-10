@@ -5,6 +5,7 @@ import { Cellule, EnteteTableau, EtatErreur, EtatVide, LigneTableau, Panneau, ty
 import { ImporterUnReleve } from "@/app/components/comptabilite/GestesRapprochement";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { lireJournaux } from "@/app/lib/comptabilite";
@@ -14,6 +15,7 @@ import { lireProfilsDeReleve, lireRapprochements, type ResumeDeRapprochement } f
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { moisPrecedentADouala } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Rapprochement bancaire · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -101,6 +103,7 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
   return (
     <>
       <EnteteTravail miettes={miettes} />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre page-travail__titre--avec-action">
           <div>
@@ -125,7 +128,7 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES} />
-              {resumes.map((r, rang) => (
+              <Paginer>{resumes.map((r, rang) => (
                 <LigneTableau key={r.identifiant} colonnes={COLONNES} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras>
                     <Link href={`/comptabilite/rapprochement/${r.identifiant}?dossier=${niu}`}>
@@ -143,7 +146,7 @@ export default async function Rapprochements({ searchParams }: { searchParams: P
                     {r.statut === "ABANDONNE" ? TIRET : <Montant valeur={r.ecart_inexplique} />}
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
