@@ -77,8 +77,9 @@ export function LivresObligatoires({
       {/* 15 octobre 2026 : annexes de la DSF que la DGI demande en Excel. */}
       <div className="livres-obligatoires__groupe">
         <p className="livres-obligatoires__intro">
-          <strong>Balances auxiliaires</strong> · exercice entier, tiers par tiers, en Excel : annexes de la DSF. Pas
-          encore au modèle de la DGI, que le cabinet obtient à la télédéclaration.
+          <strong>Balances auxiliaires</strong> · exercice entier, tiers par tiers, en Excel : pièces jointes de la DSF
+          (notes 7 et 17). Le guide de la DGI les demande en Excel sans en imposer de modèle : elles se joignent telles
+          quelles.
         </p>
         <div className="livres-obligatoires__gestes">
           <button type="submit" name="livre" value="auxiliaire-clients" className="bouton-discret" disabled={enCours}>

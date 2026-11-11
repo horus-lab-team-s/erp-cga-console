@@ -26,12 +26,24 @@ export function DsfFormatDgi({ dossier, exercice, etat }: { dossier: string; exe
     <form action={telecharger} className="dsf__format-dgi">
       <input type="hidden" name="dossier" value={dossier} />
       <input type="hidden" name="exercice" value={exercice} />
-      <p className="dsf__note">
-        <strong>Format DGI</strong> · le modèle Excel officiel de la DSF Normal, bilan et compte de résultat remplis aux
-        codes REF{etat.avec_exercice_precedent ? ", avec la colonne N-1" : ""}. Il se téléverse tel quel sur le portail,
-        sous son nom : <span className="tabulaire">{etat.nom_du_fichier}</span>. Les fiches R1 à R3 reprennent la fiche
-        signalétique validée ; les notes se complètent sur le portail.
-      </p>
+      {/* 11 novembre 2026 : un adhérent à l'IGS dépose au modèle du Système minimal de trésorerie. */}
+      {etat.nom_du_fichier.includes("SMT") ? (
+        <p className="dsf__note">
+          <strong>Format DGI</strong> · le modèle Excel officiel de la DSF du Système minimal de trésorerie : bilan
+          simplifié et compte de résultat de trésorerie remplis{etat.avec_exercice_precedent ? ", avec la colonne N-1" : ""}.
+          Recettes et dépenses sont reconstituées depuis la comptabilité, et le résultat du modèle est contrôlé contre le
+          résultat comptable. Il se téléverse tel quel sur le portail, sous son nom :{" "}
+          <span className="tabulaire">{etat.nom_du_fichier}</span>. Les fiches R1 à R3 et les notes se complètent sur le
+          portail.
+        </p>
+      ) : (
+        <p className="dsf__note">
+          <strong>Format DGI</strong> · le modèle Excel officiel de la DSF Normal, bilan et compte de résultat remplis aux
+          codes REF{etat.avec_exercice_precedent ? ", avec la colonne N-1" : ""}. Il se téléverse tel quel sur le portail,
+          sous son nom : <span className="tabulaire">{etat.nom_du_fichier}</span>. Les fiches R1 à R3 reprennent la fiche
+          signalétique validée ; les notes se complètent sur le portail.
+        </p>
+      )}
       {etat.pret ? (
         <p className="dsf__note">
           Total du bilan {montantFcfa(etat.total_bilan)} · résultat net {montantFcfa(etat.resultat)}.

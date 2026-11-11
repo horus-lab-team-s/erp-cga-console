@@ -147,7 +147,8 @@ export default async function ClotureEtDsf({
     try {
       ({ versions: versionsDsf, depot_hors_plateforme: depotHorsPlateforme } = await lireLaDsfDeLExercice(niu, exercice));
       // 15 octobre 2026 : le format DGI, modèle Normal seulement ; une panne ici ne cache pas la DSF.
-      formatDgi = liasse.systeme === "NORMAL" ? await lireLeFormatDgi(niu, exercice).catch(() => null) : null;
+      // 11 novembre 2026 : le Système minimal a aussi son modèle officiel (DSF SMT).
+      formatDgi = await lireLeFormatDgi(niu, exercice).catch(() => null);
       // 15 octobre 2026 : les pièces à joindre, Normal ou SMT ; une panne ne cache pas la DSF.
       piecesDsf = await lireLesPiecesDsf(niu, exercice).catch(() => null);
       // 16 octobre 2026 : les fiches des fournisseurs que les modèles de la DGI déclarent.
