@@ -74,6 +74,21 @@ export default async function PageMonEntreprise() {
       ) : (
         <>
           <Fiche fiche={fiche} peutSignaler={detient(acces, "SIGNALER_UN_CHANGEMENT")} />
+          {/* 11 novembre 2026 : l'attestation que l'adhérent présente à son centre des impôts. */}
+          {fiche.adhesion_numero && (
+            <section className="adherent__section" id="attestation-d-adhesion">
+              <h2 className="adherent__titre">Votre attestation d&rsquo;adhésion</h2>
+              <p className="adherent__texte">
+                Elle atteste votre adhésion au Centre (n° {fiche.adhesion_numero}), à présenter à votre centre des impôts
+                ou à un fournisseur.
+              </p>
+              <p className="adherent__suite">
+                <a href={`/api/attestation-d-adhesion/${principal}`} download>
+                  Télécharger mon attestation (PDF)
+                </a>
+              </p>
+            </section>
+          )}
           {documentsAEcheance && catalogueDesDocuments && (
             <section className="adherent__section" id="documents-a-echeance">
               <h2 className="adherent__titre">Vos documents à échéance</h2>

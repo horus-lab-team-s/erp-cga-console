@@ -211,6 +211,14 @@ export default async function FicheDuDossier({
               <Fait terme="Centre" valeur={statuts.valeur.centre} />
               <Fait terme="TVA" valeur={statuts.valeur.assujettie_tva ? "Assujettie" : "Non assujettie"} />
               <Fait terme="Adhésion au centre" valeur={statuts.valeur.adherente ? "Adhérente" : "Non adhérente"} />
+              {/* 11 novembre 2026 : l'attestation à remettre à l'adhérent (CGI art. 119). */}
+              {statuts.valeur.adherente && (
+                <div style={{ alignSelf: "end" }}>
+                  <a className="bouton-discret" href={`/api/attestation-d-adhesion/${niu}`} download>
+                    Attestation d&rsquo;adhésion (PDF)
+                  </a>
+                </div>
+              )}
               <Fait
                 terme="Exercice"
                 valeur={statuts.valeur.exercice ? `${statuts.valeur.exercice.libelle}${statuts.valeur.exercice.clos ? " (clos)" : ""}` : "aucun à cette date"}
