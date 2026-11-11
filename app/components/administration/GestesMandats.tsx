@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { LIBELLES_ROLE, type Role } from "@/app/lib/acces";
+import { libelleRole, type Role } from "@/app/lib/acces";
 import { accorderUnMandat, revoquerUnMandat } from "@/app/lib/actions-administration";
 import { EXPLICATIONS_MOTIF_MANDAT, LIBELLES_MOTIF_MANDAT } from "@/app/lib/mandats";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
@@ -103,7 +103,7 @@ export function AccorderUnMandat({ roles, aujourdhui }: { roles: Role[]; aujourd
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 4, marginTop: 4 }}>
           {roles.map((r) => (
             <label key={r} style={note}>
-              <input type="checkbox" name="roles" value={r} /> {LIBELLES_ROLE[r]}
+              <input type="checkbox" name="roles" value={r} /> {libelleRole(r)}
             </label>
           ))}
         </div>

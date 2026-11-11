@@ -1,3 +1,5 @@
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
+import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import type { Metadata } from "next";
 
 import { OngletsAdherent } from "@/app/components/adherent/OngletsAdherent";
@@ -183,6 +185,16 @@ function Justificatif({ ligne }: { ligne: LigneDeJustificatif }) {
       </span>
       {ligne.montant_ttc && (
         <span className="adherent__piece-montant tabulaire">{montantFcfa(Number(ligne.montant_ttc))}</span>
+      )}
+      {/* 14 octobre 2026 : « prévisualisation des documents chargés ». Seulement une pièce qui a
+          un fichier : une pièce saisie au guichet n'en a pas, et un bouton qui échoue est pire
+          qu'un bouton absent. */}
+      {ligne.nom_fichier && (
+        <DocumentDeLaPiece
+          champs={{ identifiant: ligne.identifiant }}
+          libelle={ligne.fournisseur ?? ligne.nom_fichier}
+          lire={lireLeDocumentDUnePiece}
+        />
       )}
       {ligne.statut === "A_CORRIGER" && (
         <span className="adherent__consigne">

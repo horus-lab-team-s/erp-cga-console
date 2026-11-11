@@ -12,6 +12,7 @@ import {
 import { Montant } from "@/app/components/Montant";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { dateCourte, TIRET } from "@/app/lib/formats";
@@ -21,6 +22,8 @@ import {
   LIBELLES_MOIS,
   lireBulletin,
   lireDeclaration,
+  lireGroupeDeRisque,
+  lireLesChargesDuMois,
   lirePersonnel,
   moisDePaieParDefaut,
   type Bulletin,
@@ -29,7 +32,10 @@ import {
   type LigneSalarie,
 } from "@/app/lib/social";
 import { ContratDuSalarie, EmbaucheSalarie } from "@/app/components/social/GestesPersonnel";
+import { GroupeDeRisque } from "@/app/components/social/GroupeDeRisque";
+import { ArreterLesCharges } from "@/app/components/social/ArreterLesCharges";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Social et paie · Plateforme CGA" };
 
@@ -66,9 +72,9 @@ export const dynamic = "force-dynamic";
  * ⚠️ LES GESTES DU FICHIER DU PERSONNEL (pas 89)
  *
  * Embaucher, ouvrir un contrat, le clore : réservés à `SAISIR_ECRITURE`. Le bulletin d'un
- * salarié s'ouvre par `?bulletin=matricule`, avec le groupe de risque professionnel
- * **demandé** : il est notifié par la CNPS au dossier, qui ne le porte pas encore (Q25), et
- * un groupe faux coûte le triple ou le tiers de la cotisation accidents du travail.
+ * salarié s'ouvre par `?bulletin=matricule`. Le groupe de risque professionnel notifié par
+ * la CNPS est porté par le dossier depuis le 16 octobre 2026 et s'applique d'office ;
+ * `?groupe=` ne fait que simuler un autre groupe.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -129,7 +135,12 @@ export default async function SocialEtPaie({
   }
 
   const saisit = detient(acces, "SAISIR_ECRITURE");
-  const groupe: GroupeRisque = parametres.groupe === "B" || parametres.groupe === "C" ? parametres.groupe : "A";
+  // Une simulation seulement : sans elle, le backend applique le groupe du dossier.
+  const groupe: GroupeRisque | undefined =
+    parametres.groupe === "A" || parametres.groupe === "B" || parametres.groupe === "C" ? parametres.groupe : undefined;
+  const groupeDuDossier = await lireGroupeDeRisque(niu).catch(() => null);
+  // 18 octobre 2026 (point 8) : la paie propose, le cabinet arrête. Une panne ne cache pas la paie.
+  const charges = declaration && saisit ? await lireLesChargesDuMois(niu, annee, mois).catch(() => null) : null;
   let bulletin: Bulletin | null = null;
   let refusBulletin: string | null = null;
   if (parametres.bulletin && !erreur) {
@@ -149,8 +160,10 @@ export default async function SocialEtPaie({
       <EnteteTravail
         miettes={[{ libelle: "Social et paie" }, { libelle: courant.denomination }]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>
             Paie de {LIBELLES_MOIS[mois - 1]} {annee}
           </h1>
@@ -160,6 +173,12 @@ export default async function SocialEtPaie({
             {sortis.length > 0 && ` · ${sortis.length} sorti${sortis.length > 1 ? "s" : ""}`}
             {" · changez de dossier dans la barre latérale"}
           </p>
+          </div>
+          {saisit && (
+            <a href="#embaucher" className="action-principale">
+              + Embaucher un salarié
+            </a>
+          )}
         </div>
 
         {erreur ? (
@@ -169,22 +188,35 @@ export default async function SocialEtPaie({
             {declaration?.repose_sur_des_valeurs_non_validees && (
               <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
                 <span style={{ display: "block" }}>
+                  {/* Réécrit le 15 octobre 2026 : les taux CNPS, CFC et FNE sont validés, et
+                      chaque valeur cite désormais son article du CGI 2026. */}
                   <strong style={{ display: "inline", fontWeight: 600 }}>
-                    Aucun taux de paie n&rsquo;a encore été validé sur le texte.
+                    Certaines valeurs de cette paie attendent la validation du fiscaliste.
                   </strong>{" "}
-                  Cotisations CNPS, barème d&rsquo;impôt sur le revenu, forfaits
-                  d&rsquo;avantages en nature : toutes ces valeurs portent le statut{" "}
-                  <code>A_VALIDER</code> et proviennent de sources secondaires.
+                  Chacune est relue dans l&rsquo;édition officielle 2026 du Code général des
+                  impôts et ses annexes, avec son article au référentiel ; les lignes
+                  concernées portent « à valider par le fiscaliste ».
                 </span>
                 <span style={{ display: "block" }}>
-                  Aucun bulletin produit ici n&rsquo;est opposable, et la taxe de
-                  développement local est <strong>indicative</strong> : son barème est à
-                  montant fixe par palier, modélisé faute de mieux en pourcentage.
+                  Tant qu&rsquo;une ligne l&rsquo;indique, le bulletin n&rsquo;est pas opposable.
                 </span>
               </div>
             )}
 
+            {groupeDuDossier && (
+              <GroupeDeRisque dossier={niu} etat={groupeDuDossier} peutEnregistrer={saisit} aujourdhui={jour} />
+            )}
+
             {declaration && <SyntheseVersement declaration={declaration} />}
+
+            {charges && (
+              <Panneau
+                titre="Arrêter les charges du mois"
+                aide="La paie propose ; vous corrigez s'il le faut, puis vous arrêtez. Seuls les montants arrêtés servent aux appels de fonds et aux déclarations."
+              >
+                <ArreterLesCharges entreprise={niu} annee={annee} mois={mois} charges={charges} />
+              </Panneau>
+            )}
 
             {declaration && declaration.mouvements.length > 0 && (
               <Panneau
@@ -242,17 +274,31 @@ export default async function SocialEtPaie({
                   <input type="hidden" name="mois" value={mois} />
                   <input type="hidden" name="bulletin" value={parametres.bulletin} />
                   <label style={{ font: "600 12px/1.4 var(--police-texte)" }}>
-                    Groupe de risque CNPS{" "}
-                    <select name="groupe" defaultValue={groupe}>
+                    Simuler un groupe CNPS{" "}
+                    <select name="groupe" defaultValue={groupe ?? ""}>
+                      <option value="">celui du dossier</option>
                       <option value="A">A</option>
                       <option value="B">B</option>
                       <option value="C">C</option>
                     </select>
                   </label>
                   <button type="submit" className="bouton-discret">Recalculer</button>
-                  <span style={{ font: "400 12px/1.5 var(--police-texte)", color: "var(--warning, #9a6700)" }}>
-                    À confirmer sur la notification CNPS du dossier : il n&rsquo;est pas encore enregistré au dossier.
-                  </span>
+                  {bulletin && (
+                    // 15 octobre 2026 : le bulletin se remet au salarié, du même calcul que l'écran.
+                    <a
+                      className="bouton-discret"
+                      href={`/api/bulletins/${encodeURIComponent(niu)}/${annee}/${mois}/${encodeURIComponent(parametres.bulletin!)}${groupe ? `?groupe_risque=${groupe}` : ""}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Imprimer le bulletin (PDF) ↗
+                    </a>
+                  )}
+                  {groupe && (
+                    <span style={{ font: "400 12px/1.5 var(--police-texte)", color: "var(--warning, #9a6700)" }}>
+                      Simulation du groupe {groupe} : le bulletin réel applique le groupe du dossier.
+                    </span>
+                  )}
                 </form>
                 {refusBulletin ? (
                   <EtatErreur titre="Pas de bulletin" detail={refusBulletin} />
@@ -263,7 +309,7 @@ export default async function SocialEtPaie({
             )}
 
             {saisit && (
-              <Panneau titre="Embaucher" aide="Inscrire le salarié et ouvrir son premier contrat. Un matricule ne se réattribue pas.">
+              <Panneau id="embaucher" titre="Embaucher" aide="Inscrire le salarié et ouvrir son premier contrat. Un matricule ne se réattribue pas.">
                 <EmbaucheSalarie dossier={niu} aujourdhui={jour} />
               </Panneau>
             )}
@@ -280,7 +326,7 @@ export default async function SocialEtPaie({
               ) : (
                 <>
                   <EnteteTableau colonnes={COLONNES} />
-                  {personnel.map((salarie) => (
+                  <Paginer>{personnel.map((salarie) => (
                     <LigneTableau key={salarie.matricule} colonnes={COLONNES} hauteur="auto">
                       <Cellule>
                         <strong style={{ fontWeight: 600 }}>
@@ -292,7 +338,15 @@ export default async function SocialEtPaie({
                       <Cellule>
                         {salarie.depuis ? dateCourte(salarie.depuis) : TIRET}
                       </Cellule>
-                      <Cellule>{salarie.matricule_cnps ?? "à obtenir"}</Cellule>
+                      <Cellule>
+                        {salarie.matricule_cnps ?? "à obtenir"}
+                        {/* 9 novembre 2026 : ce qui manque pour l'immatriculer. */}
+                        {(salarie.a_completer?.length ?? 0) > 0 && (
+                          <span style={{ display: "block", font: "400 11.5px/1.4 var(--police-texte)", color: "var(--warning, #8a5a00)" }}>
+                            À compléter : {salarie.a_completer!.join(", ")}
+                          </span>
+                        )}
+                      </Cellule>
                       <Cellule aDroite>
                         {salarie.salaire_base ? (
                           <Montant valeur={Number(salarie.salaire_base)} />
@@ -316,7 +370,7 @@ export default async function SocialEtPaie({
                         )}
                       </span>
                     </LigneTableau>
-                  ))}
+                  ))}</Paginer>
                 </>
               )}
             </Panneau>
@@ -336,7 +390,7 @@ function DetailBulletin({ bulletin }: { bulletin: Bulletin }) {
       <span>
         {l.libelle}
         {l.taux ? ` · ${l.taux} %` : ""}
-        {l.non_valide && <span style={{ color: "var(--warning, #9a6700)" }}> · taux à valider</span>}
+        {l.non_valide && <span style={{ color: "var(--warning, #9a6700)" }}> · à valider par le fiscaliste</span>}
       </span>
       <span style={{ fontVariantNumeric: "tabular-nums" }}>
         <Montant valeur={Number(l.montant)} />
@@ -346,6 +400,11 @@ function DetailBulletin({ bulletin }: { bulletin: Bulletin }) {
   const liste: React.CSSProperties = { listStyle: "none", margin: "4px 0 10px", padding: 0, font: "400 13px/1.7 var(--police-texte)" };
   return (
     <div style={{ padding: "6px 16px 14px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+      {bulletin.alertes.map((a) => (
+        <p key={a} role="alert" style={{ gridColumn: "1 / -1", margin: 0, padding: "8px 12px", borderRadius: "var(--rayon)", background: "var(--warning-100, #fff4d6)", font: "500 13px/1.5 var(--police-texte)" }}>
+          {a}
+        </p>
+      ))}
       <div>
         <strong style={{ font: "600 13px/1.4 var(--police-texte)" }}>Rémunération</strong>
         <ul style={liste}>

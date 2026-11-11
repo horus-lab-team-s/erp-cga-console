@@ -118,6 +118,37 @@ export async function renforcerLaSession(
   }
 }
 
+/**
+ * Le premier code de l'application active la clé affichée (19 octobre 2026).
+ *
+ * ⚠️ La clé ne sert à rien avant ce code : une page fermée trop tôt ne bloque plus
+ * le compte, il suffit de redemander l'association.
+ */
+export async function activerLeSecondFacteur(
+  _precedent: EtatActe,
+  donnees: FormData,
+): Promise<EtatActe> {
+  const code = String(donnees.get("code") ?? "").replace(/\s/g, "");
+  if (!/^\d{6,8}$/.test(code)) {
+    return { echec: "Saisissez les six chiffres affichés par l'application.", fait: null };
+  }
+  try {
+    await appeler("/transverse/second-facteur/activation", {
+      methode: "POST",
+      authentifie: true,
+      corps: { code },
+    });
+    revalidatePath("/", "layout");
+    return {
+      echec: null,
+      fait: "Second facteur activé. La session est renforcée pour quinze minutes.",
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
 export async function reinitialiserSecondFacteur(
   _precedent: EtatActe,
   donnees: FormData,

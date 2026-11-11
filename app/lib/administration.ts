@@ -59,6 +59,8 @@ export type LigneCompte = {
 
 export type FicheRole = {
   role: Role;
+  /** 18 octobre 2026 : le nom du rôle, celui qu'un rôle du cabinet a reçu à sa création. */
+  libelle: string;
   permissions: Permission[];
   portee_obligatoire: boolean;
 };

@@ -194,6 +194,25 @@ describe("Ouvrir une session", () => {
     // dont aucune donnée ne le concerne.
     expect(rediriger).toHaveBeenCalledWith({ href: "/mon-espace", locale: "fr" });
   });
+
+  it("route la caisse vers sa caisse, même avec la vue des versements", async () => {
+    // 18 octobre 2026 : la caisse a reçu la vue des versements par axe. La règle « sa
+    // seule permission est d'encaisser » ne la reconnaissait plus, et elle arrivait sur
+    // un tableau de bord fermé à son rôle.
+    doublerFetch([
+      {
+        corps: {
+          ...acces,
+          roles: ["CAISSE"],
+          permissions: ["ENCAISSER", "VOIR_VERSEMENTS_COMMERCE", "VOIR_VERSEMENTS_HONORAIRES"],
+        },
+      },
+    ]);
+    await jusquALaRedirection(
+      connexion({ echec: null }, formulaire({ courriel: "n@b.cm", motDePasse: "s" })),
+    );
+    expect(rediriger).toHaveBeenCalledWith({ href: "/caisse", locale: "fr" });
+  });
 });
 
 describe("Fermer une session", () => {

@@ -54,6 +54,9 @@ const nextConfig: NextConfig = {
         source: "/:chemin*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
+          // 19 octobre 2026 (audit) : le navigateur n'accepte plus que HTTPS pour ce
+          // domaine pendant un an. Ignoré sur une réponse en clair, donc sans effet local.
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {

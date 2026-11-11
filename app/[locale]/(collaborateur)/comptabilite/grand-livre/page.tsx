@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { EtatVide, Panneau } from "@/app/components/Tableau";
 import { DetailDuCompte } from "@/app/components/comptabilite/DetailDuCompte";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { Link } from "@/i18n/navigation";
 import { ErreurApi } from "@/app/lib/api";
 import {
@@ -65,6 +66,7 @@ export default async function GrandLivre({
             { libelle: "Grand livre" },
           ]}
         />
+        {niu && <DossierDeLaPage niu={niu} />}
         <div className="page-travail">
           <EtatVide
             titre="Choisir un compte"

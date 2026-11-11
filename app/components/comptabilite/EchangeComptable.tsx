@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { exporterLesEcritures, reprendreUnFichier } from "@/app/lib/actions-echange";
 import { ETAT_EXPORT_INITIAL, ETAT_REPRISE_INITIAL } from "@/app/lib/saisie-echange";
@@ -37,7 +37,7 @@ function ChoixCommuns({ exercice, profils }: { exercice: string; profils: Profil
       </label>
       <label style={etiquette}>
         Format
-        <select name="profil" required defaultValue={profils[0]?.code} style={champ}>
+        <select name="profil" required defaultValue={profils[0]?.code} style={{ ...champ, paddingRight: 30 }}>
           {profils.map((p) => (
             <option key={p.code} value={p.code}>
               {p.libelle} ({p.encodage})
@@ -115,12 +115,20 @@ export function RepriseDUnFichier({ entreprise, exercice, profils }: { entrepris
   const [version, setVersion] = useState(0);
   const [versionControlee, setVersionControlee] = useState(-1);
   const rapport = versionControlee === version ? etat.rapport : null;
+  const [, demarrer] = useTransition();
 
+  // ⚠️ PAS DE `action={…}` SUR CE FORMULAIRE (10 novembre 2026). React vide un formulaire
+  // après son action : le fichier contrôlé disparaissait, et « Appliquer » répondait
+  // « Please select a file » (constaté à la recette). On envoie donc à la main, avec le
+  // bouton qui a soumis (`appliquer` = non | oui), et le fichier reste choisi.
   return (
     <form
-      action={async (donnees) => {
+      onSubmit={(evenement) => {
+        evenement.preventDefault();
+        const soumetteur = (evenement.nativeEvent as SubmitEvent).submitter;
+        const donnees = new FormData(evenement.currentTarget, soumetteur);
         setVersionControlee(version);
-        await envoyer(donnees);
+        demarrer(() => envoyer(donnees));
       }}
       onChange={() => setVersion((v) => v + 1)}
       style={grille}

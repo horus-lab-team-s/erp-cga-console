@@ -236,10 +236,12 @@ function Selecteur({
       style={{
         height: "var(--hauteur-controle)",
         maxWidth: 190,
-        padding: "0 8px",
-        border: "1px solid var(--line-200)",
+        // `paddingRight` laisse la place au chevron de la feuille commune, et
+        // `backgroundColor` (non le raccourci `background`) ne l'efface plus.
+        padding: "0 30px 0 10px",
+        border: "1px solid var(--line-300)",
         borderRadius: "var(--rayon)",
-        background: valeur ? "var(--brand-indigo-100)" : "var(--surface)",
+        backgroundColor: valeur ? "var(--brand-indigo-100)" : "var(--surface)",
         color: valeur ? "var(--brand-indigo-700)" : "var(--ink-900)",
         font: `${valeur ? 600 : 400} 12.5px/1 var(--police-texte)`,
         cursor: "pointer",

@@ -19,6 +19,7 @@ import {
   type LigneCreation,
 } from "@/app/lib/creations";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Création d'entreprise · Plateforme CGA" };
 
@@ -61,7 +62,9 @@ export const dynamic = "force-dynamic";
  */
 export default async function PipelineCreation() {
   const acces = await exigerAcces();
-  if (!detient(acces, "SUIVRE_FORMALITE")) {
+  // 9 novembre 2026 : la direction lit le pipeline (LIRE_PILOTAGE) sans ouvrir de dossier.
+  const mene = detient(acces, "SUIVRE_FORMALITE");
+  if (!mene && !detient(acces, "LIRE_PILOTAGE")) {
     return (
       <EcranReserve
         titre="Création d&rsquo;entreprise"
@@ -75,7 +78,7 @@ export default async function PipelineCreation() {
   let erreur: string | null = null;
   // Les checklists par forme, pour le formulaire d'ouverture (pas 82). Une forme dont la
   // checklist ne se lit pas s'ouvre quand même, sans la liste.
-  const checklists = Object.fromEntries(
+  const checklists = !mene ? {} : Object.fromEntries(
     await Promise.all(
       FORMES_JURIDIQUES.map(async (f) => [f, await lireChecklist(f).catch(() => [])] as const),
     ),
@@ -113,9 +116,11 @@ export default async function PipelineCreation() {
           </p>
         </div>
 
-        <Panneau titre="Nouveau dossier" aide="La date d'ouverture est celle du jour, posée par le serveur">
-          <OuvertureDossier formes={FORMES_JURIDIQUES} checklists={checklists} />
-        </Panneau>
+        {mene && (
+          <Panneau titre="Nouveau dossier" aide="La date d'ouverture est celle du jour, posée par le serveur">
+            <OuvertureDossier formes={FORMES_JURIDIQUES} checklists={checklists} />
+          </Panneau>
+        )}
 
         {erreur ? (
           <EtatErreur titre="Pipeline indisponible" detail={erreur} />
@@ -148,22 +153,22 @@ export default async function PipelineCreation() {
                   {convertis.length === 0 ? (
                     <EtatVide titre="Aucune conversion" />
                   ) : (
-                    convertis.map((d) => (
+                    <Paginer>{convertis.map((d) => (
                       <LigneClose
                         key={d.reference}
                         dossier={d}
                         precision={d.converti_en ? `NIU ${d.converti_en}` : ""}
                       />
-                    ))
+                    ))}</Paginer>
                   )}
                 </Panneau>
                 <Panneau titre="Abandonnés" aide="Le motif est ce qui rend le pipeline analysable">
                   {abandonnes.length === 0 ? (
                     <EtatVide titre="Aucun abandon" />
                   ) : (
-                    abandonnes.map((d) => (
+                    <Paginer>{abandonnes.map((d) => (
                       <LigneClose key={d.reference} dossier={d} precision="" />
-                    ))
+                    ))}</Paginer>
                   )}
                 </Panneau>
               </div>
@@ -216,7 +221,7 @@ function ColonneEtape({ etape, dossiers }: { etape: Etape; dossiers: LigneCreati
             Aucun dossier
           </p>
         ) : (
-          dossiers.map((dossier) => <CarteDossier key={dossier.reference} dossier={dossier} />)
+          <Paginer>{dossiers.map((dossier) => <CarteDossier key={dossier.reference} dossier={dossier} />)}</Paginer>
         )}
       </div>
     </section>

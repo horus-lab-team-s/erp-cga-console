@@ -1,3 +1,4 @@
+import { politiqueDeContenu } from "@/app/lib/politique-de-contenu";
 import type { NextRequest } from "next/server";
 
 import createMiddleware from "next-intl/middleware";
@@ -47,8 +48,15 @@ const negocierLaLangue = createMiddleware(routing);
  *     jamais au backend directement : tout passe par le serveur Next, une seule
  *     origine. Un script injecté ne peut donc envoyer la session, un montant ou
  *     un NIU nulle part ;
- *   · `object-src 'none'` — pas de greffon, pas de PDF exécuté dans la page. Un
- *     justificatif déposé par un adhérent est du contenu venu du dehors ;
+ *   · `object-src blob:` — ni greffon ni PDF venus d'une adresse : seulement un fichier
+ *     que la page a déjà reçu de notre serveur. ⚠️ C'ÉTAIT `'none'`, et l'aperçu des PDF
+ *     n'a donc jamais rien montré. Le 15 octobre 2026, le cabinet a retenu pdf.js, qui
+ *     dessine le PDF sans rien en exécuter (`ApercuPdf.tsx`), ET demandé d'admettre aussi
+ *     le lecteur de Chrome, en secours quand pdf.js échoue. Ce secours lit le document,
+ *     JavaScript compris, dans son bac à sable : c'est le compromis accepté. Il exige
+ *     aussi `frame-src blob:`, Chrome montant son lecteur dans un cadre même sous
+ *     `<object>`. Aucune des deux ne s'étend à une origine extérieure
+ *     (`app/lib/politique-de-contenu.test.ts` le garde) ;
  *   · `base-uri 'self'` — sans elle, une balise `<base>` injectée détourne
  *     **toutes** les adresses relatives, y compris celles des formulaires ;
  *   · `form-action 'self'` — un formulaire ne poste jamais ailleurs. C'est ce
@@ -67,26 +75,6 @@ const negocierLaLangue = createMiddleware(routing);
  * empêche l'injection reste l'échappement de React et le refus du serveur.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-function politiqueDeContenu(nonce: string): string {
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    // Voir l'en-tête : les styles en attribut sont la façon d'écrire du produit.
-    "style-src 'self' 'unsafe-inline'",
-    // `data:` pour les images en ligne, `blob:` pour un justificatif qu'on
-    // prévisualise avant de l'envoyer.
-    "img-src 'self' data: blob:",
-    // `next/font` héberge les polices localement : aucune origine externe.
-    "font-src 'self'",
-    "connect-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    // ⚠️ Pas de `upgrade-insecure-requests` : la démonstration est servie en
-    // clair, et la directive ferait échouer chaque requête de la page.
-  ].join("; ");
-}
 
 export default function proxy(requete: NextRequest) {
   // ⚠️ `crypto` de la plateforme, pas une bibliothèque : l'exécution en

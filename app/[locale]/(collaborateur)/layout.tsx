@@ -6,6 +6,7 @@ import { exigerAcces } from "@/app/lib/session";
 import { lireCompteurs, lireDossiers } from "@/app/lib/portefeuille";
 import { lireMesNotifications } from "@/app/lib/notifications";
 import "@/app/styles/coquille.css";
+import "@/app/styles/moderne.css";
 
 /**
  * E00 · Coquille de l'espace collaborateur.

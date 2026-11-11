@@ -167,21 +167,6 @@ export type Souscription = {
   ouvre_un_acces: boolean;
 };
 
-export type StatutPaiement = "EN_ATTENTE" | "VALIDE" | "REJETE" | "EXPIRE";
-
-/** Le paiement tel que l'engagement le rend : seuls les champs lus à l'écran. */
-export type Paiement = {
-  identifiant: string;
-  montant: string;
-  telephone: string;
-  statut: StatutPaiement;
-  motif: string | null;
-  encaisse: boolean;
-  clos: boolean;
-};
-
-export type Engagement = { souscription: Souscription; paiement: Paiement; message: string };
-
 export type EtatEcheance = "REGLEE" | "EN_COURS" | "A_APPELER" | "A_VENIR" | "IMPAYEE" | "EN_DEFAUT";
 
 export type EcheanceAbonnement = {
@@ -221,23 +206,6 @@ export type ServiceASuspendre = {
   consigne: string;
 };
 
-export const LIBELLES_ETAT_SOUSCRIPTION: Record<EtatSouscription, string> = {
-  EN_ATTENTE_PAIEMENT: "En attente du paiement",
-  PAYEE: "Payée",
-  ACTIVEE: "Active",
-  ABANDONNEE: "Abandonnée",
-  RESILIEE: "Résiliée",
-};
-
-export const LIBELLES_ETAT_ECHEANCE: Record<EtatEcheance, string> = {
-  REGLEE: "Réglée",
-  EN_COURS: "Prélèvement en cours",
-  A_APPELER: "À appeler",
-  A_VENIR: "À venir",
-  IMPAYEE: "Impayée",
-  EN_DEFAUT: "En défaut",
-};
-
 /** Une lecture publique qui peut ne pas aboutir : la page dit pourquoi, sans lever. */
 export type Lecture<T> = { valeur: T } | { echec: string; statut: number | null };
 
@@ -256,26 +224,6 @@ async function enLecture<T>(appel: Promise<T>): Promise<Lecture<T>> {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, statut: erreur.statut };
     throw erreur;
   }
-}
-
-// ── Le visiteur ─────────────────────────────────────────────────────────────
-
-/**
- * Le catalogue au barème d'un jour.
- *
- * ⚠️ Le jour est obligatoire au backend : un barème se lit à une date. La page passe
- * celui du serveur, le même que le backend prendra pour figer le devis.
- */
-export function lireCatalogue(jour: string): Promise<Lecture<Service[]>> {
-  return enLecture(appeler<Service[]>(`/souscription/services?a_la_date=${encodeURIComponent(jour)}`));
-}
-
-export function lireDevis(reference: string): Promise<Lecture<Devis>> {
-  return enLecture(appeler<Devis>(`/souscription/devis/${encodeURIComponent(reference)}`));
-}
-
-export function lireSouscription(reference: string): Promise<Lecture<Souscription>> {
-  return enLecture(appeler<Souscription>(`/souscription/souscriptions/${encodeURIComponent(reference)}`));
 }
 
 /** Calculé à la date, jamais stocké : il suit la date d'effet et la résiliation. */

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { renforcerLaSession } from "@/app/lib/actions-second-facteur";
+import { activerLeSecondFacteur, renforcerLaSession } from "@/app/lib/actions-second-facteur";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 
 const note: React.CSSProperties = {
@@ -40,14 +40,22 @@ export function CleAffichee({
       {consigne && <p style={{ ...note, marginTop: 6 }}>{consigne}</p>}
       <p style={{ ...note, marginTop: 6, color: "var(--warning)" }}>
         Cette clé ne sera plus affichée : ne la conservez nulle part ailleurs que dans l&rsquo;application.
+        Elle ne protège votre compte qu&rsquo;après la saisie du premier code ; si cette page se ferme
+        avant, redemandez simplement l&rsquo;association.
       </p>
     </div>
   );
 }
 
-/** La saisie d'un code, qui renforce la session pour quinze minutes. */
-export function SaisieDuCode() {
-  const [etat, renforcer, enCours] = useActionState(renforcerLaSession, ETAT_ACTE_INITIAL);
+/**
+ * La saisie d'un code. Par défaut elle renforce la session pour quinze minutes ;
+ * `activation` : c'est le premier code, qui active la clé qu'on vient d'afficher.
+ */
+export function SaisieDuCode({ activation = false }: { activation?: boolean } = {}) {
+  const [etat, renforcer, enCours] = useActionState(
+    activation ? activerLeSecondFacteur : renforcerLaSession,
+    ETAT_ACTE_INITIAL,
+  );
   return (
     <form action={renforcer} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
       <label style={{ font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
@@ -68,7 +76,7 @@ export function SaisieDuCode() {
         />
       </label>
       <button type="submit" className="bouton-discret" disabled={enCours}>
-        {enCours ? "…" : "Renforcer la session"}
+        {enCours ? "…" : activation ? "Activer" : "Renforcer la session"}
       </button>
       {etat.echec && (
         <span role="alert" style={{ ...note, color: "var(--danger)" }}>

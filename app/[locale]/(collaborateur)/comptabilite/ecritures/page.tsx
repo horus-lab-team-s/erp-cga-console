@@ -20,6 +20,7 @@ import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui, lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Écriture · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -169,12 +170,12 @@ export default async function FicheEcriture({
 
           <Panneau titre="Historique de l'écriture">
             <ol style={{ listStyle: "none", margin: 0, padding: "8px 14px", display: "grid", gap: 8 }}>
-              {fiche.historique.map((h, rang) => (
+              <Paginer commeElementDeListe>{fiche.historique.map((h, rang) => (
                 <li key={rang} style={{ font: "400 12.5px/1.5 var(--police-texte)" }}>
                   <span style={{ color: "var(--ink-500)", fontVariantNumeric: "tabular-nums" }}>{h.quand ? dateCourte(h.quand) : "date non conservée"}</span> · {h.quoi}
                   {h.qui && <span style={{ color: "var(--ink-500)" }}> · {h.qui}</span>}
                 </li>
-              ))}
+              ))}</Paginer>
             </ol>
           </Panneau>
         </div>

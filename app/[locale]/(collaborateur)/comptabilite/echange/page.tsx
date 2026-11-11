@@ -4,12 +4,14 @@ import { Cellule, EnteteTableau, EtatErreur, EtatVide, LigneTableau, Panneau, ty
 import { ExportDesEcritures, RepriseDUnFichier } from "@/app/components/comptabilite/EchangeComptable";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { exerciceCourant } from "@/app/lib/comptabilite";
 import { lirePlanImputation, lireProfilsDEchange } from "@/app/lib/echange";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Échange comptable · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -80,6 +82,7 @@ export default async function EchangeComptable({ searchParams }: { searchParams:
       <EnteteTravail
         miettes={[{ libelle: "Comptabilité", href: "/comptabilite" }, { libelle: courant.denomination }, { libelle: "Échange" }]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Échange avec le logiciel du client</h1>
@@ -133,16 +136,16 @@ export default async function EchangeComptable({ searchParams }: { searchParams:
               ) : (
                 <>
                   <EnteteTableau colonnes={REGLES} />
-                  {[...plan.valeur.regles]
+                  <Paginer>{[...plan.valeur.regles]
                     .sort((a, b) => a.priorite - b.priorite)
                     .map((r, rang) => (
                       <LigneTableau key={`${r.priorite}-${r.motif}`} colonnes={REGLES} ton={rang % 2 ? "alterne" : "normal"}>
                         <Cellule aDroite tabulaire>{r.priorite}</Cellule>
-                        <Cellule>{r.motif}</Cellule>
+                        <Cellule lignes={2} titre={r.motif}>{motsDuMotif(r.motif)}</Cellule>
                         <Cellule tabulaire gras>{r.compte}</Cellule>
                         <Cellule>{r.libelle}</Cellule>
                       </LigneTableau>
-                    ))}
+                    ))}</Paginer>
                 </>
               )}
             </>
@@ -151,4 +154,18 @@ export default async function EchangeComptable({ searchParams }: { searchParams:
       </div>
     </>
   );
+}
+
+/**
+ * Le motif est une expression régulière (« (?i)ramette|cartouche ») : le cabinet lit des
+ * mots, pas une syntaxe. On retire le drapeau et on sépare les variantes (9 novembre 2026).
+ * Le motif exact reste au survol.
+ */
+function motsDuMotif(motif: string): string {
+  return motif
+    .replace(/^\(\?[a-z]+\)/, "")
+    .split("|")
+    .map((m) => m.replace(/\\b|[\^$\\]/g, "").trim())
+    .filter(Boolean)
+    .join(", ");
 }

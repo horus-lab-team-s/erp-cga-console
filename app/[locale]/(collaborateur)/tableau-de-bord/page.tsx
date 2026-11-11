@@ -13,7 +13,9 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { Icone } from "@/app/components/coquille/Icone";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
+import { VueDeDirection } from "@/app/components/tableau-de-bord/VueDeDirection";
 import { detient } from "@/app/lib/acces";
 import { controlerToutLeFlux, type Constat } from "@/app/lib/api";
 import { lireDemandes, lirePieces } from "@/app/lib/collecte";
@@ -22,6 +24,7 @@ import { dateCourte, dateLongue, montantFcfa, TIRET } from "@/app/lib/formats";
 import { lireEcheancier, type LigneEcheance } from "@/app/lib/obligations";
 import { aujourdhui, lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = {
   title: "Tableau de bord · Plateforme CGA",
@@ -81,6 +84,9 @@ type Indicateur = {
   valeur: string;
   detail: string;
   ton: "neutre" | "attention" | "alerte";
+  /** 9 novembre 2026 : chaque indicateur mène à l'écran qui le détaille. */
+  href: string;
+  icone: string;
 };
 
 /**
@@ -125,8 +131,12 @@ const COLONNES_ECHEANCES: Colonne[] = [
   { cle: "date", libelle: "Échéance", largeur: "84px" },
   { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.3fr)" },
   { cle: "obligation", libelle: "Obligation", largeur: "minmax(0, 1.6fr)" },
-  { cle: "restant", libelle: "Délai", largeur: "100px", aDroite: true },
-  { cle: "statut", libelle: "Statut", largeur: "92px" },
+  // 9 novembre 2026 : « Délai » et « Statut » fusionnent. Une ligne en retard disait
+  // trois fois la même chose (liseré, « 86 j de retard », pastille « En retard ») et,
+  // dès que la colonne du montant s'ouvrait, six colonnes demandaient ~750 px dans un
+  // panneau de 650 : « Statut » était coupé. Le retard se lit au délai rouge ; la
+  // pastille ne reste que pour ce qui n'est pas en retard (à déposer, déposée…).
+  { cle: "restant", libelle: "Délai", largeur: "108px", aDroite: true },
 ];
 
 /**
@@ -139,7 +149,7 @@ const COLONNES_ECHEANCES: Colonne[] = [
  */
 const COLONNES_ECHEANCES_CHIFFREES: Colonne[] = [
   ...COLONNES_ECHEANCES.slice(0, 3),
-  { cle: "montant", libelle: "Montant estimé", largeur: "104px", aDroite: true },
+  { cle: "montant", libelle: "Montant estimé", largeur: "100px", aDroite: true },
   ...COLONNES_ECHEANCES.slice(3),
 ];
 
@@ -158,8 +168,8 @@ const COLONNES_ANOMALIES: Colonne[] = [
 
 const COLONNES_ATTENDUES: Colonne[] = [
   { cle: "entreprise", libelle: "Entreprise", largeur: "minmax(0, 1.5fr)" },
-  { cle: "demandes", libelle: "Demandées", largeur: "90px", aDroite: true },
-  { cle: "bloquantes", libelle: "Bloquantes", largeur: "90px", aDroite: true },
+  { cle: "demandes", libelle: "Demandées", largeur: "84px", aDroite: true },
+  { cle: "bloquantes", libelle: "Bloquantes", largeur: "84px", aDroite: true },
   { cle: "depuis", libelle: "Plus ancienne", largeur: "104px" },
 ];
 
@@ -184,7 +194,7 @@ const STATUT_OBLIGATION: Record<LigneEcheance["obligation"]["statut"], Statut> =
 
 const ORDRE_GRAVITE: Record<string, number> = { BLOQUANT: 2, MAJEUR: 1 };
 
-export default async function TableauDeBord() {
+export default async function TableauDeBord({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   // ⚠️ Garde avant tout appel : sinon l'API rend 403 et le visiteur voit un 500.
   if (!detient(acces, "LIRE_DOSSIER")) {
@@ -192,11 +202,14 @@ export default async function TableauDeBord() {
   }
   const jour = aujourdhui();
   const exercice = exerciceCourant();
+  // 9 novembre 2026 : le dossier choisi au sélecteur filtre tout l'écran. Il n'était lu
+  // nulle part : changer d'entreprise ne changeait aucun chiffre.
+  const { dossier: demande } = await searchParams;
 
   let donnees: Awaited<ReturnType<typeof lireLaJournee>> | null = null;
   let erreur: string | null = null;
   try {
-    donnees = await lireLaJournee(jour, exercice, detient(acces, "LIRE_PIECE"));
+    donnees = await lireLaJournee(jour, exercice, detient(acces, "LIRE_PIECE"), demande);
   } catch (cause) {
     erreur = cause instanceof Error ? cause.message : String(cause);
   }
@@ -225,9 +238,17 @@ export default async function TableauDeBord() {
           </h1>
           <p style={{ margin: 0, font: "400 12.5px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
             {dateLongue(jour)} · exercice {exercice} ·{" "}
-            {acces.dossiers === null
-              ? "tout le portefeuille"
-              : `${acces.dossiers.length} dossier${acces.dossiers.length > 1 ? "s" : ""}`}
+            {donnees?.choisi ? (
+              <>
+                <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>{donnees.choisi.denomination}</strong>
+                {" · "}
+                <Link href="/tableau-de-bord">voir tout le portefeuille</Link>
+              </>
+            ) : acces.dossiers === null ? (
+              "tout le portefeuille"
+            ) : (
+              `${acces.dossiers.length} dossier${acces.dossiers.length > 1 ? "s" : ""}`
+            )}
           </p>
         </div>
 
@@ -240,9 +261,12 @@ export default async function TableauDeBord() {
                 grille resterait à quatre colonnes sur un téléphone. */}
             <div className="grille-indicateurs">
               {donnees.indicateurs.map((indicateur) => (
-                <Carte key={indicateur.libelle} indicateur={indicateur} />
+                <Carte key={indicateur.libelle} indicateur={indicateur} dossier={donnees.choisi?.niu ?? null} />
               ))}
             </div>
+
+            {/* 9 novembre 2026 : la direction voit d'abord les tendances, puis les listes. */}
+            {detient(acces, "LIRE_PILOTAGE") && <VueDeDirection jour={jour} dossier={donnees.choisi?.niu ?? null} />}
 
             <div className="grille-panneaux">
               <Panneau
@@ -258,7 +282,7 @@ export default async function TableauDeBord() {
                     detail={`Aucune obligation non déposée d'ici ${HORIZON_JOURS} jours sur votre portefeuille.`}
                   />
                 ) : (
-                  donnees.echeances.map(({ ligne, denomination }, index) => {
+                  <Paginer>{donnees.echeances.map(({ ligne, denomination }, index) => {
                     const retard = ligne.en_retard ? Math.abs(ligne.jours_restants) : 0;
                     return (
                       <LigneTableau
@@ -297,20 +321,20 @@ export default async function TableauDeBord() {
                             )}
                           </Cellule>
                         )}
-                        <Cellule
-                          aDroite
-                          tabulaire
-                          gras
-                          couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
-                        >
-                          {ligne.en_retard ? `${retard} j de retard` : `${ligne.jours_restants} j`}
-                        </Cellule>
-                        <span>
-                          <PastilleStatut statut={ligne.en_retard ? "En retard" : STATUT_OBLIGATION[ligne.obligation.statut]} />
+                        <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                          <Cellule
+                            aDroite
+                            tabulaire
+                            gras
+                            couleur={ligne.en_retard ? "var(--danger)" : "var(--ink-900)"}
+                          >
+                            {ligne.en_retard ? `${retard} j de retard` : `${ligne.jours_restants} j`}
+                          </Cellule>
+                          {!ligne.en_retard && <PastilleStatut statut={STATUT_OBLIGATION[ligne.obligation.statut]} />}
                         </span>
                       </LigneTableau>
                     );
-                  })
+                  })}</Paginer>
                 )}
               </Panneau>
 
@@ -328,7 +352,7 @@ export default async function TableauDeBord() {
                     detail="Aucune pièce en attente ne porte de constat bloquant ou majeur."
                   />
                 ) : (
-                  donnees.anomalies.map(({ constat, reference, denomination }, index) => (
+                  <Paginer>{donnees.anomalies.map(({ constat, reference, denomination }, index) => (
                     <LigneTableau
                       key={`${reference}-${constat.code_regle}`}
                       colonnes={COLONNES_ANOMALIES}
@@ -372,7 +396,7 @@ export default async function TableauDeBord() {
                         )}
                       </Cellule>
                     </LigneTableau>
-                  ))
+                  ))}</Paginer>
                 )}
               </Panneau>
 
@@ -387,7 +411,7 @@ export default async function TableauDeBord() {
                 ) : donnees.attendues.length === 0 ? (
                   <EtatVide titre="Rien n'est attendu" detail="Aucune demande de pièce ouverte sur votre portefeuille." />
                 ) : (
-                  donnees.attendues.map((ligne, index) => (
+                  <Paginer>{donnees.attendues.map((ligne, index) => (
                     <LigneTableau
                       key={ligne.niu}
                       colonnes={COLONNES_ATTENDUES}
@@ -408,7 +432,7 @@ export default async function TableauDeBord() {
                         {dateCourte(ligne.plusAncienne)}
                       </Cellule>
                     </LigneTableau>
-                  ))
+                  ))}</Paginer>
                 )}
               </Panneau>
             </div>
@@ -430,9 +454,12 @@ export default async function TableauDeBord() {
  * ⚠️ Un échéancier illisible (un dossier sans exercice ouvert, par exemple) ne fait
  * pas tomber la page : il est ignoré, et l'indicateur le dit.
  */
-async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: boolean) {
-  const dossiers = await lireDossiers(jour);
-  const noms = new Map(dossiers.map((d) => [d.niu, d.denomination]));
+async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: boolean, demande?: string) {
+  const portefeuille = await lireDossiers(jour);
+  // Un dossier inconnu ou hors du périmètre ne filtre rien : on revient au portefeuille.
+  const filtre = demande && portefeuille.some((d) => d.niu === demande) ? demande : null;
+  const dossiers = filtre ? portefeuille.filter((d) => d.niu === filtre) : portefeuille;
+  const noms = new Map(portefeuille.map((d) => [d.niu, d.denomination]));
   const nom = (niu: string) => noms.get(niu) ?? niu;
 
   const lectures = await Promise.allSettled(dossiers.map((d) => lireEcheancier(d.niu, exercice, jour)));
@@ -452,7 +479,13 @@ async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: b
   let enAttente: number | null = null;
   let aIdentifier = 0;
   if (lirePiecesPermis) {
-    const [pieces, rapports, demandes] = await Promise.all([lirePieces({ a_la_date: jour }), controlerToutLeFlux(), lireDemandes()]);
+    const [toutesLesPieces, rapports, toutesLesDemandes] = await Promise.all([
+      lirePieces({ a_la_date: jour }),
+      controlerToutLeFlux(),
+      lireDemandes(),
+    ]);
+    const pieces = filtre ? toutesLesPieces.filter((p) => p.entreprise === filtre) : toutesLesPieces;
+    const demandes = filtre ? toutesLesDemandes.filter((d) => d.entreprise === filtre) : toutesLesDemandes;
     enAttente = pieces.filter((p) => !p.traitee).length;
     aIdentifier = pieces.filter((p) => !p.traitee && !p.identifiee).length;
     // Une anomalie est « à traiter » tant que la pièce qui la porte n'est ni
@@ -497,31 +530,40 @@ async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: b
   const indicateurs: Indicateur[] = [
     {
       libelle: "Dossiers suivis",
+      href: "/portefeuille",
+      icone: "portefeuille",
       valeur: String(dossiers.length),
       detail: illisibles > 0 ? `${illisibles} échéancier${illisibles > 1 ? "s" : ""} illisible${illisibles > 1 ? "s" : ""}` : `exercice ${exercice}`,
       ton: illisibles > 0 ? "attention" : "neutre",
     },
     {
       libelle: "Échéances sous 7 jours",
+      href: "/obligations",
+      icone: "obligations",
       valeur: String(sousSept),
       detail: enRetard > 0 ? `et ${enRetard} en retard` : "aucune en retard",
       ton: enRetard > 0 ? "alerte" : sousSept > 0 ? "attention" : "neutre",
     },
     {
       libelle: "Pièces en attente",
+      href: "/pieces",
+      icone: "pieces",
       valeur: enAttente === null ? TIRET : String(enAttente),
       detail: enAttente === null ? "hors de votre rôle" : `dont ${aIdentifier} à identifier`,
       ton: "neutre",
     },
     {
       libelle: "Anomalies bloquantes",
+      href: "/conformite/file",
+      icone: "conformite",
       valeur: anomalies === null ? TIRET : String(new Set(bloquantes.map((a) => a.reference)).size),
       detail: anomalies === null ? "hors de votre rôle" : "pièces non comptabilisables en l'état",
       ton: bloquantes.length > 0 ? "alerte" : "neutre",
     },
   ];
 
-  return { indicateurs, echeances, anomalies, attendues };
+  const choisi = filtre ? { niu: filtre, denomination: nom(filtre) } : null;
+  return { indicateurs, echeances, anomalies, attendues, choisi };
 }
 
 /**
@@ -548,7 +590,7 @@ async function lireLaJournee(jour: string, exercice: string, lirePiecesPermis: b
  * distinguer ce qui presse de ce qui attend.
  * ─────────────────────────────────────────────────────────────────────────────
  */
-function Carte({ indicateur }: { indicateur: Indicateur }) {
+function Carte({ indicateur, dossier }: { indicateur: Indicateur; dossier: string | null }) {
   const tons = {
     neutre: {
       arete: "var(--line-300)",
@@ -571,8 +613,13 @@ function Carte({ indicateur }: { indicateur: Indicateur }) {
   }[indicateur.ton];
 
   return (
-    <article
+    <Link
+      href={dossier ? `${indicateur.href}?dossier=${encodeURIComponent(dossier)}` : indicateur.href}
+      className="carte-indicateur"
       style={{
+        display: "block",
+        color: "inherit",
+        textDecoration: "none",
         position: "relative",
         overflow: "hidden",
         border: "1px solid var(--line-200)",
@@ -617,7 +664,10 @@ function Carte({ indicateur }: { indicateur: Indicateur }) {
       <p style={{ margin: 0, font: "400 11.5px/1.45 var(--police-texte)", color: "var(--ink-500)" }}>
         {indicateur.detail}
       </p>
-    </article>
+      <span className="carte-indicateur__icone" aria-hidden="true">
+        <Icone nom={indicateur.icone} taille={18} />
+      </span>
+    </Link>
   );
 }
 

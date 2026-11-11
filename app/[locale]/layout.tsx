@@ -1,4 +1,5 @@
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { BandeauEssai } from "@/app/components/essai/BandeauEssai";
 import { setRequestLocale } from "next-intl/server";
 import { Inter, Poppins } from "next/font/google";
 import { notFound } from "next/navigation";
@@ -105,6 +106,8 @@ export default async function LayoutRacine({
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: APPLIQUER_THEME }} />
       </head>
       <body className="min-h-full flex flex-col">
+        {/* 9 novembre 2026 : la période d'essai des paiements, annoncée sur chaque écran. */}
+        <BandeauEssai />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

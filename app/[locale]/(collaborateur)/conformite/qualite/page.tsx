@@ -10,6 +10,7 @@ import { LIBELLES_LECTURE, lireLaQualiteDesRegles, type QualiteDesRegles } from 
 import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Qualité des règles · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -109,7 +110,7 @@ export default async function QualiteDesReglesPage({ searchParams }: { searchPar
           ) : qualite && qualite.regles.length === 0 ? (
             <EtatVide titre="Aucune règle en vigueur" />
           ) : (
-            qualite?.regles.map((r, rang) => (
+            <Paginer>{qualite?.regles.map((r, rang) => (
               <LigneTableau key={r.code} colonnes={COLONNES} ton={rang % 2 ? "alterne" : "normal"}>
                 <Cellule tabulaire couleur="var(--brand-indigo-700)">
                   {/* Pas 103 : la règle s'ouvre sur ses constats, où l'on écarte en masse. */}
@@ -128,7 +129,7 @@ export default async function QualiteDesReglesPage({ searchParams }: { searchPar
                   </span>
                 </Cellule>
               </LigneTableau>
-            ))
+            ))}</Paginer>
           )}
         </Panneau>
         <p style={{ margin: 0, font: "400 12px/1.6 var(--police-texte)", color: "var(--ink-500)" }}>

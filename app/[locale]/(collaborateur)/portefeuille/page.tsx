@@ -9,15 +9,21 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
 import { Admission, Resiliation } from "@/app/components/portefeuille/GestesDAdhesion";
-import { dateCourte, TIRET } from "@/app/lib/formats";
-import { aujourdhui, lireDossiers, type Dossier } from "@/app/lib/portefeuille";
+import { InscriptionsEnAttente } from "@/app/components/portefeuille/InscriptionsEnAttente";
+import { RegleDeDepassement } from "@/app/components/portefeuille/GestesDeReglement";
+import { PastilleDeSituation } from "@/app/components/portefeuille/PastilleDeSituation";
+import { lireLaRegleDeDepassement, lireLesSituations } from "@/app/lib/honoraires";
+import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
+import { aujourdhui, lireDossiers, lireInscriptionsEnAttente, type Dossier } from "@/app/lib/portefeuille";
 import { lireAnomaliesDuPortefeuille, type AnomalieIdentifiant } from "@/app/lib/fiche-dossier";
 import { ErreurApi } from "@/app/lib/api";
 import { Link } from "@/i18n/navigation";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Portefeuille · Plateforme CGA" };
 
@@ -63,23 +69,39 @@ const COLONNES: Colonne[] = [
   { cle: "exercice", libelle: "Exercice", largeur: "84px", aDroite: true },
 ];
 
-export default async function Portefeuille() {
+export default async function Portefeuille({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   // ⚠️ Garde avant tout appel : sinon l'API rend 403 et le visiteur voit un 500.
   if (!detient(acces, "LIRE_DOSSIER")) {
     return <EcranReserve titre="Portefeuille" permission="LIRE_DOSSIER" acces={acces} />;
   }
   const jour = aujourdhui();
-  const dossiers = await lireDossiers(jour);
+  const tous = await lireDossiers(jour);
+  // 9 novembre 2026 : le dossier choisi au sélecteur filtre la liste.
+  const choisi = dossierFiltre((await searchParams).dossier, tous);
+  const dossiers = choisi ? [choisi] : tous;
   // Une anomalie illisible ne doit pas empêcher la liste : le panneau le dit.
   let anomalies: Awaited<ReturnType<typeof lireAnomaliesDuPortefeuille>> | string;
   try {
-    anomalies = await lireAnomaliesDuPortefeuille(jour);
+    anomalies = (await lireAnomaliesDuPortefeuille(jour)).filter((a) => !choisi || a.niu_entreprise === choisi.niu);
   } catch (erreur) {
     if (!(erreur instanceof ErreurApi)) throw erreur;
     anomalies = erreur.message;
   }
   const peutInscrire = detient(acces, "INSCRIRE_STATUT");
+  // 16 octobre 2026 : les entreprises payées à inscrire ; une panne ne cache pas la liste.
+  // 18 octobre 2026 : le responsable affecté au dossier commercial les inscrit aussi ; le
+  // serveur ne lui rend que les dossiers qu'il suit.
+  const voitLaFile = peutInscrire || detient(acces, "QUALIFIER_PROSPECT");
+  const enAttente = voitLaFile ? await lireInscriptionsEnAttente().catch(() => []) : [];
+  // 18 octobre 2026 : qui est en règle. Une panne ne cache pas la liste des dossiers.
+  const situations = acces.interne
+    ? await lireLesSituations()
+        .then((liste) => liste.filter((s) => !choisi || s.situation.niu === choisi.niu))
+        .catch(() => null)
+    : null;
+  const regle = detient(acces, "ACCORDER_FAVEURS") ? await lireLaRegleDeDepassement().catch(() => null) : null;
+  const horsRegle = (situations ?? []).filter((s) => ["BLOQUE", "SOUS_GRACE", "EN_RETARD"].includes(s.situation.etat));
 
   return (
     <>
@@ -88,10 +110,10 @@ export default async function Portefeuille() {
         <div className="page-travail__titre">
           <h1>Portefeuille</h1>
           <p>
-            {dossiers.length} dossier{dossiers.length > 1 ? "s" : ""}
+            {tous.length} dossier{tous.length > 1 ? "s" : ""}
             {acces.dossiers === null
               ? ", vous couvrez tout le cabinet"
-              : " affecté" + (dossiers.length > 1 ? "s" : "") + " à votre portefeuille"}
+              : " affecté" + (tous.length > 1 ? "s" : "") + " à votre portefeuille"}
             {" · statuts résolus au "}
             {new Date(jour).toLocaleDateString("fr-FR", {
               day: "numeric",
@@ -101,12 +123,70 @@ export default async function Portefeuille() {
           </p>
         </div>
 
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/portefeuille" />}
+
         {typeof anomalies === "string" ? (
           <div className="avertissement-ecran avertissement-ecran--reserve" role="status">
             Le contrôle des identifiants ne se lit pas : {anomalies}
           </div>
         ) : (
           anomalies.length > 0 && <IdentifiantsDouteux anomalies={anomalies} />
+        )}
+
+        {enAttente.length > 0 && (
+          <Panneau
+            titre={`${enAttente.length} entreprise${enAttente.length > 1 ? "s" : ""} payée${enAttente.length > 1 ? "s" : ""} à inscrire`}
+            aide="Le dossier commercial préremplit ce qu'il sait ; vérifiez l'identité fiscale sur pièces."
+          >
+            <InscriptionsEnAttente attente={enAttente} finDAnnee={`${jour.slice(0, 4)}-12-31`} />
+          </Panneau>
+        )}
+
+        {(situations || regle) && (
+          <Panneau
+            titre={
+              horsRegle.length === 0
+                ? "Règlement des honoraires : tous en règle"
+                : `Règlement des honoraires : ${horsRegle.length} dossier${horsRegle.length > 1 ? "s" : ""} hors règle`
+            }
+            aide={
+              regle
+                ? regle.d_office
+                  ? "Règle d'office : un dossier en retard ne se traite plus. Fixez un dépassement toléré, ou accordez une grâce depuis la fiche du dossier."
+                  : `Un retard de plus de ${regle.regle.delai_jours} jours arrête le traitement, sauf grâce. Après ${regle.regle.acces_client_mois ?? 3} mois d'impayé, l'espace du client se suspend ; le cabinet continue de traiter.`
+                : "Un dossier bloqué se lit, reçoit ses pièces et se règle ; il ne se traite plus."
+            }
+          >
+            <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {horsRegle.length > 0 && (
+                <ul className="situations">
+                  <Paginer commeElementDeListe>{horsRegle.map((s) => (
+                    <li key={s.situation.niu}>
+                      <PastilleDeSituation situation={s.situation} />
+                      <Link href={`/portefeuille/${s.situation.niu}`}>{s.denomination}</Link>
+                      <span>
+                        {montantFcfa(s.situation.du)} dus
+                        {s.situation.en_retard_depuis ? `, en retard depuis le ${dateCourte(s.situation.en_retard_depuis)}` : ""}
+                        {s.situation.acces_client === "SUSPENDU" && s.situation.acces_suspendu_le
+                          ? ` · espace client suspendu depuis le ${dateCourte(s.situation.acces_suspendu_le)}`
+                          : s.situation.acces_client === "AVERTI" && s.situation.acces_suspendu_le
+                            ? ` · espace client suspendu le ${dateCourte(s.situation.acces_suspendu_le)} sans règlement`
+                            : ""}
+                      </span>
+                    </li>
+                  ))}</Paginer>
+                </ul>
+              )}
+              {regle && (
+                <RegleDeDepassement
+                  delai={regle.regle.delai_jours}
+                  dOffice={regle.d_office}
+                  accesClientMois={regle.regle.acces_client_mois}
+                  preavisAccesJours={regle.regle.preavis_acces_jours}
+                />
+              )}
+            </div>
+          </Panneau>
         )}
 
         <Panneau
@@ -191,7 +271,7 @@ function IdentifiantsDouteux({ anomalies }: { anomalies: AnomalieIdentifiant[] }
         <span className="anomalies__bascule" aria-hidden="true" />
       </summary>
       <ul className="anomalies__liste">
-        {entreprises.map(([niu, groupe]) => (
+        <Paginer commeElementDeListe>{entreprises.map(([niu, groupe]) => (
           <li key={niu} className="anomalies__entreprise">
             <Link className="anomalies__nom" href={`/portefeuille/${encodeURIComponent(niu)}`}>
               {groupe.denomination}
@@ -212,7 +292,7 @@ function IdentifiantsDouteux({ anomalies }: { anomalies: AnomalieIdentifiant[] }
               ))}
             </span>
           </li>
-        ))}
+        ))}</Paginer>
       </ul>
     </details>
   );

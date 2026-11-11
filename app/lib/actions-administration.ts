@@ -22,6 +22,7 @@ import { revalidatePath } from "next/cache";
 
 import { appeler, ErreurApi } from "./api";
 import type { EtatActe } from "./saisie";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 const CHEMIN_COMPTES = "/[locale]/comptes";
 
@@ -73,7 +74,7 @@ export async function inviterUnCollaborateur(_precedent: EtatActe, donnees: Form
     revalidatePath(CHEMIN_COMPTES, "page");
     return {
       echec: null,
-      fait: `Invitation envoyée à ${r.compte.courriel}. Le lien vaut jusqu'au ${new Date(r.expire_le).toLocaleDateString("fr-FR")}.`,
+      fait: `Invitation envoyée à ${r.compte.courriel}. Le lien vaut jusqu'au ${jourFr(jourDuFait(r.expire_le))}.`,
     };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };

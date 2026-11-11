@@ -9,6 +9,7 @@ import { ErreurApi } from "@/app/lib/api";
 import { dateCourte } from "@/app/lib/formats";
 import { lireLaChargeEtLaProduction, type ChargeEtProduction, type LigneDeCharge } from "@/app/lib/pilotage";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Charge et production · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export default async function ChargeEtProductionPage() {
               <h1>Charge et production</h1>
               <p>
                 {mois} · {vue.dossiers} dossiers · {vue.echeances_du_mois} échéance{vue.echeances_du_mois > 1 ? "s" : ""} ce mois ·
-                saturation au-delà de {vue.reglages.seuil_de_saturation} % ({vue.reglages.source})
+                saturation au-delà de {vue.reglages.seuil_de_saturation} %
               </p>
             </div>
 
@@ -121,7 +122,7 @@ export default async function ChargeEtProductionPage() {
                 <EtatVide titre="Aucune réaffectation à proposer" detail="Personne n'est saturé, ou aucun collègue du même rôle n'a la marge de reprendre un dossier." />
               ) : (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                  {vue.propositions.map((p) => (
+                  <Paginer commeElementDeListe>{vue.propositions.map((p) => (
                     <li key={`${p.dossier}-${p.vers_habilitation}`} style={{ display: "grid", gap: 6, padding: "12px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.5 var(--police-texte)" }}>
                       <strong>
                         {p.denomination} : {p.de_nom} → {p.vers_nom}
@@ -136,7 +137,7 @@ export default async function ChargeEtProductionPage() {
                         <span style={{ fontSize: 12, color: "var(--ink-500)" }}>Réaffecter demande la permission AFFECTER_DOSSIER.</span>
                       )}
                     </li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
               )}
               <p style={{ margin: 0, padding: "8px 16px 12px", font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>

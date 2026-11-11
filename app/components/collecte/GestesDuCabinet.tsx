@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 
-import { classerUnePiece, lireUnePiece, recevoirUnePieceAuCabinet, recupererLeDocument, type EtatDocument } from "@/app/lib/actions-collecte";
+import { classerUnePiece, lireLeDocumentDUnePiece, lireUnePiece, recevoirUnePieceAuCabinet } from "@/app/lib/actions-collecte";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
-import { declencherTelechargement } from "@/app/lib/telechargement-navigateur";
+import { ChampFichier } from "@/app/components/ChampFichier";
+import { DocumentDeLaPiece as ApercuDuDocument } from "@/app/components/creation/DocumentDeLaPiece";
 
 const champ: React.CSSProperties = {
   display: "block",
@@ -105,7 +106,7 @@ export function ImportAuCabinet({
       </label>
       <label style={{ ...etiquette, gridColumn: "1 / -1" }}>
         Document (PDF, JPEG, PNG, TIFF ; 20 Mo au plus)
-        <input type="file" name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" style={champ} />
+        <ChampFichier name="fichier" required accept="image/jpeg,image/png,image/tiff,application/pdf" style={champ} />
       </label>
       <label style={etiquette}>
         Nature
@@ -156,29 +157,16 @@ export function ImportAuCabinet({
   );
 }
 
-const DOCUMENT_INITIAL: EtatDocument = { echec: null, fichier: null };
-
 /**
- * Télécharger le document scanné d'une pièce (pas 88).
+ * Voir ou télécharger le document scanné d'une pièce (pas 88).
  *
- * ⚠️ Téléchargé, jamais affiché dans la page : le backend le rend en pièce jointe avec
- * `nosniff`, pour qu'un fichier venu de l'extérieur ne s'exécute pas dans le domaine du
- * cabinet. Une pièce saisie sans document le dit, en clair.
+ * 18 octobre 2026 : « Aperçu » s'ajoute au téléchargement, comme sur la lecture d'une
+ * facture. C'est le même composant, donc la même garantie : le type affiché est celui lu
+ * dans les octets à l'arrivée (PDF, JPEG, PNG ; le TIFF se télécharge), l'image par une
+ * adresse locale, le PDF dessiné par pdf.js. Rien ne s'exécute dans la page.
  */
 export function DocumentDeLaPiece({ identifiant, nom }: { identifiant: string; nom: string | null }) {
-  const [etat, recuperer, enCours] = useActionState(recupererLeDocument, DOCUMENT_INITIAL);
-  useEffect(() => {
-    if (etat.fichier) declencherTelechargement(etat.fichier);
-  }, [etat.fichier]);
-  return (
-    <form action={recuperer} style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-      <input type="hidden" name="identifiant" value={identifiant} />
-      <button type="submit" className="bouton-discret" disabled={enCours}>
-        {enCours ? "…" : `Télécharger ${nom ?? "le document"}`}
-      </button>
-      {etat.echec && <span role="alert" style={{ ...note, color: "var(--danger)" }}>{etat.echec}</span>}
-    </form>
-  );
+  return <ApercuDuDocument champs={{ identifiant }} libelle={nom ?? "le document"} lire={lireLeDocumentDUnePiece} />;
 }
 
 /**

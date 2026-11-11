@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 
 import { corrigerEcriture, saisirEcriture } from "@/app/lib/actions-comptabilite";
 import type { Compte, Ecriture, Journal } from "@/app/lib/comptabilite";
@@ -109,6 +109,40 @@ export function FormulaireEcriture({
     }),
   );
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ⚠️ LE FORMULAIRE SE VIDE EN ENTIER, OU PAS DU TOUT
+  //
+  // Après une action de formulaire, React réinitialise les champs non contrôlés et
+  // eux seuls. Les comptes et les libellés disparaissaient, les montants et les sens,
+  // tenus par l'état pour calculer l'écart à la frappe, restaient. L'écran affichait
+  // alors « équilibrée » sur huit lignes sans compte, et un sens « Débit » là où
+  // l'état gardait « Crédit ». Pire sur un refus : le comptable perdait les comptes
+  // qu'il venait de saisir, au moment précis où on lui demandait de les corriger.
+  //
+  // L'envoi passe donc par une transition, qui ne déclenche pas cette
+  // réinitialisation, et le vidage est décidé ici : seulement quand une NOUVELLE
+  // écriture est enregistrée. Un refus laisse tout en place ; une correction garde
+  // son brouillon sous les yeux. `action` reste posé : sans JavaScript, le
+  // formulaire part toujours.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const formulaire = useRef<HTMLFormElement>(null);
+  const [derniereVue, setDerniereVue] = useState(etat.enregistree);
+  if (etat.enregistree !== derniereVue) {
+    setDerniereVue(etat.enregistree);
+    if (etat.enregistree && !ecriture) {
+      setLignes(Array.from({ length: offertes }, () => ({ compte: "", libelle: "", sens: "DEBIT", montant: "" })));
+    }
+  }
+  useEffect(() => {
+    if (etat.enregistree && !ecriture) formulaire.current?.reset();
+  }, [etat.enregistree, ecriture]);
+
+  function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
+    evenement.preventDefault();
+    const donnees = new FormData(evenement.currentTarget);
+    startTransition(() => envoyer(donnees));
+  }
+
   const totaux = lignes.reduce(
     (cumul, ligne) => {
       const montant = Number(ligne.montant.replace(/\s/g, "").replace(",", ".")) || 0;
@@ -121,7 +155,7 @@ export function FormulaireEcriture({
   const ecart = totaux.debit - totaux.credit;
 
   return (
-    <form action={envoyer} className="saisie">
+    <form ref={formulaire} action={envoyer} onSubmit={soumettre} className="saisie">
       <input type="hidden" name="dossier" value={dossier} />
       <input type="hidden" name="exercice" value={exercice} />
       <input type="hidden" name="lignes_offertes" value={offertes} />

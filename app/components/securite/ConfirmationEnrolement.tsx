@@ -26,8 +26,8 @@ export function ConfirmationEnrolement({ jeton }: { jeton: string }) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "12px 16px" }}>
         <CleAffichee secret={etat.secret} uri={etat.uri} consigne={etat.consigne} />
-        <p style={note}>Saisissez ensuite le premier code affiché par l&rsquo;application :</p>
-        <SaisieDuCode />
+        <p style={note}>Saisissez ensuite le premier code affiché par l&rsquo;application pour l&rsquo;activer :</p>
+        <SaisieDuCode activation />
       </div>
     );
   }

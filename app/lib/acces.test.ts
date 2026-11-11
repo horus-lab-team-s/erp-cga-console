@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Acces, Permission, Role } from "./acces";
-import { detient, initiales, LIBELLES_ROLE, voit } from "./acces";
+import { detient, initiales, LIBELLES_ROLE, libelleRole, voit } from "./acces";
 
 /**
  * Ce qu'une session permet, éprouvé sur la distinction qui coûte le plus cher.
@@ -76,7 +76,7 @@ describe("Les permissions", () => {
 });
 
 describe("Les libellés de rôle", () => {
-  it("nomment les neuf rôles comme le cabinet les nomme", () => {
+  it("nomment les douze rôles livrés comme le cabinet les nomme", () => {
     const attendus: Role[] = [
       "CHARGE_CLIENTELE",
       "COMPTABLE",
@@ -85,8 +85,11 @@ describe("Les libellés de rôle", () => {
       "CHARGE_FORMALITES",
       "DIRECTION",
       "ADMINISTRATEUR",
+      "CAISSE",
       "ADHERENT",
+      "CLIENT_CREATION",
       "INSPECTEUR",
+      "SUPER_ADMIN",
     ];
     expect(Object.keys(LIBELLES_ROLE).sort()).toEqual([...attendus].sort());
   });
@@ -130,5 +133,15 @@ describe("Les initiales de la pastille d'identité", () => {
 
   it("gardent l'accent en majuscule", () => {
     expect(initiales("Émile ATANGANA")).toBe("ÉA");
+  });
+});
+
+describe("Un rôle créé par le cabinet (18 octobre 2026)", () => {
+  it("se nomme au catalogue, et un rôle livré garde son libellé", () => {
+    const catalogue = [{ role: "RESSOURCES_HUMAINES", libelle: "ressources humaines" }];
+    expect(libelleRole("RESSOURCES_HUMAINES", catalogue)).toBe("ressources humaines");
+    expect(libelleRole("COMPTABLE", catalogue)).toBe("Comptable");
+    // Sans catalogue, le code se montre plutôt que rien.
+    expect(libelleRole("RESSOURCES_HUMAINES")).toBe("RESSOURCES_HUMAINES");
   });
 });

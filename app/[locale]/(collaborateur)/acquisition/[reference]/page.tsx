@@ -2,16 +2,21 @@ import type { Metadata } from "next";
 
 import { Panneau } from "@/app/components/Tableau";
 import { Chiffrage, EmissionProforma, PremierContact, Qualification, Reglement } from "@/app/components/acquisition/FicheDossier";
+import { SituationDesVersementsDuDossier } from "@/app/components/acquisition/Versements";
+import { PenalitesDuDossier } from "@/app/components/acquisition/Penalites";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
+import { jourADouala, jourDuFait } from "@/app/lib/heure-douala";
 import { lireTarifs } from "@/app/lib/souscription";
 import { Link } from "@/i18n/navigation";
 import {
   LIBELLES_ETAT,
   lireFicheDossier,
+  lireLaRegleDesVersements,
   lireLeLienDeLaProforma,
+  lireLesVersements,
   lireLesCompositions,
   lireOuvertureDeLEspace,
   lireQualification,
@@ -55,7 +60,15 @@ export default async function FicheDossierCommercial({
   // ⚠️ Lue seulement quand le dossier est payé : avant l'encaissement, la saga
   // n'existe pas, et interroger pour rien coûte un aller-retour sur chaque
   // fiche commerciale ouverte.
-  const ouverture = fiche.etat === "PAYEE" ? await lireOuvertureDeLEspace(reference) : null;
+  // ⚠️ Lue dès l'acceptation, et plus seulement après le paiement : c'est elle qui
+  // dit si la vente ouvre un espace, donc s'il y a une adresse à demander au
+  // moment du règlement. La règle vit au serveur ; la recopier ici en ferait une
+  // seconde, qui divergerait le jour où une offre s'ajoute.
+  const ouverture =
+    fiche.etat === "PAYEE" || fiche.etat === "ACCEPTEE"
+      ? await lireOuvertureDeLEspace(reference).catch(() => null)
+      : null;
+  const ouvreUnEspace = !ouverture?.sans_objet;
   // ⚠️ LE DOSSIER DE FORMALITÉ, depuis le 27 septembre : une création payée en
   // ouvre un toute seule, et le collaborateur n'avait aucun chemin vers lui.
   //
@@ -89,6 +102,17 @@ export default async function FicheDossierCommercial({
   const termine = ["ACCEPTEE", "PAYEE", "SANS_SUITE"].includes(fiche.etat);
   const d = fiche.demande;
   const acceptee = fiche.proformas.find((p) => p.etat === "ACCEPTEE") ?? null;
+  // 9 novembre 2026 : frais de traitement, tranches, payé, reste. Une lecture qui échoue
+  // n'empêche pas la fiche : le panneau ne s'affiche simplement pas.
+  const [versements, regleDesVersements] = await Promise.all([
+    lireLesVersements(reference).catch(() => null),
+    lireLaRegleDesVersements().catch(() => null),
+  ]);
+  const fraisDuService = regleDesVersements?.regle.frais_par_service[d.service_souhaite] ?? null;
+  // Les réponses que le client a données sur le site ET qui sont à la qualification.
+  const declarees = Object.keys(fiche.demande.declarations ?? {}).filter(
+    (code) => qualification?.faits?.[code] !== undefined,
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // ⚠️ LE LIEN DE LA PROFORMA, RELU POUR POUVOIR LE RENVOYER.
@@ -137,8 +161,8 @@ export default async function FicheDossierCommercial({
         <div className="page-travail__titre">
           <h1>{d.nom}</h1>
           <p>
-            {d.service_souhaite} · {LIBELLES_ETAT[fiche.etat]} depuis le {dateCourte(fiche.depuis_le.slice(0, 10))} ·
-            déposée le {dateCourte(d.deposee_le.slice(0, 10))}
+            {d.service_souhaite} · {LIBELLES_ETAT[fiche.etat]} depuis le {dateCourte(jourDuFait(fiche.depuis_le))} ·
+            déposée le {dateCourte(jourDuFait(d.deposee_le))}
             {/* ⚠️ Le NOM, et non « C-007 » : la liste d'où l'on vient l'affiche déjà. */}
             {fiche.responsable_nom ? ` · suivi par ${fiche.responsable_nom}` : ""}
           </p>
@@ -155,6 +179,31 @@ export default async function FicheDossierCommercial({
               <p style={{ margin: "6px 0 0", color: "var(--ink-500)", fontSize: 12 }}>
                 Affectation : {fiche.motif_affectation}
               </p>
+            )}
+            {/* 19 octobre 2026 (point 22) : ce que le visiteur a joint, à lire avant
+                de le rappeler. */}
+            {(fiche.pieces_jointes ?? []).length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <p style={{ margin: 0, font: "600 12px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
+                  Documents joints par le visiteur
+                </p>
+                <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                  {(fiche.pieces_jointes ?? []).map((p) => (
+                    <li key={p.empreinte}>
+                      <a
+                        href={`/api/demandes/${encodeURIComponent(reference)}/${p.empreinte}`}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        {p.nom}
+                      </a>{" "}
+                      <span style={{ color: "var(--ink-500)", fontSize: 12 }}>
+                        · {Math.max(1, Math.round(p.taille / 1024))} Ko · reçu le {dateCourte(jourDuFait(p.recue_le))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </Panneau>
@@ -181,7 +230,11 @@ export default async function FicheDossierCommercial({
           titre="Qualification"
           aide={
             questionnaire && qualification
-              ? `${qualification.avancement.repondues} réponse(s) sur ${qualification.avancement.total} · questionnaire ${questionnaire.service}, version ${questionnaire.version}`
+              ? `${qualification.avancement.repondues} réponse(s) sur ${qualification.avancement.total}${
+                  declarees.length > 0
+                    ? `, dont ${declarees.length} données par le client sur le site : confirmez-les avec lui, ne les redemandez pas`
+                    : ""
+                } · questionnaire ${questionnaire.service}, version ${questionnaire.version}`
               : "Aucun questionnaire au référentiel pour ce service."
           }
         >
@@ -190,6 +243,7 @@ export default async function FicheDossierCommercial({
               reference={reference}
               questions={questionnaire.questions}
               faits={qualification.faits ?? {}}
+              declarees={declarees}
               manquantes={qualification.manquantes}
               modifiable={peutQualifier && !termine}
             />
@@ -246,10 +300,10 @@ export default async function FicheDossierCommercial({
           >
             <EmissionProforma
               reference={reference}
-              referenceProposee={null}
               dejaEmise={fiche.etat === "PROFORMA_EMISE"}
               lienRelu={lienRelu}
               compositions={compositions}
+              formeJuridique={qualification?.faits?.forme_juridique ?? null}
               client={{
                 nom: d.nom,
                 telephone: d.telephone,
@@ -259,30 +313,69 @@ export default async function FicheDossierCommercial({
             />
           </Panneau>
         )}
-        {fiche.etat === "ACCEPTEE" && acceptee && (
+        {versements && (fraisDuService !== null || versements.total !== null) && (
+          <Panneau
+            titre={versements.solde ? "Versements · soldé" : "Versements"}
+            aide="Frais de traitement versés à la demande, puis tranches de la proforma. Les frais sont déduits du total ; le dossier démarre au seuil fixé par la direction."
+          >
+            <SituationDesVersementsDuDossier
+              situation={versements}
+              frais={fraisDuService}
+              peutEncaisser={detient(acces, "ENCAISSER")}
+            />
+          </Panneau>
+        )}
+        {/* Lot 4 (9 novembre 2026) : les pénalités de retard, décidées par un responsable. */}
+        {((fiche.penalites?.length ?? 0) > 0 ||
+          detient(acces, "SUIVRE_FORMALITE") ||
+          detient(acces, "LIRE_PILOTAGE")) && (
+          <Panneau
+            titre="Pénalités de retard"
+            aide="La vue « Retards » signale les délais dépassés ; la pénalité se décide ici, avec une explication que le client reçoit par courriel. Elle se règle à la caisse."
+          >
+            <PenalitesDuDossier
+              reference={reference}
+              penalites={fiche.penalites ?? []}
+              montantsParDefaut={regleDesVersements?.regle.penalites_de_retard ?? {}}
+              peutInfliger={detient(acces, "SUIVRE_FORMALITE") || detient(acces, "LIRE_PILOTAGE")}
+              peutLever={detient(acces, "ACCORDER_FAVEURS")}
+            />
+          </Panneau>
+        )}
+        {(fiche.etat === "ACCEPTEE" || (fiche.etat === "PAYEE" && versements !== null && !versements.solde)) &&
+          acceptee && (
           <Panneau
             titre="Règlement"
-            aide="Le client a accepté. Le règlement ouvre son espace, à l'adresse retenue."
+            aide={
+              ouvreUnEspace
+                ? "Le client a accepté. Le règlement ouvre son espace, à l'adresse retenue."
+                : "Le client a accepté. Le règlement ouvre son dossier : cette prestation n'ouvre pas d'espace de plateforme."
+            }
           >
-            {detient(acces, "GERER_COMPTES") ? (
+            {detient(acces, "ENCAISSER") ? (
               <Reglement
                 numero={acceptee.numero}
                 montant={acceptee.montant}
                 telephone={d.telephone}
                 slugRetenu={fiche.slug_retenu}
+                ouvreUnEspace={ouvreUnEspace}
+                reste={versements?.reste ?? null}
               />
             ) : (
               <p style={{ margin: 0, padding: "12px 16px", font: "400 13px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
-                Proposition {acceptee.numero} acceptée. Le règlement se confirme par l&rsquo;administration du cabinet.
+                Proposition {acceptee.numero} acceptée. Le règlement se constate à la caisse du cabinet.
               </p>
             )}
           </Panneau>
         )}
         {fiche.etat === "PAYEE" && (
-          <Panneau titre="Règlement" aide="Encaissé. L'état réel de l'espace est dit ci-dessous.">
+          <Panneau
+            titre="Règlement"
+            aide={ouvreUnEspace ? "Encaissé. L'état réel de l'espace est dit ci-dessous." : "Encaissé. Ce que le règlement a ouvert est dit ci-dessous."}
+          >
             <p style={{ margin: 0, padding: "12px 16px 4px", font: "400 13px/1.5 var(--police-texte)" }}>
-              Payé{fiche.payee_le ? ` le ${dateCourte(fiche.payee_le.slice(0, 10))}` : ""}
-              {fiche.slug_retenu ? ` · espace « ${fiche.slug_retenu} »` : ""}.
+              Payé{fiche.payee_le ? ` le ${dateCourte(jourDuFait(fiche.payee_le))}` : ""}
+              {ouvreUnEspace && fiche.slug_retenu ? ` · espace « ${fiche.slug_retenu} »` : ""}.
             </p>
             <EtatDeLOuverture ouverture={ouverture} />
             {fiche.demande.service_souhaite === "CREATION" && (
@@ -374,7 +467,8 @@ async function lireQualificationSiPossible(reference: string) {
  */
 async function lirePrixArreteSiPossible(service: string): Promise<string | null> {
   try {
-    const etat = await lireTarifs(new Date().toISOString().slice(0, 10));
+    // 16 octobre 2026 : le jour à Douala, pas le jour UTC (entre minuit et une heure, la veille).
+    const etat = await lireTarifs(jourADouala());
     const ligne = etat.lignes.find((l) => l.service === service && l.statut === "FIXE");
     return ligne?.montant ?? null;
   } catch (echec: unknown) {
@@ -484,6 +578,19 @@ function EtatDeLOuverture({ ouverture }: { ouverture: OuvertureDeLEspace | null 
     borderRadius: "var(--rayon-petit)",
     font: "400 12.5px/1.6 var(--police-texte)",
   };
+
+  // ⚠️ AVANT le sablier, et c'est tout le défaut du 13 octobre 2026 : pour une
+  // création d'entreprise, aucune ouverture ne démarrera jamais, et l'écran
+  // demandait au collaborateur de « revenir sur cette fiche pour en voir l'issue ».
+  // Il n'y a pas d'issue à attendre : il y a un dossier de formalité, déjà ouvert.
+  if (ouverture?.sans_objet) {
+    return (
+      <p style={{ ...base, background: "var(--surface-alt)", color: "var(--ink-700)" }}>
+        Cette prestation n&rsquo;ouvre pas d&rsquo;espace de plateforme : le dossier du client vit
+        au cabinet. Le client suit son avancement par son lien personnel, sans mot de passe.
+      </p>
+    );
+  }
 
   if (!ouverture || !ouverture.demarree) {
     return (

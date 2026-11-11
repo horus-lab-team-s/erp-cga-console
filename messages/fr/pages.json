@@ -8,9 +8,9 @@
     "piecesNote": "Vous les photographierez depuis votre téléphone une fois votre compte créé. Inutile de les préparer avant de souscrire.",
     "pieces": [
       "Une pièce d'identité en cours de validité pour chaque associé et pour le gérant.",
-      "Un justificatif de domicile de moins de trois mois pour le siège social.",
+      "L'adresse précise du futur siège (quartier, rue, repère) : le bail se signera au nom de la société, une fois celle-ci créée.",
       "Trois propositions de dénomination sociale, par ordre de préférence.",
-      "Le plan de localisation du siège, ou le contrat de bail s'il en existe un.",
+      "Le plan de localisation du futur siège, et vos statuts ou un projet de statuts si vous en avez déjà : sinon, le cabinet les rédige.",
       "Un extrait de casier judiciaire du gérant, daté de moins de trois mois."
     ],
     "faqKicker": "Questions fréquentes",
@@ -77,7 +77,7 @@
     "suiviComptable": "Suivi comptable",
     "souscrire": "Souscrire en ligne",
     "devisWhatsapp": "Recevoir ce devis par WhatsApp",
-    "note": "Estimation indicative fondée sur les tarifs officiels en vigueur. Le devis définitif vous est confirmé après examen de votre projet, sans frais de dossier.",
+    "note": "Estimation indicative fondée sur les tarifs officiels en vigueur. Le devis définitif vous est confirmé après examen de votre projet. Des frais de traitement de dossier peuvent être demandés à l'envoi de votre demande : ils sont déduits du montant final.",
     "semaines": "semaines",
     "nonRetenu": "non retenu",
     "parMois": "12 500 FCFA par mois",
@@ -91,7 +91,7 @@
     "devisImprimer": "Imprimer ou enregistrer en PDF",
     "devisRetour": "Revenir à l'estimateur",
     "devisSuiviNote": "Cet abonnement se règle mensuellement : il n'entre pas dans le total à régler à la création.",
-    "devisAvertissement": "⚠️ Ce document est une estimation, non une facture, et n'engage pas le cabinet. Les frais officiels dépendent du dossier réel et le barème peut évoluer. Le devis définitif vous est confirmé après examen de votre projet, sans frais de dossier.",
+    "devisAvertissement": "⚠️ Ce document est une estimation, non une facture, et n'engage pas le cabinet. Les frais officiels dépendent du dossier réel et le barème peut évoluer. Le devis définitif vous est confirmé après examen de votre projet. Des frais de traitement de dossier peuvent être demandés à l'envoi de votre demande : ils sont déduits du montant final.",
     "devisPied": "CGA Broad Range Consulting Group — Douala, Yaoundé, Bafoussam. Contactez-nous pour transformer cette estimation en devis ferme.",
     "lignes": {
       "cfce": "Caisse du guichet unique (CFCE)",

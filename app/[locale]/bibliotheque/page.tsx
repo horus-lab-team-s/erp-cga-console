@@ -7,6 +7,8 @@
  * `Docs/Bibliotheque de composants CGA.html`.
  */
 
+import { notFound } from "next/navigation";
+
 import { BadgeGravite, BandeauVerdict, type Severite } from "@/app/components/Gravite";
 import { Montant, PastilleStatut, type Statut } from "@/app/components/Montant";
 import { dateCourte, dateLongue, montantFcfa, periode, taux } from "@/app/lib/formats";
@@ -104,6 +106,9 @@ const ENTETE_COLONNE: React.CSSProperties = {
 };
 
 export default function BibliothequeDeComposants() {
+  // ⚠️ 19 octobre 2026 (audit de sécurité) : page publique, sans session. Utile au
+  // développement et à la recette ; en production, elle n'élargit que la surface.
+  if (process.env.NODE_ENV === "production" && process.env.CGA_BIBLIOTHEQUE !== "1") notFound();
   return (
     <main
       style={{

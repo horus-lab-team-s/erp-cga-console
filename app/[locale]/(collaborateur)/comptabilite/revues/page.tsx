@@ -12,6 +12,7 @@ import { lireLesRevues, type ResumeDeRevue } from "@/app/lib/revue";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { moisPrecedentADouala } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Revue des dossiers · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -119,7 +120,7 @@ function File({
         <EtatVide titre={vide} />
       ) : (
         <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-          {revues.map((r) => {
+          <Paginer commeElementDeListe>{revues.map((r) => {
             const statut = LIBELLES_STATUT_REVUE[r.statut];
             return (
               <li key={`${r.dossier}-${r.identifiant}`} style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "2px 12px", padding: "10px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.45 var(--police-texte)" }}>
@@ -135,7 +136,7 @@ function File({
                 </span>
               </li>
             );
-          })}
+          })}</Paginer>
         </ul>
       )}
     </Panneau>

@@ -22,6 +22,7 @@
 import { useActionState } from "react";
 
 import { definirMotDePasse, type EtatDefinition } from "@/app/lib/actions-session";
+import { ChampMotDePasse } from "./ChampMotDePasse";
 
 /**
  * Choisir son mot de passe à partir d'un lien reçu par courriel.
@@ -93,10 +94,9 @@ export function FormulaireMotDePasse({
         <label style={etiquette} htmlFor="motDePasse">
           Nouveau mot de passe
         </label>
-        <input
+        <ChampMotDePasse
           id="motDePasse"
           name="motDePasse"
-          type="password"
           required
           // ⚠️ `new-password` et non `current-password` : sans cela, le
           // gestionnaire de mots de passe propose l'ancien, qui est
@@ -110,10 +110,9 @@ export function FormulaireMotDePasse({
         <label style={etiquette} htmlFor="confirmation">
           Confirmer
         </label>
-        <input
+        <ChampMotDePasse
           id="confirmation"
           name="confirmation"
-          type="password"
           required
           autoComplete="new-password"
           style={saisie}

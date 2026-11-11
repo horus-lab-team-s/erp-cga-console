@@ -9,9 +9,12 @@ import {
   type Colonne,
 } from "@/app/components/Tableau";
 import { Affecter, ClasserSansSuite, RappelFait } from "@/app/components/acquisition/ActesDossier";
+import { RegleDesVersementsFormulaire } from "@/app/components/acquisition/Versements";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { RegleDesDelaisFormulaire } from "@/app/components/creations/GestesCreation";
 import { detient } from "@/app/lib/acces";
+import { lireLaRegleDesDelais } from "@/app/lib/creations";
 import {
   LIBELLES_ETAT,
   lireDossiersCommerciaux,
@@ -19,11 +22,14 @@ import {
   lireDossiersEnSouffrance,
   lireMotifsDeClassement,
   lireEtatDesCanaux,
+  lireLaRegleDesVersements,
   lireRappels,
 } from "@/app/lib/console-acquisition";
 import { dateCourte } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Demandes entrantes · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -83,10 +89,21 @@ function duree(heures: number): string {
 export default async function ConsoleAcquisition() {
   const acces = await exigerAcces();
   if (!detient(acces, "LIRE_PROSPECT")) {
+    // 10 novembre 2026 : le super administrateur règle les frais, le seuil et les délais, mais
+    // ne lit pas les demandes. Il voyait un écran réservé et n'atteignait jamais ses réglages
+    // (constaté en préparant la recette en ligne) : il ne voit ici que ces deux panneaux.
+    if (detient(acces, "ACCORDER_FAVEURS")) return <ReglagesDuCentre />;
     return <EcranReserve titre="Demandes entrantes" permission="LIRE_PROSPECT" acces={acces} />;
   }
   // Pas 90 : l'état des canaux, lu à côté ; sa panne ne fait pas tomber la console.
   const canaux = await lireEtatDesCanaux().catch(() => null);
+  const regleDesVersements = detient(acces, "ACCORDER_FAVEURS")
+    ? await lireLaRegleDesVersements().catch(() => null)
+    : null;
+  // Lot 4 (9 novembre 2026) : les délais de la création, réglés au même endroit.
+  const regleDesDelais = detient(acces, "ACCORDER_FAVEURS")
+    ? await lireLaRegleDesDelais().catch(() => null)
+    : null;
   const [dossiers, payes, enSouffrance, rappels, motifs] = await Promise.all([
     lireDossiersCommerciaux(),
     lireDossiersPayes(),
@@ -119,13 +136,13 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_RAPPELS} />
-              {rappels.map((r, rang) => (
+              <Paginer>{rappels.map((r, rang) => (
                 <LigneTableau key={r.identifiant} colonnes={COLONNES_RAPPELS} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule titre={r.dossier}>{r.motif}</Cellule>
-                  <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(r.cree_le.slice(0, 10))}</Cellule>
+                  <Cellule tabulaire couleur="var(--ink-500)">{dateCourte(jourDuFait(r.cree_le))}</Cellule>
                   <Cellule>{peutQualifier ? <RappelFait identifiant={r.identifiant} /> : null}</Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -139,16 +156,16 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_SOUFFRANCE} />
-              {enSouffrance.map((d, rang) => (
+              <Paginer>{enSouffrance.map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_SOUFFRANCE} ton={rang === 0 ? "alerte" : rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras titre={d.reference}>{d.nom}</Cellule>
                   <Cellule>{LIBELLES_ETAT[d.etat]}</Cellule>
                   <Cellule aDroite tabulaire>
                     {duree(d.immobile_depuis_heures)} · délai {duree(d.delai_heures)}
                   </Cellule>
-                  <Cellule couleur="var(--ink-500)">{d.signale_le ? dateCourte(d.signale_le.slice(0, 10)) : "pas encore"}</Cellule>
+                  <Cellule couleur="var(--ink-500)">{d.signale_le ? dateCourte(jourDuFait(d.signale_le)) : "pas encore"}</Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -162,7 +179,7 @@ export default async function ConsoleAcquisition() {
           ) : (
             <>
               <EnteteTableau colonnes={COLONNES_DOSSIERS} />
-              {dossiers.map((d, rang) => (
+              <Paginer>{dossiers.map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_DOSSIERS} ton={rang % 2 ? "alterne" : "normal"}>
                   <Cellule gras titre={d.reference}>
                     <Link href={`/acquisition/${d.reference}`} style={{ color: "var(--brand-indigo-700)" }}>
@@ -176,7 +193,7 @@ export default async function ConsoleAcquisition() {
                   <Cellule>
                     {LIBELLES_ETAT[d.etat]}
                     <span style={{ display: "block", font: "400 11.5px/1.4 var(--police-texte)", color: "var(--ink-500)" }}>
-                      depuis le {dateCourte(d.depuis_le.slice(0, 10))}
+                      depuis le {dateCourte(jourDuFait(d.depuis_le))}
                     </span>
                   </Cellule>
                   <Cellule couleur={d.responsable ? undefined : "var(--ink-500)"}>
@@ -193,7 +210,7 @@ export default async function ConsoleAcquisition() {
                     </div>
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -219,7 +236,7 @@ export default async function ConsoleAcquisition() {
             aide="Elles ont quitté la file. Ouvrir la fiche dit si le dossier de formalité s'est bien ouvert."
           >
             <EnteteTableau colonnes={COLONNES_PAYES} />
-            {payes
+            <Paginer>{payes
               .filter((d) => d.service_souhaite === "CREATION")
               .map((d, rang) => (
                 <LigneTableau key={d.reference} colonnes={COLONNES_PAYES} ton={rang % 2 ? "alterne" : "normal"}>
@@ -230,10 +247,41 @@ export default async function ConsoleAcquisition() {
                   </Cellule>
                   <Cellule couleur="var(--ink-500)">{d.service_souhaite}</Cellule>
                   <Cellule couleur="var(--ink-500)">
-                    payé depuis le {dateCourte(d.depuis_le.slice(0, 10))}
+                    payé depuis le {dateCourte(jourDuFait(d.depuis_le))}
                   </Cellule>
                 </LigneTableau>
-              ))}
+              ))}</Paginer>
+          </Panneau>
+        )}
+
+        {/* 9 novembre 2026 : le super administrateur fixe les frais et le seuil. */}
+        {regleDesVersements && detient(acces, "ACCORDER_FAVEURS") && (
+          <Panneau
+            titre="Frais de traitement et seuil de démarrage"
+            aide="Les frais versés à la soumission d'une demande, par service, déduits ensuite du total de la proforma ; et la part du total versée à partir de laquelle le dossier démarre."
+          >
+            <RegleDesVersementsFormulaire
+              frais={regleDesVersements.regle.frais_par_service}
+              seuil={regleDesVersements.regle.seuil_demarrage_pourcent}
+              parDefaut={regleDesVersements.par_defaut}
+              penalite={regleDesVersements.regle.penalite_rendez_vous ?? null}
+              penalitesDeRetard={regleDesVersements.regle.penalites_de_retard ?? {}}
+            />
+          </Panneau>
+        )}
+
+        {/* Lot 4 (9 novembre 2026) : les délais de la création, suivis dans « Retards ». */}
+        {regleDesDelais && detient(acces, "ACCORDER_FAVEURS") && (
+          <Panneau
+            titre="Délais de la création"
+            aide="Rédaction des statuts, validation par le client, retrait des originaux. Un délai dépassé remonte dans « Retards » ; une pénalité se décide sur la fiche du dossier."
+          >
+            <RegleDesDelaisFormulaire
+              redaction={regleDesDelais.regle.delai_redaction_statuts_jours}
+              validation={regleDesDelais.regle.delai_validation_statuts_jours}
+              retrait={regleDesDelais.regle.delai_retrait_originaux_jours}
+              parDefaut={regleDesDelais.par_defaut}
+            />
           </Panneau>
         )}
 
@@ -251,6 +299,51 @@ export default async function ConsoleAcquisition() {
             <p style={{ margin: 0, padding: "6px 14px", font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
               Messagerie d&rsquo;envoi : {canaux.messagerie_prete ? "prête" : "aucun modèle envoyable"}.
             </p>
+          </Panneau>
+        )}
+      </div>
+    </>
+  );
+}
+
+async function ReglagesDuCentre() {
+  const [versements, delais] = await Promise.all([
+    lireLaRegleDesVersements().catch(() => null),
+    lireLaRegleDesDelais().catch(() => null),
+  ]);
+  return (
+    <>
+      <EnteteTravail miettes={[{ libelle: "Réglages de l'acquisition" }]} />
+      <div className="page-travail">
+        <div className="page-travail__titre">
+          <h1>Réglages de l&rsquo;acquisition</h1>
+          <p>Frais de traitement, seuil de démarrage et délais de la création</p>
+        </div>
+        {versements && (
+          <Panneau
+            titre="Frais de traitement et seuil de démarrage"
+            aide="Les frais versés à la soumission d'une demande, par service, déduits ensuite du total de la proforma ; et la part du total versée à partir de laquelle le dossier démarre."
+          >
+            <RegleDesVersementsFormulaire
+              frais={versements.regle.frais_par_service}
+              seuil={versements.regle.seuil_demarrage_pourcent}
+              parDefaut={versements.par_defaut}
+              penalite={versements.regle.penalite_rendez_vous ?? null}
+              penalitesDeRetard={versements.regle.penalites_de_retard ?? {}}
+            />
+          </Panneau>
+        )}
+        {delais && (
+          <Panneau
+            titre="Délais de la création"
+            aide="Rédaction des statuts, validation par le client, retrait des originaux. Un délai dépassé remonte dans « Retards »."
+          >
+            <RegleDesDelaisFormulaire
+              redaction={delais.regle.delai_redaction_statuts_jours}
+              validation={delais.regle.delai_validation_statuts_jours}
+              retrait={delais.regle.delai_retrait_originaux_jours}
+              parDefaut={delais.par_defaut}
+            />
           </Panneau>
         )}
       </div>

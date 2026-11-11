@@ -143,7 +143,9 @@ export function deMois(nom: string): string {
 
 // ── Mes échéances (pas 113, vue D) ────────────────────────────────────────────
 
-export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "A_VENIR" | "DEPOSEE";
+// PAYEE (14 octobre 2026) : la quittance est vérifiée par le cabinet.
+// FONDS_RECUS (14 octobre 2026) : sous mandat de paiement, le cabinet a reçu les fonds.
+export type EtatDEcheance = "EN_RETARD" | "PREUVE_ENVOYEE" | "FONDS_RECUS" | "PAYEE" | "A_VENIR" | "DEPOSEE";
 
 export type EcheanceDeLAdherent = {
   code_obligation: string;
@@ -157,13 +159,30 @@ export type EcheanceDeLAdherent = {
   /** Jours de retard ou restants, toujours positif ; 0 pour une preuve envoyée ou un dépôt. */
   jours: number;
   montant_estime: string | null;
+  /** 15 octobre 2026 : d'où vient l'estimation (l'IGS réduit de moitié par l'adhésion au centre…). */
+  explication_estimation?: string | null;
   montant_constate: string | null;
   declaree_le: string | null;
   de_quoi_s_agit_il: string | null;
   en_cas_de_retard: string | null;
   precedente: { periode: string; declaree_le: string | null; montant_constate: string | null } | null;
   prochaine_echeance: string | null;
-  preuve: { code_obligation: string; periode_debut: string; piece: string; envoyee_le: string; par: string } | null;
+  preuve: {
+    code_obligation: string;
+    periode_debut: string;
+    piece: string;
+    envoyee_le: string;
+    par: string;
+    /** 14 octobre 2026 : le verdict du cabinet. Refusée, l'échéance redevient à régler. */
+    verdict?: "VALIDEE" | "REFUSEE" | null;
+    motif?: string | null;
+    verifiee_le?: string | null;
+    /** 18 octobre 2026 (point 7) : le montant relevé au verdict, et l'écriture déjà passée. */
+    montant_quittance?: string | null;
+    ecriture_de_paiement?: string | null;
+  } | null;
+  /** Sous mandat de paiement : les fonds remis au cabinet pour cette échéance. */
+  fonds?: { montant: string; canal: string; recus_le: string } | null;
   autres_periodes_en_retard: number;
   effectif_a_confirmer: boolean;
 };

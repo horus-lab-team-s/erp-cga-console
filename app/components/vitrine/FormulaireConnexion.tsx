@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { connexion, type EtatConnexion } from "@/app/lib/actions-session";
 import { Link } from "@/i18n/navigation";
+import { ChampMotDePasse } from "./ChampMotDePasse";
 import { IconeVitrine } from "./IconeVitrine";
 
 /**
@@ -105,10 +106,9 @@ export function FormulaireConnexion() {
         <label style={etiquette} htmlFor="motDePasse">
           {t("motDePasse")}
         </label>
-        <input
+        <ChampMotDePasse
           id="motDePasse"
           name="motDePasse"
-          type="password"
           required
           style={saisie}
           autoComplete="current-password"

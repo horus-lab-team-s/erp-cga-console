@@ -107,6 +107,8 @@ export type Question = {
   valeurs: string[] | null;
   unite: string | null;
   aide: string;
+  /** Le nom lisible de chaque valeur d'une liste, quand le référentiel le donne. */
+  libelles_valeurs?: Record<string, string>;
 };
 
 export type Questionnaire = { service: string; version: string; questions: Question[] };
@@ -142,6 +144,14 @@ export type FicheDossier = {
     emise_le: string;
     transmise_le: string | null;
   }[];
+  /** 19 octobre 2026 (point 22) : les documents joints par le visiteur à sa demande. */
+  pieces_jointes?: {
+    empreinte: string;
+    nom: string;
+    type_mime: string;
+    taille: number;
+    recue_le: string;
+  }[];
   demande: {
     nom: string;
     telephone: string;
@@ -151,11 +161,31 @@ export type FicheDossier = {
     canal_prefere: string;
     deposee_le: string;
     /**
+     * Ce que le client a répondu lui-même sur le site, par code de question, tel
+     * qu'il l'a écrit. Ces réponses ont ouvert la qualification déjà remplie.
+     */
+    declarations?: Record<string, string>;
+    /**
      * L'accord d'être contacté sur WhatsApp. ⚠️ Lire `accorde` ET `revoque_le` :
      * un accord révoqué n'autorise plus rien (voir `vautMaintenant`).
      */
     consentement?: { accorde: boolean; revoque_le: string | null };
   };
+  /** Lot 4 (9 novembre 2026) : les pénalités de retard, levées comprises. */
+  penalites?: PenaliteInfligee[];
+};
+
+/** Lot 4 : une pénalité de retard décidée par un responsable. Levée, elle reste listée. */
+export type PenaliteInfligee = {
+  numero: number;
+  motif: "RETARD_VALIDATION_STATUTS" | "RETARD_RETRAIT_ORIGINAUX" | "PROFORMA_EXPIREE" | "AUTRE";
+  montant: string;
+  explication: string;
+  infligee_par: string;
+  infligee_le: string;
+  levee_le: string | null;
+  levee_par: string | null;
+  motif_de_levee: string | null;
 };
 
 export type LigneDeProposition = { code: string; libelle: string; montant: string; fondement: string };
@@ -296,18 +326,6 @@ export type ProformaEmise = {
   transmise_le?: string | null;
 };
 
-export type ProformaConsultee = {
-  numero: string;
-  version: number;
-  service: string;
-  etat: "EMISE" | "TRANSMISE" | "ACCEPTEE" | "REMPLACEE" | "ANNULEE";
-  montant: string;
-  lignes: { libelle: string; montant: string }[];
-  debours: { libelle: string; montant: string }[];
-  expire_le: string;
-  acceptee: boolean;
-};
-
 /** L'état des canaux de contact (pas 90) : ceux que le centre exploite, et pourquoi les autres ne le sont pas. */
 export type EtatDesCanaux = {
   actifs: string[];
@@ -342,7 +360,90 @@ export type OuvertureDeLEspace = {
   etapes_substituees: string[];
   slug: string | null;
   dernier_echec: string | null;
+  /**
+   * ⚠️ Cette vente n'ouvre pas d'espace de plateforme, et n'en ouvrira jamais : une
+   * création d'entreprise ouvre un dossier de formalité, pas un locataire. Sans ce
+   * champ, `demarree: false` se lisait « pas encore ».
+   */
+  sans_objet?: boolean;
 };
+
+/** Une ligne de la caisse : un règlement à constater, ou déjà constaté. */
+export type ReglementDeCaisse = {
+  dossier: string;
+  client: string;
+  telephone: string;
+  service: string;
+  proforma: string;
+  montant: string;
+  /** 9 novembre 2026 : `A_RESTITUER` pour un trop-perçu à rendre au client. */
+  etat: "A_ENCAISSER" | "ENCAISSE" | "A_RESTITUER";
+  payee_le: string | null;
+  /** Vrai seulement pour l'offre qui ouvre un espace : une adresse est alors due. */
+  ouvre_un_espace: boolean;
+  /**
+   * 9 novembre 2026 : les tranches. `montant` est le reste tant que la proforma n'est
+   * pas soldée ; `engage` dit que le seuil de démarrage est atteint.
+   */
+  total?: string | null;
+  paye?: string;
+  reste?: string | null;
+  engage?: boolean;
+  /** `FRAIS_DE_TRAITEMENT` : des frais attendus avant toute proforma (`proforma` vide). */
+  objet?: "PROFORMA" | "FRAIS_DE_TRAITEMENT" | "PENALITE_RENDEZ_VOUS" | "PENALITE_DE_RETARD" | "TROP_PERCU";
+};
+
+/** Ce qui est versé sur un dossier commercial, et ce qu'il reste (9 novembre 2026). */
+export type SituationDesVersements = {
+  dossier: string;
+  total: string | null;
+  frais_verses: string;
+  tranches_versees: string;
+  paye: string;
+  reste: string | null;
+  solde: boolean;
+  seuil: string | null;
+  seuil_atteint: boolean;
+  seuil_pourcent: number;
+  versements: {
+    identifiant: string;
+    nature: "FRAIS_DE_TRAITEMENT" | "TRANCHE";
+    montant: string;
+    canal: "MOBILE_MONEY" | "GUICHET";
+    constate_le: string;
+  }[];
+};
+
+/** Frais de traitement par service et seuil de démarrage, fixés par le super administrateur. */
+export type RegleDesVersements = {
+  regle: {
+    frais_par_service: Record<string, string>;
+    seuil_demarrage_pourcent: number;
+    /** 9 novembre 2026 : la pénalité d'un rendez-vous manqué, ou `null`. */
+    penalite_rendez_vous?: string | null;
+    /** Lot 4 : le montant par défaut d'une pénalité de retard, par motif. */
+    penalites_de_retard?: Record<string, string>;
+    motif: string;
+    fixee_par: string;
+    fixee_le: string;
+  };
+  par_defaut: boolean;
+};
+
+export function lireLesVersements(reference: string) {
+  return appeler<SituationDesVersements>(
+    `/acquisition/dossiers/${encodeURIComponent(reference)}/versements`,
+    authentifie,
+  );
+}
+
+export function lireLaRegleDesVersements() {
+  return appeler<RegleDesVersements>("/souscription/versements/regle", authentifie);
+}
+
+export function lireLaCaisse() {
+  return appeler<ReglementDeCaisse[]>("/acquisition/caisse", authentifie);
+}
 
 export function lireOuvertureDeLEspace(reference: string) {
   return appeler<OuvertureDeLEspace>(

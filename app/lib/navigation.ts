@@ -111,6 +111,8 @@ export const ICONES: Record<string, string> = {
   // Une carte de paiement : les souscriptions réglées en ligne (pas 83).
   souscriptions: "M3 6h18v12H3zM3 10h18M7 15h4",
   // Une étiquette de prix : les tarifs fixés par la direction.
+  // Une mallette : les offres de poste du cabinet (16 octobre 2026).
+  offres: "M4 8h16v11H4zM9 8V5h6v3M4 13h16",
   tarifs: "M3 12V4h8l10 10-8 8zM7.5 8.5h.01",
   // Un pouls : l'état de la plateforme (pas 84).
   exploitation: "M3 12h4l2-5 4 10 2-5h6",
@@ -129,6 +131,15 @@ export const NAVIGATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // Lot 4 (9 novembre 2026) : les retards en rouge, par responsable, avec leurs délais.
+    libelle: "Retards",
+    href: "/retards",
+    icone: "pilotage",
+    permission: "LIRE_PILOTAGE",
+    ouAussi: ["SAISIR_ECRITURE", "SUIVRE_FORMALITE", "LIRE_PROSPECT", "ENCAISSER"],
+    construit: true,
+  },
+  {
     // Pas 104 : « par quoi je commence ? », pour qui tient des dossiers (comptable, réviseur).
     libelle: "Mon plan de travail",
     href: "/plan-de-travail",
@@ -144,6 +155,12 @@ export const NAVIGATION: EntreeNav[] = [
     icone: "acquisition",
     permission: "LIRE_PROSPECT",
     construit: true,
+    // 9 novembre 2026 : les rendez-vous de création, et la saisie au cabinet.
+    enfants: [
+      { libelle: "Demandes", href: "/acquisition" },
+      { libelle: "Rendez-vous", href: "/acquisition/rendez-vous" },
+      { libelle: "Nouvelle demande au cabinet", href: "/acquisition/nouvelle" },
+    ],
   },
   {
     libelle: "Portefeuille",
@@ -205,6 +222,8 @@ export const NAVIGATION: EntreeNav[] = [
       { libelle: "Échange avec le logiciel du client", href: "/comptabilite/echange" },
       // Pas 101 : confronter le relevé de la banque au journal de banque.
       { libelle: "Rapprochement bancaire", href: "/comptabilite/rapprochement" },
+      // 17 octobre 2026 : le registre des biens, la dotation et le tableau de la DSF.
+      { libelle: "Immobilisations", href: "/comptabilite/immobilisations" },
       // Pas 102 : les passages de relais entre comptable et réviseur.
       { libelle: "Revue des dossiers", href: "/comptabilite/revues" },
       // Pas 107 : vérifier le mois, puis le transmettre, ce qui le verrouille.
@@ -252,10 +271,34 @@ export const NAVIGATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 14 octobre 2026. Rangée après les demandes et avant la formalité : c'est
+    // l'ordre du parcours, le client accepte, il paie, son dossier s'ouvre.
+    libelle: "Caisse",
+    href: "/caisse",
+    icone: "souscriptions",
+    permission: "ENCAISSER",
+    // 18 octobre 2026 : la direction y lit le journal par axe.
+    ouAussi: ["LIRE_PILOTAGE"],
+    construit: true,
+  },
+  {
     libelle: "Création d\u2019entreprise",
     href: "/creation-entreprise",
     icone: "creation",
     permission: "SUIVRE_FORMALITE",
+    // 9 novembre 2026 : la direction suit les créations, en lecture.
+    ouAussi: ["LIRE_PILOTAGE"],
+    construit: true,
+  },
+  {
+    // 15 octobre 2026 : ce qui suit la vente d'une prestation ponctuelle (analyse et
+    // rédaction de contrats, DSF ciblée). L'agent propose, le juriste décide.
+    libelle: "Prestations ponctuelles",
+    href: "/missions",
+    icone: "pieces",
+    permission: "TRAITER_MISSION",
+    // Le second regard doit lire ce qu'il valide.
+    ouAussi: ["VALIDER_MISSION"],
     construit: true,
   },
   {
@@ -299,6 +342,16 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 18 octobre 2026 : la matrice des rôles. Le super administrateur la règle ;
+    // l'administrateur la lit, pour savoir ce que permet le rôle qu'il attribue.
+    libelle: "Matrice des rôles",
+    href: "/roles",
+    icone: "parametres",
+    permission: "GERER_ROLES",
+    ouAussi: ["GERER_COMPTES"],
+    construit: true,
+  },
+  {
     // Pas 83. Rangé en administration : son geste principal ouvre un accès à un dossier.
     libelle: "Souscriptions en ligne",
     href: "/souscriptions",
@@ -308,12 +361,32 @@ export const NAVIGATION_ADMINISTRATION: EntreeNav[] = [
     construit: true,
   },
   {
+    // 10 novembre 2026 : les frais, le seuil et les délais du super administrateur, qui ne lit
+    // pas les demandes et n'avait donc aucun chemin vers ses réglages.
+    libelle: "Réglages de l'acquisition",
+    href: "/acquisition",
+    icone: "acquisition",
+    permission: "ACCORDER_FAVEURS",
+    construit: true,
+  },
+  {
     // Les prix de l'offre. La direction seule : le prix est une décision humaine, et
     // tant qu'elle ne l'a pas prise, rien ne se paie en ligne.
     libelle: "Tarifs de l'offre",
     href: "/tarifs",
     icone: "tarifs",
     permission: "FIXER_LES_TARIFS",
+    construit: true,
+  },
+  {
+    // 16 octobre 2026 : les offres de poste du cabinet, publiées sur le site ; les
+    // qualifications se rédigent au mini-éditeur, le candidat les lit avant de postuler.
+    libelle: "Offres de poste",
+    href: "/offres-de-poste",
+    icone: "offres",
+    permission: "EDITER_VITRINE",
+    // 18 octobre 2026 : un rôle « ressources humaines » y traite les candidatures.
+    ouAussi: ["GERER_RECRUTEMENT"],
     construit: true,
   },
   {

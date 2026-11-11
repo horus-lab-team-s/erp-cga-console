@@ -34,19 +34,46 @@ export default async function Activation({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ jeton?: string }>;
+  searchParams: Promise<{ jeton?: string; parcours?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { jeton } = await searchParams;
+  const { jeton, parcours } = await searchParams;
+  const textes = TEXTES_PAR_PARCOURS[parcours ?? ""] ?? TEXTES_PAR_PARCOURS.souscription;
 
   return (
     <EcranMotDePasse
       jeton={jeton}
-      titre="Bienvenue : activez votre espace"
-      chapeau="Votre souscription est encaissée et votre espace est ouvert. Il reste à choisir votre mot de passe."
-      libelleAction="Activer mon espace"
-      note="Ce lien ne fonctionne qu'une fois. S'il a expiré, demandez-en un nouveau depuis la page de connexion."
+      titre={textes.titre}
+      chapeau={textes.chapeau}
+      libelleAction={textes.action}
+      note="Ce lien ne fonctionne qu'une fois. S'il a expiré, demandez-en un nouveau depuis « Mot de passe oublié » sur la page de connexion."
     />
   );
 }
+
+/**
+ * Ce que la page dit, selon ce qu'elle vient d'acheter.
+ *
+ * ⚠️ « OPTIMISÉ PAR SERVICE » (demande du cabinet, 14 octobre 2026). La page
+ * disait à tout le monde « votre souscription est encaissée ». La cliente d'une
+ * création n'a rien souscrit : elle a payé la création de sa société, et son
+ * espace sert à la suivre.
+ *
+ * ⚠️ `parcours` est un mot de l'adresse, posé par le serveur dans le lien, et
+ * non un secret : il ne change que le texte, jamais ce que le lien permet. Une
+ * valeur inconnue retombe sur le texte d'origine.
+ */
+const TEXTES_PAR_PARCOURS: Record<string, { titre: string; chapeau: string; action: string }> = {
+  souscription: {
+    titre: "Bienvenue : activez votre espace",
+    chapeau: "Votre souscription est encaissée et votre espace est ouvert. Il reste à choisir votre mot de passe.",
+    action: "Activer mon espace",
+  },
+  creation: {
+    titre: "Bienvenue : votre création commence",
+    chapeau:
+      "Votre règlement est reçu et le dossier de votre société est ouvert. Choisissez votre mot de passe : vous y suivrez chaque étape et y enverrez vos pièces.",
+    action: "Créer mon espace",
+  },
+};

@@ -268,6 +268,10 @@ function Ecran() {
 
         <FormulaireConnexion />
       </div>
+      {/* 17 octobre 2026 : l'entreprise porteuse de la plateforme, en signature discrète. */}
+      <p className="connexion__signature">
+        Powered by <strong>Zayra Technologies</strong>
+      </p>
     </main>
   );
 }

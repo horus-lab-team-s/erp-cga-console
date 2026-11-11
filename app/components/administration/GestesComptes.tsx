@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import { LIBELLES_ROLE, type Role } from "@/app/lib/acces";
+import { libelleRole, type Role } from "@/app/lib/acces";
 import { inviterUnCollaborateur, retablirUnCompte, suspendreUnCompte } from "@/app/lib/actions-administration";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { soumettreSansReinitialiser } from "@/app/lib/soumission";
@@ -45,10 +45,13 @@ const champ: React.CSSProperties = {
  */
 export function InvitationCollaborateur({
   roles,
+  catalogue,
   dossiers,
   aujourdhui,
 }: {
   roles: Role[];
+  /** Le catalogue du cabinet : il nomme les rôles qu'il a créés (18 octobre 2026). */
+  catalogue?: readonly { role: string; libelle: string }[];
   dossiers: { niu: string; denomination: string }[] | null;
   aujourdhui: string;
 }) {
@@ -97,7 +100,7 @@ export function InvitationCollaborateur({
           </option>
           {roles.map((r) => (
             <option key={r} value={r}>
-              {LIBELLES_ROLE[r]}
+              {libelleRole(r, catalogue)}
             </option>
           ))}
         </select>

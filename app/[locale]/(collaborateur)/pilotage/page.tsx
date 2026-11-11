@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { EtatErreur, EtatVide, Panneau } from "@/app/components/Tableau";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { ConformiteDuCentre } from "@/app/components/pilotage/ConformiteDuCentre";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
 import { exerciceCourant } from "@/app/lib/comptabilite";
@@ -82,6 +83,10 @@ export default async function Pilotage({
               : `exercice ${exercice}`}
           </p>
         </div>
+
+        {/* 10 novembre 2026 : les obligations du promoteur (CGI art. 118 et 119). Lues à part :
+            une panne du tableau de bord ne les cache pas. */}
+        <ConformiteDuCentre />
 
         {erreur ? (
           <EtatErreur titre="Pilotage indisponible" detail={erreur} />

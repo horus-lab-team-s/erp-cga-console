@@ -19,8 +19,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { appeler, ErreurApi } from "./api";
+import { appeler, ErreurApi, telecharger } from "./api";
 import type { DossierCreation } from "./creations";
+import type { EtatDocumentDeCreation } from "./document-de-creation";
 import type { EtatActe } from "./saisie";
 
 function rafraichir() {
@@ -138,12 +139,23 @@ export async function recevoirUnePiece(_precedent: EtatActe, donnees: FormData):
     }
   }
 
+  // ⚠️ Le canal est facultatif : une pièce cochée sans qu'on sache d'où elle vient
+  // reste une pièce reçue. Les deux canaux de la cliente ne sont pas proposés ici,
+  // et le serveur les refuserait.
+  const canal = champ(donnees, "canal");
+  // 18 octobre 2026 : le nom d'une pièce hors liste (code `AUTRE`, rang donné par le serveur).
+  const libelle = champ(donnees, "libelle");
   return geste(
     () =>
       appeler<DossierCreation>(`/creations/${encodeURIComponent(reference)}/pieces`, {
         methode: "POST",
         authentifie: true,
-        corps: empreinte ? { code, empreinte } : { code },
+        corps: {
+          code,
+          ...(empreinte ? { empreinte } : {}),
+          ...(canal ? { canal } : {}),
+          ...(libelle ? { libelle } : {}),
+        },
       }),
     empreinte
       ? "Pièce reçue, document joint au dossier."
@@ -220,4 +232,77 @@ export async function convertirLeDossier(_precedent: EtatActe, donnees: FormData
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
   }
+}
+
+/**
+ * Le document d'une pièce de constitution, pour l'aperçu ou le téléchargement (14 octobre 2026).
+ *
+ * ⚠️ Rendu en base64 à l'écran, qui décide de l'afficher ou de l'enregistrer. Le serveur ne sert
+ * que l'empreinte que CE dossier porte pour CETTE pièce : voir `document_de_la_piece`.
+ */
+export async function lireLeDocumentDeLaPiece(
+  _precedent: EtatDocumentDeCreation,
+  donnees: FormData,
+): Promise<EtatDocumentDeCreation> {
+  const reference = champ(donnees, "reference");
+  const code = champ(donnees, "code");
+  try {
+    const f = await telecharger(
+      `/creations/${encodeURIComponent(reference)}/pieces/${encodeURIComponent(code)}/document`,
+    );
+    return { echec: null, fichier: { nom: f.nom, typeMime: f.typeMime, base64: Buffer.from(f.octets).toString("base64") } };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fichier: null };
+    throw erreur;
+  }
+}
+
+
+/**
+ * Lot 4 (9 novembre 2026) : deux gestes datés du jour. « Statuts transmis » ouvre le délai
+ * de validation du client ; « originaux remis » ferme le délai de retrait.
+ */
+export async function marquerUnJalon(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = champ(donnees, "reference");
+  const geste_ = champ(donnees, "geste");
+  if (geste_ !== "statuts-transmis" && geste_ !== "originaux-remis") {
+    return { echec: "Geste inconnu.", fait: null };
+  }
+  return geste(
+    () =>
+      appeler<DossierCreation>(`/creations/${encodeURIComponent(reference)}/${geste_}`, {
+        methode: "POST",
+        authentifie: true,
+      }),
+    geste_ === "statuts-transmis"
+      ? "Statuts marqués transmis : le délai de validation du client court."
+      : "Originaux marqués remis au client.",
+  );
+}
+
+/** Lot 4 : le super administrateur fixe les délais de la création, avec un motif. */
+export async function fixerLaRegleDesDelais(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const motif = champ(donnees, "motif");
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  const corps: Record<string, number | string | null> = { motif };
+  for (const cle of [
+    "delai_redaction_statuts_jours",
+    "delai_validation_statuts_jours",
+    "delai_retrait_originaux_jours",
+  ]) {
+    const valeur = champ(donnees, cle);
+    if (!valeur) {
+      corps[cle] = null;
+      continue;
+    }
+    const jours = Number(valeur);
+    if (!Number.isInteger(jours) || jours < 1) {
+      return { echec: "Un délai se compte en jours entiers, un au moins ; vide : pas suivi.", fait: null };
+    }
+    corps[cle] = jours;
+  }
+  return geste(
+    () => appeler("/creations/regle-des-delais", { methode: "PUT", authentifie: true, corps }),
+    "Délais de la création enregistrés.",
+  );
 }

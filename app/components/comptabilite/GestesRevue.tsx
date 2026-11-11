@@ -12,6 +12,7 @@ import {
 } from "@/app/lib/actions-revue";
 import { LIBELLES_NATURE_OBJET } from "@/app/lib/libelles-revue";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { useAnnonce } from "@/app/components/coquille/annonce";
 
 /**
  * Les gestes de la revue d'un mois transmis (pas 102).
@@ -158,7 +159,10 @@ function Bouton({
   libelle,
   principal,
   avecMessage,
+  annoncer: annoncerLeResultat = false,
 }: {
+  /** Le bloc quitte l'écran après le geste : le résultat s'annonce par la coquille. */
+  annoncer?: boolean;
   action: (p: { echec: string | null; fait: string | null }, d: FormData) => Promise<{ echec: string | null; fait: string | null }>;
   ids: Ids;
   rang?: number;
@@ -166,7 +170,15 @@ function Bouton({
   principal?: boolean;
   avecMessage?: string;
 }) {
-  const [etat, envoyer, enCours] = useActionState(action, ETAT_ACTE_INITIAL);
+  const annoncer = useAnnonce();
+  const [etat, envoyer, enCours] = useActionState(
+    async (precedent: { echec: string | null; fait: string | null }, donnees: FormData) => {
+      const resultat = await action(precedent, donnees);
+      if (annoncerLeResultat && resultat.fait) annoncer(resultat.fait);
+      return resultat;
+    },
+    ETAT_ACTE_INITIAL,
+  );
   const [message, setMessage] = useState("");
   return (
     <form action={envoyer} style={{ display: "grid", gap: 6, justifyItems: "start" }}>
@@ -195,5 +207,5 @@ export function RetransmettreLeMois({ ids }: { ids: Ids }) {
 }
 
 export function ValiderLeMois({ ids }: { ids: Ids }) {
-  return <Bouton action={validerLeMois} ids={ids} libelle="Valider le mois" principal />;
+  return <Bouton action={validerLeMois} ids={ids} libelle="Valider le mois" principal annoncer />;
 }
