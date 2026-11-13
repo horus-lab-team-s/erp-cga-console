@@ -6,6 +6,7 @@ import { SituationDesVersementsDuDossier } from "@/app/components/acquisition/Ve
 import { PenalitesDuDossier } from "@/app/components/acquisition/Penalites";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { jourADouala, jourDuFait } from "@/app/lib/heure-douala";
@@ -340,6 +341,13 @@ export default async function FicheDossierCommercial({
               peutInfliger={detient(acces, "SUIVRE_FORMALITE") || detient(acces, "LIRE_PILOTAGE")}
               peutLever={detient(acces, "ACCORDER_FAVEURS")}
             />
+            {/* 13 novembre 2026 : lever une pénalité exige le second facteur ; la porte se tient
+                devant le geste, comme sur la matrice des rôles. */}
+            {detient(acces, "ACCORDER_FAVEURS") &&
+              (fiche.penalites ?? []).length > 0 &&
+              !acces.facteur_fort && (
+                <PorteSecondFacteur enrole={acces.second_facteur_enrole} geste="Lever une pénalité" />
+              )}
           </Panneau>
         )}
         {(fiche.etat === "ACCEPTEE" || (fiche.etat === "PAYEE" && versements !== null && !versements.solde)) &&

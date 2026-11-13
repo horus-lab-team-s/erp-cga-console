@@ -12,6 +12,7 @@ import { Affecter, ClasserSansSuite, RappelFait } from "@/app/components/acquisi
 import { RegleDesVersementsFormulaire } from "@/app/components/acquisition/Versements";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { RegleDesDelaisFormulaire } from "@/app/components/creations/GestesCreation";
 import { detient } from "@/app/lib/acces";
 import { lireLaRegleDesDelais } from "@/app/lib/creations";
@@ -92,7 +93,7 @@ export default async function ConsoleAcquisition() {
     // 10 novembre 2026 : le super administrateur règle les frais, le seuil et les délais, mais
     // ne lit pas les demandes. Il voyait un écran réservé et n'atteignait jamais ses réglages
     // (constaté en préparant la recette en ligne) : il ne voit ici que ces deux panneaux.
-    if (detient(acces, "ACCORDER_FAVEURS")) return <ReglagesDuCentre />;
+    if (detient(acces, "ACCORDER_FAVEURS")) return <ReglagesDuCentre acces={acces} />;
     return <EcranReserve titre="Demandes entrantes" permission="LIRE_PROSPECT" acces={acces} />;
   }
   // Pas 90 : l'état des canaux, lu à côté ; sa panne ne fait pas tomber la console.
@@ -254,6 +255,12 @@ export default async function ConsoleAcquisition() {
           </Panneau>
         )}
 
+        {(regleDesVersements || regleDesDelais) && detient(acces, "ACCORDER_FAVEURS") && !acces.facteur_fort && (
+          <PorteSecondFacteur
+            enrole={acces.second_facteur_enrole}
+            geste="Régler les frais, le seuil de démarrage, les pénalités et les délais"
+          />
+        )}
         {/* 9 novembre 2026 : le super administrateur fixe les frais et le seuil. */}
         {regleDesVersements && detient(acces, "ACCORDER_FAVEURS") && (
           <Panneau
@@ -306,7 +313,7 @@ export default async function ConsoleAcquisition() {
   );
 }
 
-async function ReglagesDuCentre() {
+async function ReglagesDuCentre({ acces }: { acces: Awaited<ReturnType<typeof exigerAcces>> }) {
   const [versements, delais] = await Promise.all([
     lireLaRegleDesVersements().catch(() => null),
     lireLaRegleDesDelais().catch(() => null),
@@ -319,6 +326,15 @@ async function ReglagesDuCentre() {
           <h1>Réglages de l&rsquo;acquisition</h1>
           <p>Frais de traitement, seuil de démarrage et délais de la création</p>
         </div>
+        {/* 13 novembre 2026 : enregistrer ces réglages exige le second facteur (ACCORDER_FAVEURS).
+            Sans la porte, l'écran proposait « Enregistrer » et le serveur refusait, sans que le
+            super administrateur puisse saisir son code ici : la recette en ligne l'a constaté. */}
+        {!acces.facteur_fort && (
+          <PorteSecondFacteur
+            enrole={acces.second_facteur_enrole}
+            geste="Régler les frais, le seuil de démarrage, les pénalités et les délais"
+          />
+        )}
         {versements && (
           <Panneau
             titre="Frais de traitement et seuil de démarrage"
