@@ -154,7 +154,8 @@ export function nomDeLaPeriode(debut: string, periodicite: PeriodiciteDHonoraire
 
 export type EtatDebit = {
   echec: string | null;
-  demande: { message: string; telephone: string; simule: boolean } | null;
+  /** 17 novembre 2026 : `valide_d_office`, la période d'essai a validé le paiement. */
+  demande: { message: string; telephone: string; simule: boolean; valide_d_office?: boolean } | null;
 };
 
 export const DEBIT_INITIAL: EtatDebit = { echec: null, demande: null };

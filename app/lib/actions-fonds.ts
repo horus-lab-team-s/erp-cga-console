@@ -19,7 +19,7 @@ export async function confierLesFonds(_precedent: EtatDebit, donnees: FormData):
   const telephone = champ(donnees, "telephone");
   if (!telephone) return { echec: "Indiquez le numéro mobile money à débiter.", demande: null };
   try {
-    const demande = await appeler<{ accepte: boolean; message: string; telephone: string; simule: boolean }>(
+    const demande = await appeler<{ accepte: boolean; message: string; telephone: string; simule: boolean; valide_d_office?: boolean }>(
       `${base(niu)}/appels/${encodeURIComponent(appel)}/paiement-en-ligne`,
       { methode: "POST", authentifie: true, corps: { telephone } },
     );

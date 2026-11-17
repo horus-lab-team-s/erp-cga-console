@@ -39,6 +39,8 @@ export function ReglerUnePeriode({
 
   useEffect(() => {
     if (!etat.demande) return;
+    // Validé d'office (période d'essai) : la page se relit tout de suite.
+    if (etat.demande.valide_d_office) router.refresh();
     let tours = 0;
     const minuterie = setInterval(() => {
       tours += 1;
@@ -51,7 +53,9 @@ export function ReglerUnePeriode({
   if (etat.demande) {
     return (
       <p role="status" className="honoraires__attente">
-        {etat.demande.simule
+        {etat.demande.valide_d_office
+          ? "Paiement d'essai validé automatiquement : aucun débit réel n'est effectué. Votre règlement est enregistré."
+          : etat.demande.simule
           ? "Démonstration : aucun débit réel n'est demandé, la plateforme n'a pas encore ses identifiants marchands."
           : `Validez le paiement sur votre téléphone (${etat.demande.telephone}). Cette page se met à jour toute seule.`}
       </p>

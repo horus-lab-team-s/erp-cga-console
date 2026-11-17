@@ -20,7 +20,7 @@ export async function demanderLeDebit(_precedent: EtatDebit, donnees: FormData):
   const telephone = champ(donnees, "telephone");
   if (!telephone) return { echec: "Indiquez le numéro mobile money à débiter.", demande: null };
   try {
-    const demande = await appeler<{ accepte: boolean; message: string; telephone: string; simule: boolean }>(
+    const demande = await appeler<{ accepte: boolean; message: string; telephone: string; simule: boolean; valide_d_office?: boolean }>(
       `/souscription/honoraires/${encodeURIComponent(niu)}/paiement-en-ligne`,
       { methode: "POST", authentifie: true, corps: { periode, telephone } },
     );
