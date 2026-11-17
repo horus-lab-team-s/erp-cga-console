@@ -8,12 +8,13 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import {
   ETAPES,
   LIBELLES_ETAPE,
   FORMES_JURIDIQUES,
   lireChecklist,
+  lireLesCreationsEnAttenteDuSeuil,
   lirePipeline,
   type Etape,
   type LigneCreation,
@@ -83,6 +84,9 @@ export default async function PipelineCreation() {
       FORMES_JURIDIQUES.map(async (f) => [f, await lireChecklist(f).catch(() => [])] as const),
     ),
   );
+  // 17 novembre 2026 : les ventes acceptées qui attendent leur seuil de démarrage. Une panne
+  // de cette lecture n'empêche pas le pipeline de s'afficher.
+  const enAttente = await lireLesCreationsEnAttenteDuSeuil().catch(() => null);
   try {
     dossiers = await lirePipeline();
   } catch (cause) {
@@ -119,6 +123,67 @@ export default async function PipelineCreation() {
         {mene && (
           <Panneau titre="Nouveau dossier" aide="La date d'ouverture est celle du jour, posée par le serveur">
             <OuvertureDossier formes={FORMES_JURIDIQUES} checklists={checklists} />
+          </Panneau>
+        )}
+
+        {enAttente && (enAttente.creations.length > 0 || enAttente.regle_par_defaut) && (
+          <Panneau
+            titre="En attente du seuil de démarrage"
+            aide={`Proforma acceptée, versements en cours : le dossier entre au pipeline dès que ${enAttente.seuil_pourcent} % du total sont versés`}
+          >
+            {enAttente.regle_par_defaut && (
+              <p
+                role="alert"
+                style={{
+                  margin: "0 0 10px",
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  background: "var(--alerte-fond, #fff7e6)",
+                  color: "var(--ink-900)",
+                  font: "400 13px/1.5 var(--police-texte)",
+                }}
+              >
+                <strong>Aucune règle de versement n&rsquo;est fixée.</strong> Le dossier ne démarre
+                qu&rsquo;une fois la proforma payée à 100 %, et le site ne demande pas de frais de
+                traitement. Le super administrateur règle le seuil et les frais dans « Réglages de
+                l&rsquo;acquisition ».
+              </p>
+            )}
+            {enAttente.creations.length === 0 ? (
+              <EtatVide titre="Aucune création en attente du seuil" />
+            ) : (
+              <Paginer>
+                {enAttente.creations.map((c) => (
+                  <div
+                    key={c.reference}
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "4px 16px",
+                      alignItems: "baseline",
+                      padding: "8px 16px",
+                      borderTop: "1px solid var(--line-200)",
+                      font: "400 13px/1.5 var(--police-texte)",
+                    }}
+                  >
+                    {detient(acces, "LIRE_PROSPECT") ? (
+                      <Link href={`/acquisition/${c.reference}`} style={{ fontWeight: 600 }}>
+                        {c.nom}
+                      </Link>
+                    ) : (
+                      <strong>{c.nom}</strong>
+                    )}
+                    <span>{c.telephone}</span>
+                    <span>
+                      Versé {montantFcfa(c.paye)}
+                      {c.total ? ` sur ${montantFcfa(c.total)}` : ""}
+                      {c.seuil ? ` · seuil ${montantFcfa(c.seuil)} (${c.seuil_pourcent} %)` : ""}
+                    </span>
+                    <span style={{ color: "var(--ink-500)" }}>acceptée le {dateCourte(c.depuis_le)}</span>
+                  </div>
+                ))}
+              </Paginer>
+            )}
           </Panneau>
         )}
 

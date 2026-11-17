@@ -202,3 +202,32 @@ export type RegleDesDelaisDeCreation = {
 export async function lireLaRegleDesDelais(): Promise<RegleDesDelaisDeCreation> {
   return appeler<RegleDesDelaisDeCreation>("/creations/regle-des-delais", { authentifie: true });
 }
+
+/**
+ * 17 novembre 2026 : les créations vendues (proforma acceptée) qui n'ont pas encore atteint
+ * leur seuil de démarrage. Leur dossier de formalité ne s'ouvrira qu'au seuil ; le pipeline
+ * les montre pour qu'aucune vente ne « disparaisse » entre le paiement et les formalités.
+ */
+export type CreationEnAttenteDuSeuil = {
+  reference: string;
+  nom: string;
+  telephone: string;
+  depuis_le: string;
+  total: string | null;
+  paye: string;
+  reste: string | null;
+  seuil: string | null;
+  seuil_pourcent: number;
+};
+
+export type CreationsEnAttenteDuSeuil = {
+  regle_par_defaut: boolean;
+  seuil_pourcent: number;
+  creations: CreationEnAttenteDuSeuil[];
+};
+
+export async function lireLesCreationsEnAttenteDuSeuil(): Promise<CreationsEnAttenteDuSeuil> {
+  return appeler<CreationsEnAttenteDuSeuil>("/acquisition/creations/en-attente-du-seuil", {
+    authentifie: true,
+  });
+}
