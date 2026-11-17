@@ -143,10 +143,10 @@ export default async function PipelineCreation() {
                   font: "400 13px/1.5 var(--police-texte)",
                 }}
               >
-                <strong>Aucune règle de versement n&rsquo;est fixée.</strong> Le dossier ne démarre
-                qu&rsquo;une fois la proforma payée à 100 %, et le site ne demande pas de frais de
-                traitement. Le super administrateur règle le seuil et les frais dans « Réglages de
-                l&rsquo;acquisition ».
+                <strong>Aucune règle de versement n&rsquo;est fixée.</strong> Le seuil par défaut du
+                cabinet s&rsquo;applique : le dossier démarre dès que {enAttente.seuil_pourcent} % du
+                total sont versés. Le site ne demande pas encore de frais de traitement : le super
+                administrateur les fixe, avec le seuil, dans « Réglages de l&rsquo;acquisition ».
               </p>
             )}
             {enAttente.creations.length === 0 ? (

@@ -153,19 +153,29 @@ export function RegleDesVersementsFormulaire({
   const [etat, fixer, enCours] = useActionState(fixerLaRegleDesVersements, ETAT_ACTE_INITIAL);
   return (
     <form action={fixer} className="versements__regle">
+      {/* 17 novembre 2026 : ce que chaque réglage change, dit à l'endroit où il se règle.
+          En recette en ligne, personne ne savait que le dossier attendait ce seuil pour
+          entrer au pipeline, ni que le site ne demandait de frais qu'une fois fixés ici. */}
       <p className="versements__note">
         {parDefaut
-          ? "Aucune règle fixée : pas de frais de traitement, et tout se règle avant le démarrage."
-          : `Le dossier démarre à ${seuil} % du total versé.`}
+          ? `Aucune règle enregistrée : le seuil par défaut du cabinet s'applique (démarrage à ${seuil} % du total versé), et le site ne demande aucun frais de traitement. Enregistrez la règle pour fixer les frais.`
+          : `Règle en vigueur : le dossier démarre à ${seuil} % du total versé.`}
+      </p>
+      <p className="versements__note">
+        Comment cela fonctionne : à la demande sur le site, le client règle les frais de
+        traitement (déduits ensuite de la proforma). Après l&rsquo;acceptation de la proforma,
+        il verse par tranches ; dès que le seuil est atteint, le dossier de création s&rsquo;ouvre
+        et entre au pipeline de création. Avant, il figure dans le panneau « En attente du
+        seuil de démarrage » du pipeline. Chaque versement lui envoie un reçu par courriel.
       </p>
       {SERVICES.map((s) => (
         <label key={s.code}>
-          Frais de traitement · {s.libelle} (FCFA, vide : aucun)
+          Frais de traitement · {s.libelle} (FCFA, vide : aucun ; demandés au client dès sa demande sur le site)
           <input name={`frais_${s.code}`} type="number" min={1} step={1} defaultValue={frais[s.code] ?? ""} />
         </label>
       ))}
       <label>
-        Seuil de démarrage (% du total versé)
+        Seuil de démarrage (% du total versé ; 70 % par défaut : le dossier entre au pipeline à ce seuil)
         <input name="seuil_demarrage_pourcent" type="number" min={1} max={100} step={1} required defaultValue={seuil} />
       </label>
       <label>

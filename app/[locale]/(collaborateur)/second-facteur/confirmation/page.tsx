@@ -28,6 +28,8 @@ export default async function ConfirmationDuSecondFacteur({
 }: {
   searchParams: Promise<{ jeton?: string }>;
 }) {
+  // 17 novembre 2026 : sans session, `exigerAcces` envoie à la connexion avec la page
+  // demandée (jeton compris), et la connexion ramène ici. Voir `proxy.ts`.
   const acces = await exigerAcces();
   const { jeton = "" } = await searchParams;
   return (

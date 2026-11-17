@@ -30,6 +30,8 @@ export type EtatEnrolement = {
   echec: string | null;
   secret: string | null;
   uri: string | null;
+  /** 17 novembre 2026 : le code QR de `uri`, en SVG, à scanner avec l'application. */
+  qr_svg?: string | null;
   consigne: string | null;
   /** Vrai quand un lien est parti par courriel : aucun secret n'est rendu (pas 62). */
   confirmation_par_courriel: boolean;
@@ -38,6 +40,7 @@ export type EtatEnrolement = {
 type Enrolement = {
   secret: string | null;
   uri: string | null;
+  qr_svg?: string | null;
   consigne: string;
   confirmation_par_courriel: boolean;
 };

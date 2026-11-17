@@ -20,15 +20,38 @@ const note: React.CSSProperties = {
 export function CleAffichee({
   secret,
   uri,
+  qr = null,
   consigne,
 }: {
   secret: string;
   uri: string | null;
+  qr?: string | null;
   consigne: string | null;
 }) {
   return (
     <div style={{ padding: "10px 12px", border: "1px solid var(--line-200)", borderRadius: "var(--rayon-petit)" }}>
-      <p style={note}>Saisissez cette clé dans l&rsquo;application, ou ouvrez le lien depuis le téléphone :</p>
+      {/* 17 novembre 2026 : le code QR d'abord. La clé seule, recopiée à la main, a fait
+          échouer l'association en recette en ligne : une faute de frappe rend tous les
+          codes faux sans que rien ne le signale. */}
+      <p style={note}>
+        <strong>1.</strong> Dans l&rsquo;application d&rsquo;authentification du téléphone,
+        choisissez « Ajouter un compte » puis « Scanner un code QR », et visez ce code :
+      </p>
+      {qr && (
+        // eslint-disable-next-line @next/next/no-img-element -- une image en ligne, sans optimisation possible
+        <img
+          src={`data:image/svg+xml;utf8,${encodeURIComponent(qr)}`}
+          alt="Code QR de votre clé, à scanner avec l'application d'authentification"
+          width={200}
+          height={200}
+          style={{ display: "block", margin: "8px 0", imageRendering: "pixelated" }}
+        />
+      )}
+      <p style={note}>
+        <strong>2.</strong> L&rsquo;application ajoute « CGA Broad Range ». Si le scan est impossible,
+        saisissez plutôt cette clé à la main (type « basé sur le temps »), ou, sur le téléphone,
+        touchez le lien :
+      </p>
       <p style={{ margin: "6px 0", font: "600 15px/1.4 var(--police-mono)", letterSpacing: "0.08em", wordBreak: "break-all" }}>
         {secret.match(/.{1,4}/g)?.join(" ")}
       </p>

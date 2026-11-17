@@ -149,7 +149,13 @@ export async function connexion(
         : seulementLaCaisse
           ? "/caisse"
           : "/tableau-de-bord";
-  redirect({ href: accueil, locale: langue });
+  // ⚠️ 17 novembre 2026 : revenir où l'on allait. Le lien de confirmation du second
+  // facteur, ouvert dans un navigateur où l'on n'était pas connecté, menait à la connexion
+  // puis au tableau de bord : le jeton était perdu, et l'association n'aboutissait jamais.
+  // Seule une page interne est acceptée (« /… », jamais « //hôte » ni une adresse complète).
+  const suite = String(donnees.get("suite") ?? "");
+  const suiteSure = /^\/(?!\/)[\w\-/]*(\?[\w\-=&.%]*)?$/.test(suite) ? suite : null;
+  redirect({ href: suiteSure ?? accueil, locale: langue });
 
   // `redirect` interrompt l'exécution en levant : la ligne suivante n'est jamais
   // atteinte. Elle est là parce que le vérificateur de types l'ignore, et non

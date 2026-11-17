@@ -87,6 +87,11 @@ export default function proxy(requete: NextRequest) {
   // pour le script du thème.
   requete.headers.set("x-nonce", nonce);
   requete.headers.set("Content-Security-Policy", politique);
+  // 17 novembre 2026 : la page demandée, sans le préfixe de langue, pour que la connexion y
+  // ramène (`exigerAcces`). Le lien de confirmation du second facteur, ouvert là où l'on
+  // n'était pas connecté, perdait son jeton : l'association n'aboutissait jamais.
+  const chemin = requete.nextUrl.pathname.replace(/^\/(fr|en)(?=\/|$)/, "") || "/";
+  requete.headers.set("x-chemin-demande", `${chemin}${requete.nextUrl.search}`);
 
   // La négociation de langue **d'abord** : elle peut réécrire ou rediriger, et
   // c'est sa réponse qu'il faut coiffer. Poser l'en-tête sur une autre réponse

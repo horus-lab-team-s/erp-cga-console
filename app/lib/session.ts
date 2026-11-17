@@ -65,7 +65,14 @@ export async function exigerAcces(): Promise<Acces> {
   const courant = await acces();
   if (courant === null) {
     const langue = await getLocale();
-    redirect({ href: "/connexion", locale: langue });
+    // 17 novembre 2026 : la connexion ramène à la page demandée (voir `proxy.ts`).
+    const { headers } = await import("next/headers");
+    const demande = (await headers()).get("x-chemin-demande") ?? "";
+    const suite = demande && !demande.startsWith("/connexion") && demande !== "/" ? demande : "";
+    redirect({
+      href: suite ? `/connexion?suite=${encodeURIComponent(suite)}` : "/connexion",
+      locale: langue,
+    });
   }
   return courant as Acces;
 }

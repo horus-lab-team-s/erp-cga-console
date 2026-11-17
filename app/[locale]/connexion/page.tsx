@@ -52,10 +52,16 @@ export async function generateMetadata({
  */
 export default async function Connexion({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ suite?: string }>;
 }) {
   const { locale } = await params;
+  // 17 novembre 2026 : la page où revenir après la connexion (lien de confirmation du
+  // second facteur ouvert dans un navigateur où l'on n'était pas connecté). Filtrée par
+  // l'action de connexion : une page interne de la console, rien d'autre.
+  const { suite = "" } = await searchParams;
   setRequestLocale(locale);
   return (
     // ⚠️ NI EN-TÊTE NI PIED, et c'est le dessin d'origine : voir le commentaire
@@ -65,12 +71,12 @@ export default async function Connexion({
     // scission elle affichait sept liens qui rendaient tous 404, sous des
     // libellés qui ne se chargeaient plus.
     <div className="vitrine">
-      <Ecran />
+      <Ecran suite={suite} />
     </div>
   );
 }
 
-function Ecran() {
+function Ecran({ suite }: { suite: string }) {
   const t = useTranslations("pages.connexion");
   const commun = useTranslations("commun");
   const profils = t.raw("profils") as { titre: string; detail: string }[];
@@ -266,7 +272,7 @@ function Ecran() {
           </p>
         </div>
 
-        <FormulaireConnexion />
+        <FormulaireConnexion suite={suite} />
       </div>
       {/* 17 octobre 2026 : l'entreprise porteuse de la plateforme, en signature discrète. */}
       <p className="connexion__signature">

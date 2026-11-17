@@ -48,7 +48,7 @@ import { IconeVitrine } from "./IconeVitrine";
 
 const ETAT_INITIAL: EtatConnexion = { echec: null };
 
-export function FormulaireConnexion() {
+export function FormulaireConnexion({ suite = "" }: { suite?: string } = {}) {
   const t = useTranslations("pages.connexion");
   const [etat, envoyer, enCours] = useActionState(connexion, ETAT_INITIAL);
 
@@ -87,6 +87,7 @@ export function FormulaireConnexion() {
 
   return (
     <form className="formulaire-heros" action={envoyer}>
+      {suite && <input type="hidden" name="suite" value={suite} />}
       <div>
         <label style={etiquette} htmlFor="courriel">
           {t("identifiant")}
