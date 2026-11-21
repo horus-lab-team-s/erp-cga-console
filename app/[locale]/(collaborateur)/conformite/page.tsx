@@ -11,6 +11,7 @@ import { dateCourte, montantFcfa, TIRET } from "@/app/lib/formats";
 import { lireDossiers } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Journal des dérogations · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -143,7 +144,7 @@ export default async function JournalDesDerogationsPage({
           ) : journal && journal.derogations.length === 0 ? (
             <EtatVide titre="Aucune dérogation" detail="Aucun constat n'a été écarté dans votre périmètre, ou aucun ne répond aux filtres." />
           ) : (
-            journal?.derogations.map((d, rang) => (
+            <Paginer>{journal?.derogations.map((d, rang) => (
               <LigneTableau key={d.identifiant} colonnes={COLONNES} ton={rang % 2 ? "alterne" : "normal"} hauteur="auto">
                 <Cellule tabulaire>{dateCourte(d.propose_le)}</Cellule>
                 <Cellule tabulaire couleur="var(--brand-indigo-700)">{d.code_regle}</Cellule>
@@ -167,7 +168,7 @@ export default async function JournalDesDerogationsPage({
                 <Cellule aDroite tabulaire>{d.enjeu ? montantFcfa(d.enjeu) : TIRET}</Cellule>
                 <Cellule>{STATUTS[d.statut] ?? d.statut}</Cellule>
               </LigneTableau>
-            ))
+            ))}</Paginer>
           )}
         </Panneau>
       </div>

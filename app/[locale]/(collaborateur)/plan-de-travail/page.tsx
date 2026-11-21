@@ -9,6 +9,7 @@ import { dateCourte } from "@/app/lib/formats";
 import { lireLePlanDeTravail, type LigneDeDossier, type PlanDeTravail, type Tache } from "@/app/lib/plan-de-travail";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Mon plan de travail · Plateforme CGA" };
 // Tout dépend du jour : un rendu figé serait faux dès le lendemain.
@@ -114,7 +115,7 @@ export default async function MonPlanDeTravail() {
 
               <Panneau titre="Mes dossiers" aide="Les plus chargés d'abord">
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                  {plan.mes_dossiers.map((d) => {
+                  <Paginer commeElementDeListe>{plan.mes_dossiers.map((d) => {
                     const revue = REVUES[d.revue_du_mois_precedent];
                     return (
                       <li key={d.niu} style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "2px 12px", padding: "9px 16px", borderBottom: "1px solid var(--line-100)", font: "400 13px/1.45 var(--police-texte)" }}>
@@ -130,7 +131,7 @@ export default async function MonPlanDeTravail() {
                         </span>
                       </li>
                     );
-                  })}
+                  })}</Paginer>
                 </ul>
               </Panneau>
             </div>

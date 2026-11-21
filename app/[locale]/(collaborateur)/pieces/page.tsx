@@ -6,6 +6,7 @@ import { BoiteReception, type LignePiece } from "@/app/components/collecte/Boite
 import type { Severite } from "@/app/components/Gravite";
 import type { Statut } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { BandeauDuFiltre, dossierFiltre } from "@/app/components/coquille/BandeauDuFiltre";
 import { ErreurApi, controlerToutLeFlux, type ReponseControle } from "@/app/lib/api";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { detient } from "@/app/lib/acces";
@@ -16,6 +17,9 @@ import { exigerAcces } from "@/app/lib/session";
 import { ClasserLaPiece, ImportAuCabinet, LectureDePiece } from "@/app/components/collecte/GestesDuCabinet";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
+import { InterrupteurDeLaLecture } from "@/app/components/collecte/GestesLectureAuDepot";
+import { lireLaLectureAuDepot } from "@/app/lib/lecture-au-depot";
 
 export const metadata: Metadata = { title: "Pièces justificatives · Plateforme CGA" };
 
@@ -48,7 +52,7 @@ export const dynamic = "force-dynamic";
  * La jointure se fait sur le serveur : le navigateur reçoit des lignes résolues, et
  * ne recalcule aucun état.
  */
-export default async function BoiteReceptionPieces() {
+export default async function BoiteReceptionPieces({ searchParams }: { searchParams: Promise<{ dossier?: string }> }) {
   const acces = await exigerAcces();
   // ⚠️ Garde avant tout appel. Sans elle, cet écran s'ouvrait à quiconque tenait
   // une session — administrateur compris, alors que c'est le seul rôle
@@ -58,6 +62,8 @@ export default async function BoiteReceptionPieces() {
     return <EcranReserve titre="Pièces justificatives" permission="LIRE_PIECE" acces={acces} />;
   }
 
+  const demande = (await searchParams).dossier;
+  let choisi: { niu: string; denomination: string } | null = null;
   let lignes: LignePiece[] = [];
   let erreur: string | null = null;
   let dossiersDuPortefeuille: { niu: string; denomination: string }[] = [];
@@ -83,7 +89,7 @@ export default async function BoiteReceptionPieces() {
   }
 
   try {
-    const [pieces, rapports, demandes, noms] = await Promise.all([
+    const [toutesLesPieces, rapports, toutesLesDemandes, noms] = await Promise.all([
       lirePieces({}),
       controlerToutLeFlux(),
       lireDemandes(),
@@ -96,12 +102,20 @@ export default async function BoiteReceptionPieces() {
         })
         .catch(() => new Map<string, string>()),
     ]);
+    // 9 novembre 2026 : le dossier choisi au sélecteur filtre la boîte de réception.
+    choisi = dossierFiltre(demande, dossiersDuPortefeuille);
+    const pieces = choisi ? toutesLesPieces.filter((x) => x.entreprise === choisi!.niu) : toutesLesPieces;
+    const demandes = choisi ? toutesLesDemandes.filter((x) => x.entreprise === choisi!.niu) : toutesLesDemandes;
     lignes = construireLignes(pieces, rapports, demandes, noms);
     aIdentifier = pieces.filter((p) => p.etat === "RECUE");
     aTerminer = pieces.filter((p) => p.etat === "LUE" || p.etat === "RAPPROCHEE");
   } catch (cause) {
     erreur = cause instanceof ErreurApi ? cause.message : `Appel impossible : ${String(cause)}`;
   }
+
+  // 18 octobre 2026 (point 13) : qui règle la politique du cabinet active la lecture au dépôt.
+  const regleLaLecture = detient(acces, "ARRETER_POLITIQUE") || detient(acces, "GERER_ROLES");
+  const lectureAuDepot = regleLaLecture ? await lireLaLectureAuDepot().catch(() => null) : null;
 
   return (
     <>
@@ -140,6 +154,8 @@ export default async function BoiteReceptionPieces() {
           )}
         </div>
 
+        {choisi && <BandeauDuFiltre denomination={choisi.denomination} chemin="/pieces" />}
+
         {enAttente.length > 0 && (
           <details style={{ flex: "none", border: "1px solid var(--warning)", borderRadius: "var(--rayon)", background: "var(--surface)", padding: "8px 12px" }}>
             <summary style={{ cursor: "pointer", font: "600 13px/1.5 var(--police-texte)" }}>
@@ -153,7 +169,7 @@ export default async function BoiteReceptionPieces() {
               {enAttente.map((e) => (
                 <li key={e.identifiant}>
                   <Link href={`/pieces/${e.reference_document}`}>{e.reference_document}</Link> · {e.code_regle} ({e.severite}) · proposé par{" "}
-                  {e.propose_par} le {e.propose_le.slice(0, 10).split("-").reverse().join("/")}
+                  {e.propose_par} le {jourDuFait(e.propose_le).split("-").reverse().join("/")}
                 </li>
               ))}
             </ul>
@@ -173,8 +189,14 @@ export default async function BoiteReceptionPieces() {
               <div key={p.identifiant} style={{ borderTop: "1px solid var(--line-100)", padding: "8px 0" }}>
                 <p style={{ margin: "0 0 4px", font: "400 12.5px/1.5 var(--police-texte)" }}>
                   <strong>{p.identifiant}</strong> · {p.entreprise} · reçue par {LIBELLES_CANAL[p.canal]} le{" "}
-                  {p.recue_le.slice(0, 10).split("-").reverse().join("/")}
+                  {jourDuFait(p.recue_le).split("-").reverse().join("/")}
                   {p.commentaire && <span style={{ color: "var(--ink-500)" }}> · « {p.commentaire} »</span>}
+                </p>
+                {/* 14 octobre 2026 : la facture se lit le document sous les yeux, et devient une écriture. */}
+                <p style={{ margin: "0 0 6px" }}>
+                  <Link href={`/pieces/facture/${encodeURIComponent(p.identifiant)}`} className="bouton-discret">
+                    Lire la facture et proposer l&rsquo;écriture →
+                  </Link>
                 </p>
                 <LectureDePiece
                   identifiant={p.identifiant}
@@ -213,9 +235,29 @@ export default async function BoiteReceptionPieces() {
                   )}{" "}
                   · {LIBELLES_ETAT[p.etat]}
                 </p>
+                {p.type === "FACTURE_ACHAT" && (
+                  <p style={{ margin: "0 0 6px" }}>
+                    <Link href={`/pieces/facture/${encodeURIComponent(p.identifiant)}`} className="bouton-discret">
+                      Lire la facture et proposer l&rsquo;écriture →
+                    </Link>
+                  </p>
+                )}
                 <ClasserLaPiece identifiant={p.identifiant} />
               </div>
             ))}
+          </details>
+        )}
+
+        {lectureAuDepot && (
+          <details className="lecture-depot__cadre">
+            <summary>
+              Lecture automatique au dépôt : {lectureAuDepot.actif ? "activée" : "coupée"}
+            </summary>
+            <p className="lecture-depot__aide">
+              L&rsquo;agent lit les pièces que déposent les adhérents qui y consentent, et prépare leur facture.
+              Il ne bloque aucun dépôt et ne décide de rien : le collaborateur confirme toujours.
+            </p>
+            <InterrupteurDeLaLecture etat={lectureAuDepot} />
           </details>
         )}
 
@@ -272,7 +314,7 @@ function construireLignes(
       reference: piece.reference_document,
       adherent: noms.get(piece.entreprise) ?? reponse?.facture.destinataire.denomination ?? piece.entreprise,
       fournisseur: piece.emetteur ?? TIRET,
-      date: piece.date_document ?? piece.recue_le.slice(0, 10),
+      date: piece.date_document ?? jourDuFait(piece.recue_le),
       // Le backend rend un nombre ; la ligne garde la chaîne que `montantFcfa` formate.
       ttc: piece.montant_ttc === null ? null : String(piece.montant_ttc),
       canal: LIBELLES_CANAL[piece.canal],

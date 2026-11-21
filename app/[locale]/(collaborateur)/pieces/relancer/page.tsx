@@ -5,6 +5,7 @@ import { EtatErreur, EtatVide, Panneau } from "@/app/components/Tableau";
 import { EnvoyerLaRelance } from "@/app/components/collecte/EnvoyerLaRelance";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { detient } from "@/app/lib/acces";
 import { ErreurApi } from "@/app/lib/api";
 import { dateCourte, TIRET } from "@/app/lib/formats";
@@ -13,6 +14,7 @@ import { lireLaRelance, type AttenteDePiece, type VueDeRelance } from "@/app/lib
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
 import { moisPrecedentADouala } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Relancer un adhérent · Plateforme CGA" };
 export const dynamic = "force-dynamic";
@@ -119,6 +121,7 @@ export default async function RelancerUnAdherent({
     return (
       <>
         <EnteteTravail miettes={miettes} />
+        <DossierDeLaPage niu={dossier} />
         <div className="page-travail">
           <div className="page-travail__titre">
             <h1>Relancer un adhérent</h1>
@@ -203,14 +206,14 @@ export default async function RelancerUnAdherent({
                 <EtatVide titre="Aucune relance" detail="Ni envoyée depuis cet écran, ni tracée à la main." />
               ) : (
                 <ul style={{ listStyle: "none", margin: 0, padding: "6px 14px" }}>
-                  {vue.historique.map((h, rang) => (
+                  <Paginer commeElementDeListe>{vue.historique.map((h, rang) => (
                     <li key={rang} style={{ display: "flex", flexWrap: "wrap", gap: "2px 10px", padding: "6px 0", borderBottom: "1px solid var(--line-100)", font: "400 12.5px/1.5 var(--police-texte)" }}>
                       <span style={{ color: "var(--ink-500)", fontVariantNumeric: "tabular-nums" }}>{dateCourte(h.quand)}</span>
                       <strong>{h.canal}</strong>
                       <span style={{ flex: "1 1 200px", minWidth: 0 }}>{h.contenu}</span>
                       <span style={{ color: h.etat === "Lu" ? "var(--success)" : h.etat === "Non lu" ? "var(--warning)" : "var(--ink-500)", fontWeight: 600 }}>{h.etat}</span>
                     </li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
               )}
             </Panneau>
@@ -237,9 +240,9 @@ export default async function RelancerUnAdherent({
                 <p style={{ margin: 0 }}>Bonjour{vue.destinataires[0] ? ` ${vue.destinataires[0].split(" ")[0]}` : ""},</p>
                 <p style={{ margin: "4px 0" }}>{vue.apercu.introduction}</p>
                 <ul style={{ margin: "4px 0", paddingLeft: 18 }}>
-                  {vue.apercu.liste.map((l) => (
+                  <Paginer commeElementDeListe>{vue.apercu.liste.map((l) => (
                     <li key={l}>{l}</li>
-                  ))}
+                  ))}</Paginer>
                 </ul>
                 <p style={{ margin: "4px 0" }}>{vue.apercu.conclusion}</p>
                 <p style={{ margin: 0 }}>{vue.apercu.signature}</p>

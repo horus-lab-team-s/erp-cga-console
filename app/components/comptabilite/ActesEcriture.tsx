@@ -6,7 +6,8 @@ import { contrepasserEcriture, validerEcriture } from "@/app/lib/actions-comptab
 import type { Compte, Ecriture, Journal } from "@/app/lib/comptabilite";
 import { FormulaireEcriture } from "./FormulaireEcriture";
 import type { ExerciceDuDossier } from "@/app/lib/portefeuille";
-import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
+import { useAnnonce } from "@/app/components/coquille/annonce";
 
 /**
  * Les deux actes qui suivent la saisie : valider, contre-passer.
@@ -145,7 +146,14 @@ function Brouillon({
 }
 
 function Validation({ dossier, cle }: { dossier: string; cle: string }) {
-  const [etat, envoyer, enCours] = useActionState(validerEcriture, ETAT_ACTE_INITIAL);
+  const annoncer = useAnnonce();
+  // ⚠️ L'annonce part de l'action même : validée, l'écriture quitte la liste des
+  // brouillons, et ce bloc est démonté dans le même rendu que le résultat.
+  const [etat, envoyer, enCours] = useActionState(async (precedent: EtatActe, donnees: FormData) => {
+    const resultat = await validerEcriture(precedent, donnees);
+    if (resultat.fait) annoncer(resultat.fait);
+    return resultat;
+  }, ETAT_ACTE_INITIAL);
   return (
     <form action={envoyer} style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <input type="hidden" name="dossier" value={dossier} />

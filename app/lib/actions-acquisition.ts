@@ -44,7 +44,7 @@ import { revalidatePath } from "next/cache";
 import { appeler, ErreurApi } from "./api";
 import type { EtatActe } from "./saisie";
 import { DEMARCHES, type DemandeSoumise, type ResultatDemande } from "./acquisition";
-import type { ProformaConsultee, ProformaEmise, Proposition } from "./console-acquisition";
+import type { ProformaEmise, Proposition } from "./console-acquisition";
 
 type AccuseDeDemande = {
   recue: boolean;
@@ -251,7 +251,6 @@ export async function chiffrerLeDossier(
   }
 }
 
-
 // ══ La proforma (pas 67) ═════════════════════════════════════════════════════
 
 export type EtatEmission = {
@@ -285,6 +284,36 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
   // celle du résumé, comme pour toutes les proformas émises avant.
   const composition = String(donnees.get("composition") ?? "").trim();
   const vide = { proforma: null, lien: null };
+  // ⚠️ LE DÉTAIL RETOUCHÉ DANS L'APERÇU (14 octobre 2026). Il n'est envoyé qu'avec
+  // un document : c'est lui qu'il ajuste. Le serveur vérifie que le montant en est
+  // le total, et refuse une rubrique vide ; ce filtre-ci écarte seulement ce qui
+  // n'a pas la forme attendue, pour rendre une phrase plutôt qu'une trace.
+  let rubriques: { numero: string; intitule: string; lignes: { libelle: string; montant: string }[] }[] | null = null;
+  const brutes = String(donnees.get("rubriques") ?? "").trim();
+  if (composition && brutes) {
+    try {
+      const lues: unknown = JSON.parse(brutes);
+      if (!Array.isArray(lues)) throw new Error("forme");
+      rubriques = lues.map((r) => ({
+        numero: String(r.numero ?? ""),
+        intitule: String(r.intitule ?? ""),
+        lignes: (Array.isArray(r.lignes) ? r.lignes : []).map((l: { libelle?: unknown; montant?: unknown }) => ({
+          libelle: String(l.libelle ?? "").trim(),
+          montant: String(l.montant ?? "").replace(/\s/g, ""),
+        })),
+      }));
+    } catch {
+      return { echec: "Le détail de la proforma n'a pas pu être lu. Rechargez la page et recommencez.", ...vide };
+    }
+    for (const rubrique of rubriques) {
+      for (const ligne of rubrique.lignes) {
+        if (!ligne.libelle) return { echec: `Rubrique ${rubrique.numero} : une ligne n'a pas de désignation.`, ...vide };
+        if (!/^[1-9]\d*$/.test(ligne.montant)) {
+          return { echec: `Rubrique ${rubrique.numero}, « ${ligne.libelle} » : le montant s'écrit en francs, sans décimales.`, ...vide };
+        }
+      }
+    }
+  }
   if (!/^\d+$/.test(montant)) return { echec: "Le montant arrêté s'écrit en francs, sans décimales.", ...vide };
   if (!/^\d+$/.test(score)) return { echec: "Le score de charge est un entier positif.", ...vide };
   try {
@@ -299,6 +328,7 @@ export async function emettreLaProforma(_precedent: EtatEmission, donnees: FormD
           score_charge: Number(score),
           envoyer_par_courriel: parCourriel,
           composition: composition || null,
+          ...(rubriques ? { rubriques } : {}),
         },
       },
     );
@@ -383,52 +413,6 @@ export async function transmettreLaProforma(_precedent: EtatActe, donnees: FormD
   }
 }
 
-// ══ Côté client, sans compte (pas 67) ════════════════════════════════════════
-
-export type LienPresente = { numero: string; version: string; expire_le: string; sceau: string };
-
-/** Lit la proforma par le lien signé. Publique : le sceau est l'authentification. */
-export async function consulterLaProforma(lien: LienPresente): Promise<ProformaConsultee | { echec: string }> {
-  const p = new URLSearchParams({ version: lien.version, expire_le: lien.expire_le, sceau: lien.sceau });
-  try {
-    return await appeler<ProformaConsultee>(
-      `/acquisition/proformas/${encodeURIComponent(lien.numero)}/consultation?${p}`,
-    );
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message };
-    throw erreur;
-  }
-}
-
-/**
- * Le client accepte. **Vaut engagement** : l'identité déclarée et la case cochée
- * sont exigées ici avant l'envoi, et le backend fige le montant, la date et l'origine.
- */
-export async function accepterLaProforma(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
-  const numero = String(donnees.get("numero") ?? "").trim();
-  const identite = String(donnees.get("identite_declaree") ?? "").trim();
-  if (identite.length < 2) return { echec: "Indiquez votre nom et votre qualité.", fait: null };
-  if (donnees.get("engagement") !== "oui") {
-    return { echec: "Cochez la case pour confirmer votre accord.", fait: null };
-  }
-  try {
-    await appeler(`/acquisition/proformas/${encodeURIComponent(numero)}/acceptation`, {
-      methode: "POST",
-      corps: {
-        version: Number(donnees.get("version")),
-        expire_le: String(donnees.get("expire_le") ?? ""),
-        sceau: String(donnees.get("sceau") ?? ""),
-        identite_declaree: identite,
-      },
-    });
-    return { echec: null, fait: "Votre accord est enregistré. Le cabinet revient vers vous pour le règlement." };
-  } catch (erreur) {
-    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
-    throw erreur;
-  }
-}
-
-
 // ══ Le règlement (pas 68) ════════════════════════════════════════════════════
 
 /**
@@ -442,13 +426,33 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
   const numero = String(donnees.get("numero") ?? "").trim();
   const slug = String(donnees.get("slug") ?? "").trim().toLowerCase();
   const telephone = String(donnees.get("telephone") ?? "").trim();
-  if (!numero || slug.length < 3) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  // ⚠️ Une prestation n'ouvre pas d'espace : le formulaire ne demande alors aucune
+  // adresse, et le dit par `sans_espace`. Le serveur reste juge : il refuserait une
+  // vente de plateforme envoyée sans adresse.
+  const sansEspace = donnees.get("sans_espace") === "oui";
+  if (!numero || (!sansEspace && slug.length < 3)) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  const tranche = trancheDe(donnees);
+  if (tranche === false) return { echec: "Le montant s'écrit en francs, sans virgule.", fait: null };
   try {
-    const r = await appeler<{ accepte: boolean; message: string; telephone: string; montant: string }>(
+    const r = await appeler<{
+      accepte: boolean;
+      message: string;
+      telephone: string;
+      montant: string;
+      valide_d_office?: boolean;
+    }>(
       `/acquisition/proformas/${encodeURIComponent(numero)}/reglement`,
-      { methode: "POST", authentifie: true, corps: { slug, telephone } },
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: { ...(sansEspace ? { telephone } : { slug, telephone }), ...(tranche ? { montant: tranche } : {}) },
+      },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
+    // 9 novembre 2026 : période d'essai — validé d'office, sans débit réel.
+    if (r.accepte && r.valide_d_office) {
+      return { echec: null, fait: `Paiement d'essai de ${r.montant} FCFA validé automatiquement : aucun débit réel.` };
+    }
     return r.accepte
       ? { echec: null, fait: `Demande envoyée au ${r.telephone} : le client doit valider sur son téléphone. ${r.message}`.trim() }
       : { echec: `L'opérateur n'a pas accepté la demande : ${r.message}`, fait: null };
@@ -464,26 +468,248 @@ export async function demanderLeReglement(_precedent: EtatActe, donnees: FormDat
  * ⚠️ La case de confirmation est vérifiée ici : c'est un rapprochement fait par un humain,
  * et il ouvre un espace. L'adresse doit être celle déjà retenue, s'il y en a une (pas 68).
  */
+/**
+ * 9 novembre 2026 : le montant d'une tranche, ou `null` pour tout le reste. `false` : illisible.
+ * Le serveur borne (au plus le reste à payer).
+ */
+function trancheDe(donnees: FormData): string | null | false {
+  const brut = String(donnees.get("montant") ?? "").replace(/\s/g, "");
+  if (!brut) return null;
+  return /^\d+$/.test(brut) && Number(brut) > 0 ? brut : false;
+}
+
 export async function confirmerLEncaissement(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
   const numero = String(donnees.get("numero") ?? "").trim();
   const slug = String(donnees.get("slug") ?? "").trim().toLowerCase();
   const reference = String(donnees.get("reference_externe") ?? "").trim();
-  if (!numero || slug.length < 3) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
+  const sansEspace = donnees.get("sans_espace") === "oui";
+  if (!numero || (!sansEspace && slug.length < 3)) return { echec: "Choisissez l'adresse de l'espace du client.", fait: null };
   if (donnees.get("rapproche") !== "oui") {
-    return { echec: "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir l'espace.", fait: null };
+    return {
+      echec: sansEspace
+        ? "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir le dossier."
+        : "Cochez la case : le règlement doit avoir été constaté avant d'ouvrir l'espace.",
+      fait: null,
+    };
+  }
+  const tranche = trancheDe(donnees);
+  if (tranche === false) return { echec: "Le montant s'écrit en francs, sans virgule.", fait: null };
+  if (tranche && !reference) return { echec: "Une tranche porte le numéro de son reçu de caisse.", fait: null };
+  try {
+    const r = await appeler<{ etat: string; tenant: string | null; slug: string | null; rejeu: boolean }>(
+      `/acquisition/proformas/${encodeURIComponent(numero)}/encaissement`,
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: {
+          ...(sansEspace ? { reference_externe: reference } : { slug, reference_externe: reference }),
+          ...(tranche ? { montant: tranche } : {}),
+        },
+      },
+    );
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    revalidatePath("/[locale]/caisse", "page");
+    // 9 novembre 2026 : un versement n'engage le dossier qu'au seuil de démarrage.
+    const engage = r.etat === "PAYEE";
+    return {
+      echec: null,
+      fait: r.rejeu
+        ? "Ce versement était déjà constaté : rien n'est compté deux fois."
+        : !engage
+          ? "Versement constaté. Le seuil de démarrage n'est pas encore atteint : le dossier s'ouvrira au prochain versement suffisant."
+          : sansEspace
+            ? "Versement constaté. Le dossier du client est engagé ; cette prestation n'ouvre pas d'espace de plateforme."
+            : `Versement constaté. L'espace « ${slug} » s'ouvre.`,
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/** 9 novembre 2026 : la caisse constate des frais de traitement versés au guichet. */
+export async function encaisserLesFrais(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  if (!recu) return { echec: "Indiquez le numéro du reçu de caisse.", fait: null };
+  if (donnees.get("rapproche") !== "oui") return { echec: "Cochez la case : le versement doit avoir été constaté.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/frais-de-traitement/encaissement`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu },
+    });
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    revalidatePath("/[locale]/caisse", "page");
+    return { echec: null, fait: "Frais de traitement constatés. Ils seront déduits du total de la proforma." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * 9 novembre 2026 : le super administrateur fixe les frais de traitement par service et le seuil
+ * de démarrage. Un champ vide : pas de frais pour ce service. Le serveur exige le second facteur.
+ */
+export async function fixerLaRegleDesVersements(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  const seuil = Number(String(donnees.get("seuil_demarrage_pourcent") ?? "").trim());
+  if (!Number.isInteger(seuil) || seuil < 1 || seuil > 100) {
+    return { echec: "Le seuil de démarrage est un pourcentage entier, de 1 à 100.", fait: null };
+  }
+  const frais: Record<string, string> = {};
+  for (const [cle, valeur] of donnees.entries()) {
+    if (!cle.startsWith("frais_")) continue;
+    const montant = String(valeur).replace(/\s/g, "");
+    if (!montant) continue;
+    if (!/^\d+$/.test(montant) || Number(montant) <= 0) {
+      return { echec: `Frais de ${cle.slice(6)} : un montant en francs, positif.`, fait: null };
+    }
+    frais[cle.slice(6)] = montant;
+  }
+  // 9 novembre 2026 : la pénalité d'un rendez-vous manqué. Vide : aucune.
+  const penalite = String(donnees.get("penalite_rendez_vous") ?? "").replace(/\s/g, "");
+  if (penalite && (!/^\d+$/.test(penalite) || Number(penalite) <= 0)) {
+    return { echec: "La pénalité d'un rendez-vous manqué : un montant en francs, positif.", fait: null };
+  }
+  // Lot 4 : les montants par défaut des pénalités de retard. Vide : saisi au cas par cas.
+  const penalitesDeRetard: Record<string, string> = {};
+  for (const [cle, valeur] of donnees.entries()) {
+    if (!cle.startsWith("penalite_") || cle === "penalite_rendez_vous") continue;
+    const montant = String(valeur).replace(/\s/g, "");
+    if (!montant) continue;
+    if (!/^\d+$/.test(montant) || Number(montant) <= 0) {
+      return { echec: "Une pénalité par défaut : un montant en francs, positif.", fait: null };
+    }
+    penalitesDeRetard[cle.slice(9)] = montant;
   }
   try {
-    const r = await appeler<{ etat: string; tenant: string | null; rejeu: boolean }>(
-      `/acquisition/proformas/${encodeURIComponent(numero)}/encaissement`,
-      { methode: "POST", authentifie: true, corps: { slug, reference_externe: reference } },
+    await appeler("/souscription/versements/regle", {
+      methode: "PUT",
+      authentifie: true,
+      corps: {
+        frais_par_service: frais,
+        seuil_demarrage_pourcent: seuil,
+        ...(penalite ? { penalite_rendez_vous: penalite } : {}),
+        penalites_de_retard: penalitesDeRetard,
+        motif,
+      },
+    });
+    revalidatePath("/[locale]/acquisition", "page");
+    return { echec: null, fait: "Règle des versements enregistrée." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/** 9 novembre 2026 : la caisse reçoit la pénalité d'un rendez-vous manqué. */
+export async function encaisserLaPenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  if (!recu) return { echec: "Indiquez le numéro du reçu de caisse.", fait: null };
+  try {
+    // Lot 4 : une pénalité de retard s'encaisse à sa propre adresse.
+    const deRetard = donnees.get("sorte") === "retard";
+    const chemin = deRetard ? "penalite-de-retard/encaissement" : "penalite/encaissement";
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/${chemin}`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu },
+    });
+    revalidatePath("/[locale]/caisse", "page");
+    return {
+      echec: null,
+      fait: deRetard
+        ? "Pénalité de retard encaissée."
+        : "Pénalité encaissée : le client peut reprendre un rendez-vous.",
+    };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * 9 novembre 2026 : la caisse constate qu'un trop-perçu a été rendu au client. C'est
+ * l'argent reçu de l'opérateur que rien n'absorbait (au-delà du reste, proforma soldée).
+ */
+export async function restituerLeTropPercu(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const recu = String(donnees.get("reference_externe") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (!recu) return { echec: "Indiquez la référence de la restitution (reçu signé, transfert).", fait: null };
+  if (motif.length < 5) return { echec: "Dites comment l'argent a été rendu.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/trop-percu/restitution`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { reference_externe: recu, motif },
+    });
+    revalidatePath("/[locale]/caisse", "page");
+    return { echec: null, fait: "Restitution constatée." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+
+/**
+ * Lot 4 (9 novembre 2026) : un responsable inflige une pénalité de retard, avec une
+ * explication que le client lira. Le montant vide prend celui fixé par défaut pour le motif.
+ */
+export async function infligerUnePenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  const explication = String(donnees.get("explication") ?? "").trim();
+  const montant = String(donnees.get("montant") ?? "").replace(/\s/g, "");
+  if (explication.length < 10) {
+    return { echec: "L'explication, que le client lira, s'écrit en dix caractères au moins.", fait: null };
+  }
+  if (montant && (!/^\d+$/.test(montant) || Number(montant) <= 0)) {
+    return { echec: "Le montant : des francs, positif ; ou vide pour le montant par défaut.", fait: null };
+  }
+  try {
+    const reponse = await appeler<{ client_prevenu: boolean | null }>(
+      `/acquisition/dossiers/${encodeURIComponent(reference)}/penalites`,
+      {
+        methode: "POST",
+        authentifie: true,
+        corps: { motif, explication, ...(montant ? { montant } : {}) },
+      },
     );
     revalidatePath("/[locale]/acquisition/[reference]", "page");
     return {
       echec: null,
-      fait: r.rejeu
-        ? "Ce règlement était déjà confirmé : aucun second espace n'est ouvert."
-        : `Règlement confirmé. L'espace « ${slug} » s'ouvre.`,
+      fait: reponse.client_prevenu
+        ? "Pénalité appliquée : le client en est prévenu par courriel."
+        : "Pénalité appliquée. Aucun courriel n'est parti : prévenez le client de vive voix.",
     };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/** Lot 4 : le super administrateur lève une pénalité (jamais une pénalité déjà versée). */
+export async function leverUnePenalite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const reference = String(donnees.get("reference") ?? "").trim();
+  const numero = String(donnees.get("numero") ?? "").trim();
+  const motif = String(donnees.get("motif") ?? "").trim();
+  if (motif.length < 10) return { echec: "Le motif s'écrit en dix caractères au moins.", fait: null };
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/penalites/${numero}/levee`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { motif },
+    });
+    revalidatePath("/[locale]/acquisition/[reference]", "page");
+    return { echec: null, fait: "Pénalité levée." };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;

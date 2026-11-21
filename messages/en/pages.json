@@ -8,9 +8,9 @@
     "piecesNote": "You will photograph them from your phone once your account is created. No need to prepare them before subscribing.",
     "pieces": [
       "A valid identity document for each partner and for the manager.",
-      "Proof of address less than three months old for the registered office.",
+      "The exact address of the future registered office (district, street, landmark): the lease will be signed in the company's name once it is created.",
       "Three proposed company names, in order of preference.",
-      "A location plan for the office, or the lease if there is one.",
+      "A location plan for the future office, and your articles of association or a draft if you already have one: otherwise, the firm drafts them.",
       "A criminal record extract for the manager, less than three months old."
     ],
     "faqKicker": "Frequently asked",
@@ -77,7 +77,7 @@
     "suiviComptable": "Accounting service",
     "souscrire": "Subscribe online",
     "devisWhatsapp": "Get this quote on WhatsApp",
-    "note": "Indicative estimate based on official rates in force. The final quote is confirmed after review of your project, with no file fee.",
+    "note": "Indicative estimate based on official rates in force. The final quote is confirmed after review of your project. A file processing fee may be requested when you submit your request: it is deducted from the final amount.",
     "semaines": "weeks",
     "nonRetenu": "not selected",
     "parMois": "12,500 FCFA per month",

@@ -12,6 +12,7 @@ import {
 } from "@/app/components/Tableau";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
+import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
 import { ReinitialiserSecondFacteur } from "@/app/components/securite/ReinitialiserSecondFacteur";
 import { InvitationCollaborateur, RetablirCompte, SuspendreCompte } from "@/app/components/administration/GestesComptes";
 import {
@@ -21,7 +22,7 @@ import {
 } from "@/app/components/administration/GestesHabilitations";
 import { AccorderUnMandat, RevoquerUnMandat } from "@/app/components/administration/GestesMandats";
 import { lireDossiers } from "@/app/lib/portefeuille";
-import { LIBELLES_ROLE, detient } from "@/app/lib/acces";
+import { LIBELLES_ROLE, libelleRole, detient } from "@/app/lib/acces";
 import {
   lireAudit,
   lireComptes,
@@ -35,6 +36,7 @@ import { dateCourte, TIRET } from "@/app/lib/formats";
 import { aujourdhui } from "@/app/lib/portefeuille";
 import { exigerAcces } from "@/app/lib/session";
 import { depuisUtc } from "@/app/lib/heure-douala";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Comptes et habilitations · Plateforme CGA" };
 
@@ -136,9 +138,15 @@ export default async function Comptes() {
 
   // ⚠️ Les rôles internes seulement : l'accès d'un adhérent s'ouvre par sa souscription,
   // et celui d'un inspecteur ne se donne pas par une invitation de collaborateur.
+  //
+  // 18 octobre 2026 : les rôles créés par le cabinet s'invitent comme les autres ; le super
+  // administrateur ne se propose qu'à qui règle la matrice (le serveur refuserait aux autres).
   const rolesInvitables = roles
     .map((r) => r.role)
-    .filter((r) => r !== "ADHERENT" && r !== "INSPECTEUR");
+    .filter((r) => r !== "ADHERENT" && r !== "INSPECTEUR" && r !== "CLIENT_CREATION")
+    .filter((r) => r !== "SUPER_ADMIN" || detient(acces, "GERER_ROLES"));
+  // Un mandat couvre des rôles tenus ailleurs : un rôle propre à ce cabinet n'existe pas chez l'autre.
+  const rolesMandatables = rolesInvitables.filter((r) => r in LIBELLES_ROLE);
   const dossiers = detient(acces, "LIRE_DOSSIER")
     ? (await lireDossiers(jour)).map((d) => ({ niu: d.niu, denomination: d.denomination }))
     : null;
@@ -170,7 +178,8 @@ export default async function Comptes() {
     <>
       <EnteteTravail miettes={[{ libelle: "Comptes et habilitations" }]} />
       <div className="page-travail">
-        <div className="page-travail__titre">
+        <div className="page-travail__titre page-travail__titre--avec-action">
+          <div>
           <h1>Comptes et habilitations</h1>
           <p>
             {comptes.length} comptes · rôles résolus au {dateCourte(jour)} ·{" "}
@@ -192,6 +201,34 @@ export default async function Comptes() {
               </>
             )}
           </p>
+          </div>
+          {/* 9 novembre 2026 : « il manque le bouton pour ajouter un utilisateur ». Il
+              existait, au bas d'un panneau, et seulement après le second facteur. Il est
+              maintenant en tête d'écran ; le panneau dit ce qu'il faut faire d'abord. */}
+          <a href="#inviter" className="action-principale">
+            + Inviter un collaborateur
+          </a>
+        </div>
+
+        {/* 19 octobre 2026 : inviter, suspendre, rétablir, fermer une habilitation ou
+            retirer un second facteur exigent la session renforcée. Les gestes ne se
+            montrent qu'une fois le code saisi : un bouton qui répond « refusé » à
+            chaque clic ne dit pas ce qu'il faut faire. */}
+
+        <div id="inviter" style={{ scrollMarginTop: 16 }}>
+          <Panneau
+            titre="Inviter un collaborateur"
+            aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
+          >
+            {acces.facteur_fort ? (
+              <InvitationCollaborateur roles={rolesInvitables} catalogue={roles} dossiers={dossiers} aujourdhui={jour} />
+            ) : (
+              <PorteSecondFacteur
+                enrole={acces.second_facteur_enrole}
+                geste="Inviter, suspendre ou rétablir un compte"
+              />
+            )}
+          </Panneau>
         </div>
 
         {!verification.intacte && (
@@ -268,12 +305,6 @@ export default async function Comptes() {
           </Panneau>
         )}
 
-        <Panneau
-          titre="Inviter"
-          aide="Crée le compte et son habilitation ; le lien d'activation part au collaborateur."
-        >
-          <InvitationCollaborateur roles={rolesInvitables} dossiers={dossiers} aujourdhui={jour} />
-        </Panneau>
 
         <Panneau
           titre="Comptes"
@@ -281,7 +312,14 @@ export default async function Comptes() {
         >
           <EnteteTableau colonnes={COMPTES} />
           {comptes.map((ligne, rang) => (
-            <Ligne key={ligne.compte.identifiant} ligne={ligne} rang={rang} soi={acces.compte} />
+            <Ligne
+              roles={roles}
+              key={ligne.compte.identifiant}
+              ligne={ligne}
+              rang={rang}
+              soi={acces.compte}
+              fort={acces.facteur_fort}
+            />
           ))}
         </Panneau>
 
@@ -289,7 +327,7 @@ export default async function Comptes() {
           titre="Mandats accordés"
           aide="Ce que ce cabinet a ouvert à d'autres locataires. Un mandat n'accorde aucun rôle : il autorise l'exercice, ici, de rôles déjà tenus ailleurs. Les mandats retirés restent affichés, parce qu'un retrait se relit."
         >
-          <AccorderUnMandat roles={rolesInvitables} aujourdhui={jour} />
+          <AccorderUnMandat roles={rolesMandatables} aujourdhui={jour} />
           {mandats.length === 0 ? (
             <EtatVide
               titre="Aucun mandat accordé"
@@ -310,12 +348,12 @@ export default async function Comptes() {
           aide="Un rôle, un périmètre, un intervalle. Confier un dossier vaut à compter d'aujourd'hui : l'historique antérieur n'est pas réécrit."
         >
           <EnteteTableau colonnes={HABILITATIONS} />
-          {comptes
+          <Paginer>{comptes
             .flatMap((l) => l.habilitations.map((h) => ({ h, compte: l.compte })))
             .map(({ h, compte }, rang) => (
               <LigneTableau key={h.identifiant} colonnes={HABILITATIONS} ton={rang % 2 ? "alterne" : "normal"}>
                 <Cellule gras>{compte.nom_complet}</Cellule>
-                <Cellule>{LIBELLES_ROLE[h.role]}</Cellule>
+                <Cellule>{libelleRole(h.role, roles)}</Cellule>
                 <Cellule couleur="var(--ink-500)" titre={h.portee?.join(", ") ?? ""}>
                   {h.portee === null ? "tout le cabinet" : h.portee.length ? h.portee.join(", ") : "aucun dossier"}
                 </Cellule>
@@ -329,17 +367,17 @@ export default async function Comptes() {
                     {affecte && !h.transverse && h.role !== "ADHERENT" && h.role !== "INSPECTEUR" && (
                       <ConfierUnDossier habilitation={h.identifiant} />
                     )}
-                    {h.compte !== acces.compte && (
+                    {h.compte !== acces.compte && acces.facteur_fort && (
                       <FermerUneHabilitation
                         habilitation={h.identifiant}
-                        libelle={`${LIBELLES_ROLE[h.role]} de ${compte.nom_complet}`}
+                        libelle={`${libelleRole(h.role, roles)} de ${compte.nom_complet}`}
                         aujourdhui={jour}
                       />
                     )}
                   </span>
                 </Cellule>
               </LigneTableau>
-            ))}
+            ))}</Paginer>
         </Panneau>
 
         <Panneau
@@ -354,7 +392,7 @@ export default async function Comptes() {
           ) : (
             <>
               <EnteteTableau colonnes={AUDIT} />
-              {entrees
+              <Paginer>{entrees
                 .slice(-40)
                 .reverse()
                 .map((entree) => (
@@ -388,7 +426,7 @@ export default async function Comptes() {
                       {entree.mandat ? `mandat ${entree.mandat}` : "chez lui"}
                     </Cellule>
                   </LigneTableau>
-                ))}
+                ))}</Paginer>
             </>
           )}
         </Panneau>
@@ -401,11 +439,17 @@ function Ligne({
   ligne,
   rang,
   soi,
+  roles,
+  fort,
 }: {
   ligne: LigneCompte;
   rang: number;
+  /** La session est renforcée : les gestes qui modifient le compte se montrent. */
+  fort: boolean;
   /** L'identifiant du compte connecté : il ne reçoit pas le bouton de réinitialisation. */
   soi: string;
+  /** Le catalogue : il nomme les rôles créés par le cabinet. */
+  roles: readonly { role: string; libelle: string }[];
 }) {
   const suspendu = ligne.compte.etat === "SUSPENDU";
   const enAttente = ligne.compte.etat === "EN_ATTENTE_ACTIVATION";
@@ -418,7 +462,7 @@ function Ligne({
       {/* Aucun rôle au jour ne veut pas dire « compte vide » : c'est souvent une
           habilitation fermée, et l'historique la conserve. */}
       <Cellule couleur={ligne.roles.length ? undefined : "var(--ink-500)"}>
-        {ligne.roles.map((r) => LIBELLES_ROLE[r]).join(", ") || "aucun à cette date"}
+        {ligne.roles.map((r) => libelleRole(r, roles)).join(", ") || "aucun à cette date"}
       </Cellule>
       <Cellule aDroite tabulaire couleur="var(--ink-500)">
         {ligne.dossiers === null
@@ -427,7 +471,7 @@ function Ligne({
       </Cellule>
       <Cellule couleur={ligne.compte.second_facteur_actif ? undefined : "var(--ink-500)"}>
         {ligne.compte.second_facteur_actif ? "Enrôlé" : TIRET}
-        {ligne.compte.second_facteur_actif && ligne.compte.identifiant !== soi && (
+        {fort && ligne.compte.second_facteur_actif && ligne.compte.identifiant !== soi && (
           <ReinitialiserSecondFacteur
             identifiant={ligne.compte.identifiant}
             nom={ligne.compte.nom_complet}
@@ -440,11 +484,11 @@ function Ligne({
         }
       >
         {suspendu ? "Suspendu" : enAttente ? "Jamais activé" : "Actif"}
-        {!suspendu && ligne.compte.identifiant !== soi && (
+        {fort && !suspendu && ligne.compte.identifiant !== soi && (
           <SuspendreCompte identifiant={ligne.compte.identifiant} nom={ligne.compte.nom_complet} />
         )}
         {/* Pas 91 : la levée de suspension a sa route. */}
-        {suspendu && <RetablirCompte identifiant={ligne.compte.identifiant} />}
+        {fort && suspendu && <RetablirCompte identifiant={ligne.compte.identifiant} />}
         {ligne.compte.etat === "ACTIF" && ligne.compte.identifiant !== soi && (
           <FermerLesSessions identifiant={ligne.compte.identifiant} />
         )}
@@ -471,7 +515,7 @@ function LigneMandat({ mandat, rang }: { mandat: MandatAccorde; rang: number }) 
         {mandat.mandataire}
       </Cellule>
       <Cellule couleur={eteint ? "var(--ink-500)" : undefined}>
-        {mandat.roles.map((r) => LIBELLES_ROLE[r]).join(", ")}
+        {mandat.roles.map((r) => libelleRole(r)).join(", ")}
       </Cellule>
       {/* ⚠️ « tous les comptes » et « aucun » ne se confondent pas : `null` ouvre à tout
           le monde chez le mandataire, et c'est l'inverse de ce qu'une liste vide

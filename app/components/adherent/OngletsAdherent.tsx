@@ -12,6 +12,9 @@ const ONGLETS = [
   { cle: "accueil", libelle: "Accueil", lien: "/mon-espace" },
   { cle: "justificatifs", libelle: "Justificatifs", lien: "/mon-espace/justificatifs" },
   { cle: "echeances", libelle: "Échéances", lien: "/mon-espace/echeances" },
+  // 14 octobre 2026 : ce que l'adhérent doit au cabinet, et le moyen de le régler.
+  { cle: "honoraires", libelle: "Honoraires", lien: "/mon-espace/honoraires" },
+  { cle: "paie", libelle: "Ma paie", lien: "/mon-espace/paie" },
   { cle: "documents", libelle: "Documents", lien: "/mon-espace/documents" },
   { cle: "entreprise", libelle: "Entreprise", lien: "/mon-espace/entreprise" },
 ] as const;

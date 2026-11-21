@@ -9,6 +9,9 @@ import { BadgeGravite, type Severite } from "../Gravite";
 import { PastilleStatut, type Statut } from "../Montant";
 import { ApercuPiece } from "./ApercuPiece";
 import { BarreFiltres, FILTRES_VIDES, type Compteurs, type Filtres } from "./BarreFiltres";
+import { numeros } from "@/app/components/Paginer";
+
+const PAR_PAGE = 10;
 
 /**
  * E03 · Boîte de réception des pièces — fiche au § 8.3.
@@ -109,6 +112,14 @@ export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
   // second rendu, et le premier afficherait brièvement une ligne inexistante.
   const indexActif = Math.min(indexSouhaite, Math.max(0, visibles.length - 1));
   const active = visibles[indexActif] ?? null;
+
+  // 9 novembre 2026 : dix lignes à la fois. La page DÉCOULE de la ligne active : les
+  // flèches franchissent seules le bas d'une page, et choisir une page y place le curseur.
+  // « Tout cocher » vaut toujours pour toutes les lignes filtrées, pas pour la seule page.
+  const page = Math.floor(indexActif / PAR_PAGE);
+  const pages = Math.max(1, Math.ceil(visibles.length / PAR_PAGE));
+  const debut = page * PAR_PAGE;
+  const pageCourante = visibles.slice(debut, debut + PAR_PAGE);
 
   const basculerCoche = useCallback((identifiant: string) => {
     setCochees((actuelles) => {
@@ -274,20 +285,58 @@ export function BoiteReception({ lignes }: { lignes: LignePiece[] }) {
                 Retirez une puce ci-dessus pour élargir la recherche.
               </p>
             ) : (
-              visibles.map((ligne, index) => (
+              pageCourante.map((ligne, rang) => (
                 <Ligne
                   key={ligne.identifiant}
                   ligne={ligne}
-                  actif={index === indexActif}
+                  actif={debut + rang === indexActif}
                   coche={cochees.has(ligne.identifiant)}
-                  alterne={index % 2 === 1}
-                  onSurvol={() => setIndexActif(index)}
+                  alterne={rang % 2 === 1}
+                  onSurvol={() => setIndexActif(debut + rang)}
                   onCocher={() => basculerCoche(ligne.identifiant)}
                   onOuvrir={() => ligne.reference && routeur.push(`/pieces/${ligne.reference}`)}
                 />
               ))
             )}
           </div>
+
+          {pages > 1 && (
+            <nav className="pagination" aria-label="Pagination des pièces">
+              <span className="pagination__position" aria-live="polite">
+                {debut + 1}–{Math.min(debut + PAR_PAGE, visibles.length)} sur {visibles.length}
+              </span>
+              <span className="pagination__boutons">
+                <button type="button" onClick={() => setIndexActif(debut - PAR_PAGE)} disabled={page === 0} aria-label="Page précédente">
+                  ‹ Précédent
+                </button>
+                {numeros(page, pages).map((n, i) =>
+                  n === null ? (
+                    <span key={`ellipse-${i}`} className="pagination__ellipse" aria-hidden="true">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setIndexActif(n * PAR_PAGE)}
+                      aria-current={n === page ? "page" : undefined}
+                      aria-label={`Page ${n + 1}`}
+                    >
+                      {n + 1}
+                    </button>
+                  ),
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIndexActif(debut + PAR_PAGE)}
+                  disabled={page === pages - 1}
+                  aria-label="Page suivante"
+                >
+                  Suivant ›
+                </button>
+              </span>
+            </nav>
+          )}
 
           <Raccourcis nbVisibles={visibles.length} nbTotal={lignes.length} />
         </div>

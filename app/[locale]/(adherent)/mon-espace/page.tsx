@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { ListeDesNotifications } from "@/app/components/coquille/ListeDesNotifications";
 import { lireMesNotifications } from "@/app/lib/notifications";
 
 import { deconnexion } from "@/app/lib/actions-session";
 import { DepotDePiece } from "@/app/components/collecte/DepotDePiece";
+import { DocumentDeLaPiece } from "@/app/components/creation/DocumentDeLaPiece";
+import { lireLeDocumentDUnePiece } from "@/app/lib/actions-collecte";
 import {
   LIBELLES_CANAL,
   LIBELLES_ETAT,
@@ -31,7 +34,7 @@ import { ChoisirMonEntreprise } from "@/app/components/adherent/ChoisirMonEntrep
 import { initiales } from "@/app/lib/acces";
 import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 
 export const metadata: Metadata = {
   title: "Mon espace · CGA Broad Range Consulting Group",
@@ -91,6 +94,12 @@ export default async function MonEspace() {
   // L'espace adhérent n'est pas un écran de travail : le refus s'écrit donc
   // dans sa propre langue, sans la coquille collaborateur.
   // ─────────────────────────────────────────────────────────────────────────
+  // ⚠️ La cliente d'une création n'a pas encore d'entreprise au portefeuille : sa page
+  // est sa création (14 octobre 2026). Lui dire « accès réservé » ici, à elle qui vient
+  // de payer, ferait chercher une panne là où il n'y a qu'une autre porte.
+  if (!detient(acces, "LIRE_DOSSIER") && detient(acces, "SUIVRE_MA_CREATION")) {
+    redirect({ href: "/ma-creation", locale: await getLocale() });
+  }
   if (!detient(acces, "LIRE_DOSSIER")) {
     return (
       <main className="adherent">
@@ -289,6 +298,9 @@ function FicheDossier({ dossier }: { dossier: Dossier }) {
       <p className="adherent__suite">
         <Link href="/mon-espace/entreprise">Mon entreprise, mon interlocuteur, signaler un changement</Link>
       </p>
+      <p className="adherent__suite">
+        <Link href="/mon-espace/dsf">Ma déclaration annuelle (DSF) : les pièces à verser, l&rsquo;état du dépôt</Link>
+      </p>
       <p className="adherent__mention">
         Statuts résolus au jour d&rsquo;aujourd&rsquo;hui. Un régime change de date à
         date : celui-ci ne dit rien de vos exercices antérieurs.
@@ -324,6 +336,14 @@ function LigneDeposee({ piece }: { piece: LignePiece }) {
         <span className="adherent__piece-montant tabulaire">
           {montantFcfa(Number(piece.montant_ttc))}
         </span>
+      )}
+      {/* 18 octobre 2026 : ce qui vient d'être envoyé se revoit ici, sans changer d'écran. */}
+      {piece.nom_fichier && (
+        <DocumentDeLaPiece
+          champs={{ identifiant: piece.identifiant }}
+          libelle={piece.emetteur ?? piece.nom_fichier}
+          lire={lireLeDocumentDUnePiece}
+        />
       )}
     </li>
   );

@@ -127,7 +127,7 @@ export default async function VueRisqueDuDossier({
               ) : vue.mesures_proposees.length === 0 ? (
                 <EtatVide
                   titre="Aucune mesure proposée à ce niveau"
-                  detail="Les mesures se règlent au référentiel, dans pilotage/mesures.yaml : chacune dit pour quels niveaux elle est permise."
+                  detail="Les mesures se règlent dans le référentiel : chacune dit pour quels niveaux elle est permise."
                 />
               ) : (
                 vue.mesures_proposees.map((m) => (

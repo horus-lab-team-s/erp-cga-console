@@ -26,12 +26,15 @@ import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 
 const note: React.CSSProperties = { margin: 0, font: "400 12px/1.5 var(--police-texte)", color: "var(--ink-500)" };
 const champ: React.CSSProperties = {
+  width: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   padding: "6px 8px",
   border: "1px solid var(--line-200)",
   borderRadius: "var(--rayon-petit)",
   font: "400 13px/1.4 var(--police-texte)",
 };
-const etiquette: React.CSSProperties = { display: "grid", gap: 4, font: "600 12px/1.4 var(--police-texte)" };
+const etiquette: React.CSSProperties = { display: "grid", gap: 4, minWidth: 0, font: "600 12px/1.4 var(--police-texte)" };
 
 function Echec({ texte }: { texte: string | null }) {
   return texte ? <p role="alert" style={{ ...note, color: "var(--danger)" }}>{texte}</p> : null;

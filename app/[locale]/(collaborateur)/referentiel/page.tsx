@@ -155,8 +155,8 @@ export default async function Referentiel() {
               Aucun chiffre produit par cette plateforme n&rsquo;est opposable.
             </strong>
             {validation.non_valides.length} des {validation.total} paramètres portent le
-            statut <code>A_VALIDER</code> : ils proviennent de sources secondaires et
-            n&rsquo;ont pas été confrontés au texte. Un fiscaliste nommé doit confirmer
+            statut <code>A_VALIDER</code> : ils n&rsquo;ont pas encore été validés par un
+            fiscaliste nommé. Il doit confirmer
             chaque valeur sur le Code général des impôts en vigueur, la loi de finances de
             l&rsquo;année et la circulaire d&rsquo;application, avant toute mise en
             production.

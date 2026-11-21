@@ -64,6 +64,23 @@ export default async function Recherche({ searchParams }: { searchParams: Promis
               }.`}
         </p>
 
+        {/* 9 novembre 2026 : l'écran n'avait que le champ de l'en-tête ; on cherchait
+            en vain où saisir. Un GET simple : l'adresse reste partageable. */}
+        <form method="get" role="search" className="recherche__formulaire">
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="NIU, dénomination, numéro de pièce…"
+            aria-label="Rechercher"
+            autoFocus={!q}
+            className="recherche__champ"
+          />
+          <button type="submit" className="action-principale">
+            Rechercher
+          </button>
+        </form>
+
         {erreur && <EtatErreur titre="Recherche indisponible" detail={erreur} />}
 
         {refusTropCourt && toutesRefusees && refusTropCourt.status === "rejected" && (

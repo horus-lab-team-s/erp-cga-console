@@ -5,6 +5,7 @@ import { FormulaireEcriture } from "@/app/components/comptabilite/FormulaireEcri
 import { Montant } from "@/app/components/Montant";
 import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { EtatVide, Panneau } from "@/app/components/Tableau";
 import { detient } from "@/app/lib/acces";
 import {
@@ -122,6 +123,7 @@ export default async function SaisieComptable({
           { libelle: "Saisie" },
         ]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Saisie d&rsquo;écriture</h1>

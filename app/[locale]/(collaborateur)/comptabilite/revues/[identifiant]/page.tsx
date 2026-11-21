@@ -200,7 +200,7 @@ export default async function Revue({
             )}
             {comptable && renvoyee && (ouvertes === 0 ? <RetransmettreLeMois ids={ids} /> : (
               <p style={{ margin: 0, font: "400 12.5px/1.5 var(--police-texte)", color: "var(--ink-500)" }}>
-                Répondre aux {ouvertes} remarque{ouvertes > 1 ? "s" : ""} ouverte{ouvertes > 1 ? "s" : ""} avant de retransmettre.
+                {ouvertes > 1 ? `Répondre aux ${ouvertes} remarques ouvertes` : "Répondre à la remarque ouverte"} avant de retransmettre.
               </p>
             ))}
             {r.statut === "VALIDEE" && (

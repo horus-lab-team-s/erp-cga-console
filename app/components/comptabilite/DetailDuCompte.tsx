@@ -8,6 +8,7 @@ import { delettrer, lettrerLaSelection } from "@/app/lib/actions-lettrage";
 import { dateCourte, TIRET } from "@/app/lib/formats";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 /**
  * Le détail d'un compte, avec son lettrage (pas 108). Maquette « Parcours comptable », vue C.
@@ -117,7 +118,7 @@ export function DetailDuCompte({
             tombait à zéro (vu sur téléphone). Plus étroit, le tableau défile. */}
         <div style={{ minWidth: 760 }}>
           <EnteteTableau colonnes={colonnes} />
-          {lignes.map((ligne, rang) => (
+          <Paginer>{lignes.map((ligne, rang) => (
             <LigneTableau key={cle(ligne)} colonnes={colonnes} ton={cochees.has(cle(ligne)) ? "selection" : rang % 2 ? "alterne" : "normal"}>
               {coche && (
                 <span>
@@ -168,7 +169,7 @@ export function DetailDuCompte({
                 )}
               </span>
             </LigneTableau>
-          ))}
+          ))}</Paginer>
         </div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: "10px 14px" }}>

@@ -25,9 +25,13 @@ export function ConfirmationEnrolement({ jeton }: { jeton: string }) {
   if (etat.secret) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "12px 16px" }}>
-        <CleAffichee secret={etat.secret} uri={etat.uri} consigne={etat.consigne} />
-        <p style={note}>Saisissez ensuite le premier code affiché par l&rsquo;application :</p>
-        <SaisieDuCode />
+        <CleAffichee secret={etat.secret} uri={etat.uri} qr={etat.qr_svg ?? null} consigne={etat.consigne} />
+        <p style={note}>
+          <strong>3.</strong> Saisissez le code à six chiffres que l&rsquo;application affiche
+          maintenant, puis « Activer ». Le code change toutes les trente secondes : prenez celui
+          qui est affiché au moment où vous validez.
+        </p>
+        <SaisieDuCode activation />
       </div>
     );
   }
@@ -35,8 +39,9 @@ export function ConfirmationEnrolement({ jeton }: { jeton: string }) {
     <form action={confirmer} style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 16px" }}>
       <input type="hidden" name="jeton" value={jeton} />
       <p style={note}>
-        Préparez votre application d&rsquo;authentification. La clé ne s&rsquo;affichera
-        qu&rsquo;une fois.
+        Préparez votre téléphone avec une application d&rsquo;authentification (Google
+        Authenticator, Microsoft Authenticator, 2FAS…). En cliquant sur « Afficher ma clé »,
+        un code QR s&rsquo;affiche : il ne s&rsquo;affichera qu&rsquo;une fois.
       </p>
       <div>
         <button type="submit" className="bouton-discret" disabled={enCours}>

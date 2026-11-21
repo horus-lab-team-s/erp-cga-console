@@ -8,17 +8,19 @@ import { EcranReserve } from "@/app/components/coquille/EcranReserve";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
 import { ErreurApi } from "@/app/lib/api";
 import { detient } from "@/app/lib/acces";
-import { dateCourte } from "@/app/lib/formats";
+import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import {
   ETAPES,
   LIBELLES_ETAPE,
   FORMES_JURIDIQUES,
   lireChecklist,
+  lireLesCreationsEnAttenteDuSeuil,
   lirePipeline,
   type Etape,
   type LigneCreation,
 } from "@/app/lib/creations";
 import { exigerAcces } from "@/app/lib/session";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Création d'entreprise · Plateforme CGA" };
 
@@ -61,7 +63,9 @@ export const dynamic = "force-dynamic";
  */
 export default async function PipelineCreation() {
   const acces = await exigerAcces();
-  if (!detient(acces, "SUIVRE_FORMALITE")) {
+  // 9 novembre 2026 : la direction lit le pipeline (LIRE_PILOTAGE) sans ouvrir de dossier.
+  const mene = detient(acces, "SUIVRE_FORMALITE");
+  if (!mene && !detient(acces, "LIRE_PILOTAGE")) {
     return (
       <EcranReserve
         titre="Création d&rsquo;entreprise"
@@ -75,11 +79,14 @@ export default async function PipelineCreation() {
   let erreur: string | null = null;
   // Les checklists par forme, pour le formulaire d'ouverture (pas 82). Une forme dont la
   // checklist ne se lit pas s'ouvre quand même, sans la liste.
-  const checklists = Object.fromEntries(
+  const checklists = !mene ? {} : Object.fromEntries(
     await Promise.all(
       FORMES_JURIDIQUES.map(async (f) => [f, await lireChecklist(f).catch(() => [])] as const),
     ),
   );
+  // 17 novembre 2026 : les ventes acceptées qui attendent leur seuil de démarrage. Une panne
+  // de cette lecture n'empêche pas le pipeline de s'afficher.
+  const enAttente = await lireLesCreationsEnAttenteDuSeuil().catch(() => null);
   try {
     dossiers = await lirePipeline();
   } catch (cause) {
@@ -113,9 +120,72 @@ export default async function PipelineCreation() {
           </p>
         </div>
 
-        <Panneau titre="Nouveau dossier" aide="La date d'ouverture est celle du jour, posée par le serveur">
-          <OuvertureDossier formes={FORMES_JURIDIQUES} checklists={checklists} />
-        </Panneau>
+        {mene && (
+          <Panneau titre="Nouveau dossier" aide="La date d'ouverture est celle du jour, posée par le serveur">
+            <OuvertureDossier formes={FORMES_JURIDIQUES} checklists={checklists} />
+          </Panneau>
+        )}
+
+        {enAttente && (enAttente.creations.length > 0 || enAttente.regle_par_defaut) && (
+          <Panneau
+            titre="En attente du seuil de démarrage"
+            aide={`Proforma acceptée, versements en cours : le dossier entre au pipeline dès que ${enAttente.seuil_pourcent} % du total sont versés`}
+          >
+            {enAttente.regle_par_defaut && (
+              <p
+                role="alert"
+                style={{
+                  margin: "0 0 10px",
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  background: "var(--alerte-fond, #fff7e6)",
+                  color: "var(--ink-900)",
+                  font: "400 13px/1.5 var(--police-texte)",
+                }}
+              >
+                <strong>Aucune règle de versement n&rsquo;est fixée.</strong> Le seuil par défaut du
+                cabinet s&rsquo;applique : le dossier démarre dès que {enAttente.seuil_pourcent} % du
+                total sont versés. Le site ne demande pas encore de frais de traitement : le super
+                administrateur les fixe, avec le seuil, dans « Réglages de l&rsquo;acquisition ».
+              </p>
+            )}
+            {enAttente.creations.length === 0 ? (
+              <EtatVide titre="Aucune création en attente du seuil" />
+            ) : (
+              <Paginer>
+                {enAttente.creations.map((c) => (
+                  <div
+                    key={c.reference}
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "4px 16px",
+                      alignItems: "baseline",
+                      padding: "8px 16px",
+                      borderTop: "1px solid var(--line-200)",
+                      font: "400 13px/1.5 var(--police-texte)",
+                    }}
+                  >
+                    {detient(acces, "LIRE_PROSPECT") ? (
+                      <Link href={`/acquisition/${c.reference}`} style={{ fontWeight: 600 }}>
+                        {c.nom}
+                      </Link>
+                    ) : (
+                      <strong>{c.nom}</strong>
+                    )}
+                    <span>{c.telephone}</span>
+                    <span>
+                      Versé {montantFcfa(c.paye)}
+                      {c.total ? ` sur ${montantFcfa(c.total)}` : ""}
+                      {c.seuil ? ` · seuil ${montantFcfa(c.seuil)} (${c.seuil_pourcent} %)` : ""}
+                    </span>
+                    <span style={{ color: "var(--ink-500)" }}>acceptée le {dateCourte(c.depuis_le)}</span>
+                  </div>
+                ))}
+              </Paginer>
+            )}
+          </Panneau>
+        )}
 
         {erreur ? (
           <EtatErreur titre="Pipeline indisponible" detail={erreur} />
@@ -148,22 +218,22 @@ export default async function PipelineCreation() {
                   {convertis.length === 0 ? (
                     <EtatVide titre="Aucune conversion" />
                   ) : (
-                    convertis.map((d) => (
+                    <Paginer>{convertis.map((d) => (
                       <LigneClose
                         key={d.reference}
                         dossier={d}
                         precision={d.converti_en ? `NIU ${d.converti_en}` : ""}
                       />
-                    ))
+                    ))}</Paginer>
                   )}
                 </Panneau>
                 <Panneau titre="Abandonnés" aide="Le motif est ce qui rend le pipeline analysable">
                   {abandonnes.length === 0 ? (
                     <EtatVide titre="Aucun abandon" />
                   ) : (
-                    abandonnes.map((d) => (
+                    <Paginer>{abandonnes.map((d) => (
                       <LigneClose key={d.reference} dossier={d} precision="" />
-                    ))
+                    ))}</Paginer>
                   )}
                 </Panneau>
               </div>
@@ -216,7 +286,7 @@ function ColonneEtape({ etape, dossiers }: { etape: Etape; dossiers: LigneCreati
             Aucun dossier
           </p>
         ) : (
-          dossiers.map((dossier) => <CarteDossier key={dossier.reference} dossier={dossier} />)
+          <Paginer>{dossiers.map((dossier) => <CarteDossier key={dossier.reference} dossier={dossier} />)}</Paginer>
         )}
       </div>
     </section>

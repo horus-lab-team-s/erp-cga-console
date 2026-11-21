@@ -6,6 +6,8 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const {
   chiffrerLeDossier,
   classerSansSuite,
+  confirmerLEncaissement,
+  fixerLaRegleDesVersements,
   deposerUneDemande,
   emettreLaProforma,
   enregistrerLaQualification,
@@ -312,5 +314,80 @@ describe("Classer sans suite", () => {
     // ⚠️ « Classé » se comprend comme « effacé » par beaucoup de gens. Le dire
     // évite l'appel paniqué du chargé de clientèle qui a cliqué par erreur.
     expect(etat.fait).toContain("Il n'est pas supprimé");
+  });
+});
+
+
+/** 9 novembre 2026 : les tranches au guichet, et la règle du super administrateur. */
+describe("Les versements du parcours", () => {
+  const VIDE = { echec: null, fait: null };
+  const champs = (valeurs: Record<string, string>) => {
+    const f = new FormData();
+    for (const [k, v] of Object.entries(valeurs)) f.append(k, v);
+    return f;
+  };
+  const corpsDe = (f: ReturnType<typeof doublerFetch>) =>
+    JSON.parse(String((f.mock.calls[0][1] as RequestInit).body));
+
+  it("envoie une tranche avec son reçu, et refuse une tranche sans reçu", async () => {
+    const sansRecu = doublerFetch();
+    const refus = await confirmerLEncaissement(
+      VIDE,
+      champs({ numero: "PRO-1", sans_espace: "oui", rapproche: "oui", montant: "100000" }),
+    );
+    expect(refus.echec).toContain("reçu");
+    expect(sansRecu).not.toHaveBeenCalled();
+
+    const f = doublerFetch({ etat: "ACCEPTEE", tenant: null, slug: null, rejeu: false });
+    const etat = await confirmerLEncaissement(
+      VIDE,
+      champs({ numero: "PRO-1", sans_espace: "oui", rapproche: "oui", montant: "100 000", reference_externe: "R-1" }),
+    );
+    expect(corpsDe(f)).toEqual({ reference_externe: "R-1", montant: "100000" });
+    expect(etat.fait).toContain("seuil de démarrage");
+  });
+
+  it("fixe la règle : frais des services remplis seulement, seuil borné", async () => {
+    expect(
+      (await fixerLaRegleDesVersements(VIDE, champs({ seuil_demarrage_pourcent: "0", motif: "décision du 9 novembre" })))
+        .echec,
+    ).toContain("1 à 100");
+    const f = doublerFetch({});
+    await fixerLaRegleDesVersements(
+      VIDE,
+      champs({ frais_CREATION: "25000", frais_FORMATION: "", seuil_demarrage_pourcent: "70", motif: "décision du 9 novembre" }),
+    );
+    expect(corpsDe(f)).toEqual({
+      frais_par_service: { CREATION: "25000" },
+      seuil_demarrage_pourcent: 70,
+      penalites_de_retard: {},
+      motif: "décision du 9 novembre",
+    });
+  });
+
+  it("lot 4 : les pénalités par défaut, remplies seulement, hors rendez-vous manqué", async () => {
+    const f = doublerFetch({});
+    await fixerLaRegleDesVersements(
+      VIDE,
+      champs({
+        seuil_demarrage_pourcent: "100",
+        penalite_rendez_vous: "5000",
+        penalite_PROFORMA_EXPIREE: "15000",
+        penalite_AUTRE: "",
+        motif: "décision du 9 novembre",
+      }),
+    );
+    expect(corpsDe(f)).toMatchObject({
+      penalite_rendez_vous: "5000",
+      penalites_de_retard: { PROFORMA_EXPIREE: "15000" },
+    });
+    expect(
+      (
+        await fixerLaRegleDesVersements(
+          VIDE,
+          champs({ seuil_demarrage_pourcent: "100", penalite_AUTRE: "-3", motif: "décision du 9 novembre" }),
+        )
+      ).echec,
+    ).toContain("positif");
   });
 });

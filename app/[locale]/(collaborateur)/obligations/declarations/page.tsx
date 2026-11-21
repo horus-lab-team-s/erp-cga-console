@@ -10,6 +10,7 @@ import {
 } from "@/app/components/Tableau";
 import { Montant } from "@/app/components/Montant";
 import { EnteteTravail } from "@/app/components/coquille/EnteteTravail";
+import { DossierDeLaPage } from "@/app/components/coquille/DossierDeLaPage";
 import { Link } from "@/i18n/navigation";
 import { ErreurApi } from "@/app/lib/api";
 import { dateCourte, TIRET } from "@/app/lib/formats";
@@ -27,6 +28,7 @@ import { detient } from "@/app/lib/acces";
 import { exigerAcces } from "@/app/lib/session";
 import { ConstatDepotTva } from "@/app/components/obligations/GestesEcheancier";
 import { PorteSecondFacteur } from "@/app/components/securite/PorteSecondFacteur";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = { title: "Déclaration de TVA · Plateforme CGA" };
 
@@ -140,6 +142,7 @@ export default async function Declarations({
           { libelle: "Déclaration de TVA" },
         ]}
       />
+      <DossierDeLaPage niu={niu} />
       <div className="page-travail">
         <div className="page-travail__titre">
           <h1>Déclaration de TVA</h1>
@@ -166,7 +169,7 @@ export default async function Declarations({
               <div style={{ overflowX: "auto" }}>
                 <div style={{ minWidth: 600 }}>
                   <EnteteTableau colonnes={LIGNES} />
-                  {declaration.lignes.map((ligne, rang) => (
+                  <Paginer>{declaration.lignes.map((ligne, rang) => (
                     <LigneTableau key={ligne.code} colonnes={LIGNES} ton={ligne.grandeur === "TVA_REJETEE" && Number(ligne.montant) > 0 ? "alerte" : rang % 2 ? "alterne" : "normal"}>
                       <Cellule tabulaire gras>{ligne.code}</Cellule>
                       <Cellule titre={ligne.base_partielle ? "Base partielle : des écritures mêlent plusieurs catégories de TVA et ne sont pas réparties." : ligne.libelle}>
@@ -183,7 +186,7 @@ export default async function Declarations({
                         {ligne.ecritures.length}
                       </Cellule>
                     </LigneTableau>
-                  ))}
+                  ))}</Paginer>
                   <LigneTableau colonnes={LIGNES} ton="selection">
                     <Cellule>{""}</Cellule>
                     <Cellule gras>{Number(declaration.tva_a_payer) > 0 ? "TVA à payer" : "Crédit à reporter"}</Cellule>
@@ -199,13 +202,13 @@ export default async function Declarations({
                 <details style={{ padding: "8px 14px", font: "400 12px/1.6 var(--police-texte)" }}>
                   <summary style={{ cursor: "pointer", fontWeight: 600 }}>Les écritures de chaque ligne</summary>
                   <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
-                    {declaration.lignes
+                    <Paginer commeElementDeListe>{declaration.lignes
                       .filter((l) => l.ecritures.length > 0)
                       .map((l) => (
                         <li key={l.code}>
                           <strong>{l.code}</strong> · {l.ecritures.join(", ")}
                         </li>
-                      ))}
+                      ))}</Paginer>
                   </ul>
                 </details>
               )}
@@ -361,7 +364,7 @@ export default async function Declarations({
                 <div style={{ overflowX: "auto" }}>
                 <div style={{ minWidth: 560 }}>
                   <EnteteTableau colonnes={REJETS} />
-                  {declaration.detail_rejets.map((rejet, rang) => (
+                  <Paginer>{declaration.detail_rejets.map((rejet, rang) => (
                     <LigneTableau
                       // ⚠️ Pas 79 : l'écriture, le compte et le rang, toujours renseignés.
                       // La pièce et la règle peuvent être nulles, et deux rejets sans pièce
@@ -380,7 +383,7 @@ export default async function Declarations({
                         <Montant valeur={rejet.montant} />
                       </Cellule>
                     </LigneTableau>
-                  ))}
+                  ))}</Paginer>
                 </div>
                 </div>
               )}

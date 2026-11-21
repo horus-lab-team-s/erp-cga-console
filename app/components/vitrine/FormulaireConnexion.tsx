@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 
 import { connexion, type EtatConnexion } from "@/app/lib/actions-session";
 import { Link } from "@/i18n/navigation";
+import { ChampMotDePasse } from "./ChampMotDePasse";
 import { IconeVitrine } from "./IconeVitrine";
+import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
 
 /**
  * Formulaire de connexion à l'espace client.
@@ -47,7 +49,7 @@ import { IconeVitrine } from "./IconeVitrine";
 
 const ETAT_INITIAL: EtatConnexion = { echec: null };
 
-export function FormulaireConnexion() {
+export function FormulaireConnexion({ suite = "" }: { suite?: string } = {}) {
   const t = useTranslations("pages.connexion");
   const [etat, envoyer, enCours] = useActionState(connexion, ETAT_INITIAL);
 
@@ -86,6 +88,7 @@ export function FormulaireConnexion() {
 
   return (
     <form className="formulaire-heros" action={envoyer}>
+      {suite && <input type="hidden" name="suite" value={suite} />}
       <div>
         <label style={etiquette} htmlFor="courriel">
           {t("identifiant")}
@@ -105,10 +108,9 @@ export function FormulaireConnexion() {
         <label style={etiquette} htmlFor="motDePasse">
           {t("motDePasse")}
         </label>
-        <input
+        <ChampMotDePasse
           id="motDePasse"
           name="motDePasse"
-          type="password"
           required
           style={saisie}
           autoComplete="current-password"
@@ -166,18 +168,21 @@ export function FormulaireConnexion() {
         >
           {t("oubli")}
         </Link>
-        <Link
-          href="/devenir-adherent"
+        {/* 21 novembre 2026 : « /devenir-adherent » est une page du SITE PUBLIC. Écrit en
+            chemin relatif, le lien restait sur la console et tombait en 404 ; de même, « / »
+            ramenait à la console au lieu du site. */}
+        <a
+          href={`${ADRESSE_VITRINE}/devenir-adherent`}
           style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "#d9a3d6" }}
         >
           {t("creer")}
-        </Link>
-        <Link
-          href="/"
+        </a>
+        <a
+          href={ADRESSE_VITRINE}
           style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "rgb(255 255 255 / 72%)" }}
         >
           {t("retour")}
-        </Link>
+        </a>
       </div>
 
       <p

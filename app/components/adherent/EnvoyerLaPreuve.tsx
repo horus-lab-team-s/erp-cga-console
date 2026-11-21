@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 
 import { envoyerUnePreuveDePaiement } from "@/app/lib/actions-collecte";
 import { ETAT_ACTE_INITIAL } from "@/app/lib/saisie";
+import { ChampFichier } from "@/app/components/ChampFichier";
 
 /**
  * « J'ai déjà payé : envoyer la preuve » (pas 113, maquette « Espace adhérent », vue D, note 5).
@@ -28,7 +29,7 @@ export function EnvoyerLaPreuve({ dossier, echeance }: { dossier: string; echean
       <input type="hidden" name="echeance" value={echeance} />
       <label>
         La quittance ou le reçu de paiement
-        <input type="file" name="fichier" accept="image/*,application/pdf" required className="adherent__file" />
+        <ChampFichier name="fichier" accept="image/*,application/pdf" required className="adherent__file" />
       </label>
       <small>Photo ou PDF, 20 Mo au plus. Le cabinet la vérifie, puis la joint à la déclaration.</small>
       <button type="submit" className="adherent__depot-envoyer" disabled={enCours}>

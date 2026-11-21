@@ -40,8 +40,10 @@ import { appeler, BASE_API, ErreurApi, telecharger, TEMOIN_SESSION } from "./api
 const DOSSIER = "M081234567890P";
 
 const temoinPose = vi.fn<(nom: string) => { value: string } | undefined>();
+const enteteRecu = vi.fn<(nom: string) => string | null>();
 vi.mock("next/headers", () => ({
   cookies: async () => ({ get: (nom: string) => temoinPose(nom) }),
+  headers: async () => ({ get: (nom: string) => enteteRecu(nom) }),
 }));
 
 /** Une réponse du backend, aussi proche que possible de la vraie. */
@@ -66,6 +68,30 @@ function doublerFetch(...reponses: Response[]) {
 beforeEach(() => {
   temoinPose.mockReset();
   temoinPose.mockReturnValue(undefined);
+  enteteRecu.mockReset();
+  enteteRecu.mockReturnValue(null);
+});
+
+describe("Les gardes de l'audit du 19 octobre 2026", () => {
+  it("refuse un chemin qui remonte d'un segment, sans rien envoyer", async () => {
+    const f = doublerFetch(reponse({}));
+
+    await expect(appeler("/obligations/dossiers/../mes-documents")).rejects.toThrow("Chemin refusé");
+    await expect(appeler("/obligations/dossiers/%2E%2E/recu")).rejects.toThrow("Chemin refusé");
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("transmet l'adresse du visiteur, la dernière de la liste", async () => {
+    enteteRecu.mockImplementation((nom) => (nom === "x-forwarded-for" ? "6.6.6.6, 41.202.1.9" : null));
+    const f = doublerFetch(reponse({}));
+
+    await appeler("/transverse/session", { methode: "POST", corps: {} });
+
+    const entetes = (f.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
+    // ⚠️ La première adresse vient du client, qui écrit ce qu'il veut ; la dernière,
+    // de l'ingress.
+    expect(entetes["X-Forwarded-For"]).toBe("41.202.1.9");
+  });
 });
 
 describe("Le témoin de session", () => {

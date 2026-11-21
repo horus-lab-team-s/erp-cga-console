@@ -5,12 +5,16 @@ import { useActionState, useState } from "react";
 import {
   abandonnerLeDossier,
   convertirLeDossier,
+  fixerLaRegleDesDelais,
   franchirUneEtape,
+  marquerUnJalon,
   ouvrirUnDossierDeCreation,
   porterLesIdentifiants,
   recevoirUnePiece,
 } from "@/app/lib/actions-creations";
 import { ETAT_ACTE_INITIAL, type EtatActe } from "@/app/lib/saisie";
+import { ChampFichier } from "@/app/components/ChampFichier";
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
 
 /**
  * Les gestes du tunnel de création (pas 82).
@@ -114,7 +118,7 @@ export function OuvertureDossier({
 }
 
 export function FranchirEtape({ reference, vers, libelle }: { reference: string; vers: string; libelle: string }) {
-  const [etat, franchir, enCours] = useActionState(franchirUneEtape, ETAT_ACTE_INITIAL);
+  const [etat, franchir, enCours] = useActionAnnoncee(franchirUneEtape, ETAT_ACTE_INITIAL);
   return (
     <form action={franchir} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />
@@ -141,32 +145,58 @@ export function RecevoirPiece({
   reference,
   code,
   libelle,
+  remplacer = false,
+  horsListe = false,
 }: {
   reference: string;
   code: string;
   libelle: string;
+  /** La pièce est déjà reçue : le geste remplace son document (« le cabinet vous dira si l'un d'eux doit être repris »). */
+  remplacer?: boolean;
+  /** 18 octobre 2026 : une pièce que la liste n'a pas prévue, que le collaborateur nomme. */
+  horsListe?: boolean;
 }) {
-  const [etat, recevoir, enCours] = useActionState(recevoirUnePiece, ETAT_ACTE_INITIAL);
+  const [etat, recevoir, enCours] = useActionAnnoncee(recevoirUnePiece, ETAT_ACTE_INITIAL);
   const [avecFichier, setAvecFichier] = useState(false);
   if (etat.fait) return <Retour etat={etat} />;
   return (
     <form action={recevoir} style={{ display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
       <input type="hidden" name="reference" value={reference} />
       <input type="hidden" name="code" value={code} />
+      {horsListe && (
+        <input
+          name="libelle"
+          required
+          maxLength={120}
+          placeholder="Nom de la pièce (ex. plan de localisation)"
+          aria-label="Nom de la pièce hors liste"
+          style={{ ...champ, display: "inline-block", width: 260, marginTop: 0 }}
+        />
+      )}
       <label style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
         {/* Le libellé de la pièce pour les lecteurs d'écran : sur une liste de
             neuf lignes, « Choisir un fichier » seul ne dit pas laquelle. */}
         <span className="visuellement-cache">Document de : {libelle}</span>
-        <input
-          type="file"
+        <ChampFichier
           name="fichier"
           accept="image/jpeg,image/png,image/tiff,application/pdf"
           onChange={(e) => setAvecFichier(Boolean(e.target.files?.length))}
           style={{ font: "400 12px/1.4 var(--police-texte)", maxWidth: 190 }}
         />
       </label>
+      {/* ⚠️ D'où vient la pièce (14 octobre 2026) : six mois plus tard, devant un document
+          illisible, on sait s'il faut le redemander à la cliente ou le chercher dans une
+          conversation. Les deux canaux de la cliente ne se déclarent pas à sa place. */}
+      <label style={{ display: "inline-flex", alignItems: "center", gap: 4, font: "400 12px/1.4 var(--police-texte)" }}>
+        <span className="visuellement-cache">Reçue par</span>
+        <select name="canal" defaultValue="WHATSAPP" aria-label={`Canal de réception : ${libelle}`} style={{ font: "400 12px/1.4 var(--police-texte)" }}>
+          <option value="WHATSAPP">par WhatsApp</option>
+          <option value="GUICHET">au guichet</option>
+          <option value="COURRIEL">par courriel</option>
+        </select>
+      </label>
       <button type="submit" className="bouton-discret" disabled={enCours}>
-        {enCours ? "…" : avecFichier ? "Joindre et marquer reçue" : "Marquer reçue"}
+        {enCours ? "…" : avecFichier ? (remplacer ? "Remplacer le document" : "Joindre et marquer reçue") : "Marquer reçue"}
       </button>
       <Retour etat={etat} />
     </form>
@@ -175,20 +205,26 @@ export function RecevoirPiece({
 
 export function Identifiants({ reference }: { reference: string }) {
   const [etat, porter, enCours] = useActionState(porterLesIdentifiants, ETAT_ACTE_INITIAL);
-  const ligne = (nom: string, libelle: string, cleDate: string) => (
+  // 21 novembre 2026 : un NIU à treize chiffres passait la saisie, puis le portefeuille le
+  // marquait bloquant. Le serveur refuse désormais un format faux ; l'exemple le montre avant.
+  const ligne = (nom: string, libelle: string, cleDate: string, exemple?: string) => (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 150px", gap: 8 }}>
-      <label style={etiquette}>{libelle}<input name={nom} style={champ} /></label>
+      <label style={etiquette}>{libelle}<input name={nom} style={champ} placeholder={exemple} autoCapitalize="characters" /></label>
       <label style={etiquette}>Obtenu le<input type="date" name={cleDate} style={champ} /></label>
     </div>
   );
   return (
     <form action={porter} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <input type="hidden" name="reference" value={reference} />
-      {ligne("rccm", "RCCM", "rccm_obtenu_le")}
-      {ligne("niu", "NIU", "niu_obtenu_le")}
+      {ligne("rccm", "RCCM", "rccm_obtenu_le", "RC/DLA/2026/B/9001")}
+      {ligne("niu", "NIU", "niu_obtenu_le", "M112600090017R")}
       {ligne("patente", "Patente", "patente_obtenue_le")}
       {ligne("cnps", "N° CNPS", "cnps_obtenue_le")}
-      <p style={note}>Chaque identifiant va avec sa date : elle mesure le délai tenu par le guichet.</p>
+      <p style={note}>
+        Chaque identifiant va avec sa date : elle mesure le délai tenu par le guichet. Le NIU (une lettre, douze
+        chiffres, une lettre) et le RCCM se recopient tels qu&rsquo;ils figurent sur le document délivré : un format
+        faux est refusé, car le NIU devient la clé du dossier au portefeuille.
+      </p>
       <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" className="bouton-discret" disabled={enCours}>
           {enCours ? "…" : "Enregistrer les identifiants"}
@@ -200,7 +236,7 @@ export function Identifiants({ reference }: { reference: string }) {
 }
 
 export function Abandon({ reference }: { reference: string }) {
-  const [etat, abandonner, enCours] = useActionState(abandonnerLeDossier, ETAT_ACTE_INITIAL);
+  const [etat, abandonner, enCours] = useActionAnnoncee(abandonnerLeDossier, ETAT_ACTE_INITIAL);
   const [ouvert, setOuvert] = useState(false);
   if (etat.fait) return <Retour etat={etat} />;
   if (!ouvert) {
@@ -228,7 +264,7 @@ export function Abandon({ reference }: { reference: string }) {
 }
 
 export function Conversion({ reference }: { reference: string }) {
-  const [etat, convertir, enCours] = useActionState(convertirLeDossier, ETAT_ACTE_INITIAL);
+  const [etat, convertir, enCours] = useActionAnnoncee(convertirLeDossier, ETAT_ACTE_INITIAL);
   if (etat.fait) return <Retour etat={etat} />;
   return (
     <form action={convertir} style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 460 }}>
@@ -340,5 +376,76 @@ export function LienDeSuiviDeLaCliente({
         </button>
       </div>
     </div>
+  );
+}
+
+
+/** Lot 4 (9 novembre 2026) : « statuts transmis » ou « originaux remis », datés du jour. */
+export function MarquerUnJalon({
+  reference,
+  geste,
+  libelle,
+}: {
+  reference: string;
+  geste: "statuts-transmis" | "originaux-remis";
+  libelle: string;
+}) {
+  const [etat, marquer, enCours] = useActionAnnoncee(marquerUnJalon, ETAT_ACTE_INITIAL);
+  return (
+    <form action={marquer} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+      <input type="hidden" name="reference" value={reference} />
+      <input type="hidden" name="geste" value={geste} />
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : libelle}
+      </button>
+      <Retour etat={etat} />
+    </form>
+  );
+}
+
+/**
+ * Lot 4 : les délais de la création, fixés par le super administrateur. ⚠️ Aucun délai par
+ * défaut : un délai vide n'est pas suivi, et rien ne se signale.
+ */
+export function RegleDesDelaisFormulaire({
+  redaction,
+  validation,
+  retrait,
+  parDefaut,
+}: {
+  redaction: number | null;
+  validation: number | null;
+  retrait: number | null;
+  parDefaut: boolean;
+}) {
+  const [etat, fixer, enCours] = useActionState(fixerLaRegleDesDelais, ETAT_ACTE_INITIAL);
+  return (
+    <form action={fixer} className="versements__regle">
+      <p className="versements__note">
+        {parDefaut
+          ? "Aucun délai fixé : rien n'est suivi ni signalé."
+          : "Un délai vide n'est pas suivi. Les dépassements remontent dans « Retards »."}
+      </p>
+      <label>
+        Rédaction des statuts par le cabinet (jours, depuis l&rsquo;étape « Constitution »)
+        <input name="delai_redaction_statuts_jours" type="number" min={1} max={365} step={1} defaultValue={redaction ?? ""} />
+      </label>
+      <label>
+        Validation et signature des statuts par le client (jours, depuis leur transmission)
+        <input name="delai_validation_statuts_jours" type="number" min={1} max={365} step={1} defaultValue={validation ?? ""} />
+      </label>
+      <label>
+        Retrait des originaux par le client (jours, depuis l&rsquo;étape « Remise »)
+        <input name="delai_retrait_originaux_jours" type="number" min={1} max={730} step={1} defaultValue={retrait ?? ""} />
+      </label>
+      <label>
+        Motif
+        <input name="motif" minLength={10} maxLength={500} required />
+      </label>
+      <button type="submit" className="bouton-discret" disabled={enCours}>
+        {enCours ? "…" : "Enregistrer les délais"}
+      </button>
+      <Retour etat={etat} />
+    </form>
   );
 }

@@ -1,0 +1,1372 @@
+/* =========================================================================
+   REFONTE VISUELLE — 9 novembre 2026, avant la livraison.
+
+   Demande de la responsable : « un rendu plus moderne », des boutons
+   qu'on voit, plus de contrôles au style brut du navigateur. Audit des
+   54 écrans de la console (captures de la copie locale) :
+
+   · 722 champs et 42 boutons SANS CLASSE : rendus au style natif (gris,
+     hauteurs disparates, « mm/dd/yyyy », « Choose File ») ;
+   · boutons secondaires blancs à filet fin sur cartes blanches : on ne les
+     voyait pas — c'est le « blanc sur blanc » signalé ;
+   · gris de 11–12 px sous le seuil de lecture confortable ;
+   · cartes plates, en-têtes de tableau en capitales grises, états vides
+     qui occupent l'écran.
+
+   Cette feuille est chargée APRÈS les autres et corrige à la base :
+   les sélecteurs `:where()` ont une spécificité nulle, donc tout
+   composant qui a SON style le garde ; seuls les contrôles nus héritent.
+
+   Ce qui déroge au § 10.7 du dossier de design (pas d'ombre portée) est
+   assumé : l'ombre douce sépare les cartes du fond sans filet de plus.
+   La hiérarchie de gravité et les deux teintes de marque sont inchangées.
+   ========================================================================= */
+
+:root {
+  /* Un fond un cran plus froid : les cartes blanches s'en détachent. */
+  --surface-alt: #f5f4f9;
+  /* Le gris secondaire remonte au-dessus de 6:1 sur blanc. */
+  --ink-500: #5d566f;
+  --ink-400: #6a6380;
+
+  --rayon: 10px;
+  --rayon-grand: 14px;
+  --rayon-petit: 6px;
+  --hauteur-controle: 36px;
+
+  --ombre-carte: 0 1px 2px rgb(30 20 50 / 4%), 0 4px 14px rgb(30 20 50 / 5%);
+  --ombre-carte-survol: 0 2px 4px rgb(30 20 50 / 6%), 0 10px 26px rgb(30 20 50 / 9%);
+  --ombre-bouton: 0 1px 2px rgb(30 20 50 / 8%);
+  --anneau: 0 0 0 3px rgb(140 45 134 / 18%);
+  --transition: 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-theme="sombre"] {
+  --ombre-carte: 0 0 0 1px var(--line-200);
+  --ombre-carte-survol: 0 0 0 1px var(--line-300);
+  --ombre-bouton: none;
+  --anneau: 0 0 0 3px rgb(192 95 184 / 28%);
+  /* Les liens indigo éclaircis passaient sous 4,5:1 sur les cartes. */
+  --brand-indigo-700: #d2bdf0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Titres de page ───────────────────────────────────────────────────── */
+
+:where(.contenu) :where(h1) {
+  letter-spacing: -0.015em;
+}
+
+/* ── Panneaux (composant Panneau) ─────────────────────────────────────── */
+
+.panneau {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+
+.panneau__tete {
+  flex: none;
+  min-height: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line-100);
+}
+
+.panneau__titres {
+  min-width: 0;
+  flex: 1 1 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panneau__titre {
+  margin: 0;
+  font: 600 15.5px/1.3 var(--police-texte);
+  letter-spacing: -0.005em;
+  color: var(--ink-900);
+}
+
+.panneau__aide {
+  margin: 0;
+  font: 400 12.5px/1.45 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.panneau__action {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panneau__corps {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ── En-têtes de tableau : casse de phrase, plus de capitales criardes ── */
+
+.entete-tableau {
+  height: var(--entete-tableau);
+  min-height: 36px;
+  padding: 0 14px;
+  background: var(--surface-2, #f7f5fb);
+  border-bottom: 1px solid var(--line-200);
+  font: 600 11.5px/1.2 var(--police-texte);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.ligne-tableau {
+  transition: background-color var(--transition);
+}
+
+/* ── États vides : compacts, avec une pastille ────────────────────────── */
+
+.etat-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 22px 24px;
+  text-align: center;
+  font: 400 13px/1.55 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.etat-vide::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--success) 0 4px, transparent 4.5px),
+    var(--success-100);
+}
+
+.etat-vide__titre {
+  color: var(--ink-900);
+  font-weight: 600;
+}
+
+.etat-vide__detail {
+  max-width: 560px;
+}
+
+/* ── Boutons : trois rôles, une hauteur ───────────────────────────────── */
+
+.action-principale,
+.action-secondaire,
+.bouton-primaire,
+.bouton-discret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--hauteur-controle);
+  height: auto;
+  padding: 0 16px;
+  border-radius: var(--rayon);
+  font: 600 13px/1.2 var(--police-texte);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--ombre-bouton);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+.action-principale:active:not(:disabled),
+.action-secondaire:active:not(:disabled),
+.bouton-primaire:active:not(:disabled),
+.bouton-discret:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Une seule couleur d'action principale : le magenta de la marque. Le bouton
+   « primaire » indigo et l'action principale magenta coexistaient. */
+.action-principale,
+.bouton-primaire {
+  border: 1px solid var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+.action-principale:hover:not(:disabled),
+.bouton-primaire:hover:not(:disabled) {
+  filter: none;
+  background: #7a2575;
+  border-color: #7a2575;
+  box-shadow: 0 4px 12px rgb(140 45 134 / 25%);
+}
+
+/* ⚠️ UN LIEN HABILLÉ EN BOUTON GARDE SA COULEUR DANS TOUS SES ÉTATS.
+   `a:hover` (globals.css) passe le texte en magenta souligné : sur le fond magenta
+   d'une action principale, « + Importer un relevé » devenait illisible au survol et
+   après le clic (9 novembre 2026). */
+a.action-principale,
+a.action-principale:is(:hover, :focus, :active, :visited),
+a.bouton-primaire,
+a.bouton-primaire:is(:hover, :focus, :active, :visited) {
+  color: #fff;
+  text-decoration: none;
+}
+a.action-secondaire,
+a.action-secondaire:is(:hover, :focus, :active, :visited),
+a.bouton-discret,
+a.bouton-discret:is(:hover, :focus, :active, :visited) {
+  color: var(--brand-indigo-700);
+  text-decoration: none;
+}
+.action-principale:focus-visible,
+.action-secondaire:focus-visible,
+.bouton-primaire:focus-visible,
+.bouton-discret:focus-visible {
+  outline: none;
+  box-shadow: var(--anneau);
+}
+
+/* Le secondaire se VOIT : fond teinté, filet appuyé, texte indigo. */
+.action-secondaire,
+.bouton-discret {
+  border: 1px solid var(--line-300);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+}
+
+.action-secondaire:hover:not(:disabled),
+.bouton-discret:hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.bouton-discret {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.action-principale:disabled,
+.action-secondaire:disabled,
+.bouton-primaire:disabled,
+.bouton-discret:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Contrôles nus : ils prennent l'habit de la charte ────────────────── */
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"], .selecteur__panneau)
+  :where(button:not([class]), input[type="submit"]:not([class]), input[type="button"]:not([class])) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--hauteur-controle);
+  padding: 0 14px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 600 13px/1.2 var(--police-texte);
+  box-shadow: var(--ombre-bouton);
+  cursor: pointer;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(button:not([class]), input[type="submit"]:not([class]), input[type="button"]:not([class])):hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+}
+
+/* Le bouton d'envoi d'un formulaire est son action principale. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(form) :where(button[type="submit"]:not([class])) {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(form) :where(button[type="submit"]:not([class])):hover:not(:disabled) {
+  border-color: #7a2575;
+  background: #7a2575;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(button:not([class])):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="color"]),
+    select,
+    textarea
+  ) {
+  min-height: var(--hauteur-controle);
+  padding: 0 11px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background-color: var(--surface);
+  color: var(--ink-900);
+  font: 400 13px/1.4 var(--police-texte);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(textarea) {
+  padding: 9px 11px;
+  line-height: 1.5;
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):hover:not(:disabled, :focus) {
+  border-color: var(--ink-300);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):focus {
+  outline: none;
+  border-color: var(--brand-magenta-600);
+  box-shadow: var(--anneau);
+}
+
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input, select, textarea):disabled {
+  background-color: var(--surface-2, #f7f5fb);
+  color: var(--ink-400);
+}
+
+/* La liste déroulante perd la flèche du navigateur pour un chevron de la charte. */
+/* ⚠️ Spécificité VOULUE (et non `:where`) : plusieurs composants posent leur propre
+   `background:` sur leur liste ; ce raccourci effaçait le chevron, et la liste ne se
+   reconnaissait plus (contrôle visuel du 9 novembre : Service, filtres des pièces,
+   Mois et Statut de l'espace adhérent). Seules les propriétés du chevron sont ici. */
+.contenu select:not([multiple]),
+.coquille select:not([multiple]),
+.espace-adherent select:not([multiple]),
+[data-espace="adherent"] select:not([multiple]) {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%236b6480' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  text-overflow: ellipsis;
+}
+
+/* Cases et boutons radio : aux couleurs de la marque, plus de bleu système. */
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"]) :where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--brand-magenta-600);
+  width: 16px;
+  height: 16px;
+}
+
+/* L'icône de calendrier native était noire sur fond sombre. */
+:where(input[type="date"], input[type="month"], input[type="datetime-local"], input[type="time"])::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+/* Le champ fichier : un vrai bouton, plus « Choose File » gris. */
+:where(input[type="file"]) {
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+:where(input[type="file"])::file-selector-button {
+  margin-right: 10px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line-300);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 600 12.5px/1 var(--police-texte);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+:where(input[type="file"])::file-selector-button:hover {
+  background: var(--brand-indigo-100);
+}
+
+/* Les dépliants : un chevron qui tourne, plus le triangle système. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary) {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand-indigo-700);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary)::-webkit-details-marker {
+  display: none;
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details) > :where(summary)::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--transition);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(details[open]) > :where(summary)::before {
+  transform: rotate(45deg);
+}
+
+/* Les fieldsets natifs perdent leur cadre gravé. */
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(fieldset) {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon);
+}
+
+:where(.contenu, .espace-adherent, [data-espace="adherent"]) :where(legend) {
+  padding: 0 6px;
+  font: 600 12.5px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* Les libellés de champ, un cran plus lisibles. */
+.champ > span {
+  font: 600 12px/1.4 var(--police-texte);
+  color: var(--ink-700);
+}
+
+/* ── Sélecteur de dossier ─────────────────────────────────────────────── */
+
+.selecteur {
+  padding: 0 var(--espace-1);
+}
+
+.selecteur__declencheur {
+  min-height: 52px;
+  gap: 10px;
+  padding: 0 10px 0 8px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 7%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+.selecteur__declencheur:hover,
+.selecteur__declencheur[aria-expanded="true"] {
+  background: rgb(255 255 255 / 13%);
+  border-color: rgb(255 255 255 / 24%);
+}
+
+.selecteur__denomination {
+  font: 600 13px/1.3 var(--police-texte);
+  color: #fff;
+}
+
+.selecteur__niu {
+  font: 500 11px/1.4 var(--police-texte);
+  color: rgb(255 255 255 / 66%);
+}
+
+.selecteur__chevrons {
+  flex: none;
+  color: rgb(255 255 255 / 70%);
+}
+
+.selecteur__pastille {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font: 700 11.5px/1 var(--police-texte);
+  letter-spacing: 0.02em;
+}
+
+.selecteur__pastille--tous {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, var(--brand-magenta-600), #5b2a8c);
+  color: #fff;
+}
+
+.selecteur__panneau {
+  position: fixed;
+  z-index: 60;
+  width: min(380px, calc(100vw - 16px));
+  max-height: min(70vh, 560px);
+  border: 1px solid var(--line-200);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 32px rgb(30 20 50 / 18%),
+    0 2px 6px rgb(30 20 50 / 8%);
+  animation: selecteur-entree 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes selecteur-entree {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+.selecteur__barre-recherche {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line-100);
+  color: var(--ink-400);
+}
+
+.selecteur__recherche,
+:where(.selecteur__panneau) .selecteur__recherche {
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font: 400 14px/1 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.selecteur__recherche:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.selecteur__touche,
+.selecteur__pied kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--line-200);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface-2, #f7f5fb);
+  font: 600 10.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__liste {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.selecteur__section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 8px 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 600 11px/1.4 var(--police-texte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.selecteur__compte {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--line-100);
+  letter-spacing: 0;
+  color: var(--ink-500);
+}
+
+.selecteur__option {
+  min-height: 48px;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  transition: background-color 80ms;
+}
+
+.selecteur__option:hover,
+.selecteur__option[data-actif] {
+  background: var(--surface-2, #f7f5fb);
+}
+
+.selecteur__option[aria-selected="true"] {
+  background: var(--brand-magenta-100);
+}
+
+.selecteur__texte {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.selecteur__nom {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 13px/1.3 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.selecteur__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11.5px/1.4 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__regime {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--line-100);
+  font: 600 10.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.selecteur__regime--reel {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+
+.selecteur__pied {
+  flex: none;
+  display: flex;
+  gap: 14px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--line-100);
+  background: var(--surface-2, #f7f5fb);
+  font: 400 11px/1.4 var(--police-texte);
+  color: var(--ink-400);
+}
+
+/* ── En-tête de la zone de travail ────────────────────────────────────── */
+
+.entete {
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: saturate(1.4) blur(10px);
+}
+
+:root[data-theme="sombre"] .entete {
+  background: rgb(34 28 48 / 85%);
+}
+
+/* ── Espace adhérent : la barre d'onglets ne masque plus le contenu ───── */
+
+.adherent__onglets {
+  margin-top: 12px;
+  background: rgb(255 255 255 / 88%);
+  backdrop-filter: saturate(1.4) blur(12px);
+  box-shadow: 0 -2px 16px rgb(30 20 50 / 8%);
+  z-index: 5;
+}
+
+:root[data-theme="sombre"] .adherent__onglets {
+  background: rgb(34 28 48 / 90%);
+}
+
+/* ── Mode sombre : lisibilité des pastilles et des liens ──────────────── */
+
+:root[data-theme="sombre"] .selecteur__regime--reel {
+  background: #3a2f57;
+  color: #e3d6f7;
+}
+
+:root[data-theme="sombre"] .selecteur__pastille:not(.selecteur__pastille--tous) {
+  filter: brightness(0.82) saturate(1.2);
+}
+
+/* ── Titre de page avec son action principale à droite ───────────────── */
+
+.page-travail__titre--avec-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+/* ── Écran réservé : une carte courte et deux issues ──────────────────── */
+
+.ecran-reserve {
+  align-self: center;
+  width: min(560px, 100%);
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 28px 28px;
+  text-align: center;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+
+.ecran-reserve__icone {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: var(--brand-magenta-100);
+  color: var(--brand-magenta-600);
+}
+
+.ecran-reserve__titre {
+  margin: 0;
+  font: 600 17px/1.3 var(--police-texte);
+  color: var(--ink-900);
+}
+
+.ecran-reserve__texte {
+  margin: 0;
+  font: 400 13.5px/1.6 var(--police-texte);
+  color: var(--ink-500);
+}
+
+.ecran-reserve__texte strong {
+  color: var(--ink-900);
+}
+
+.ecran-reserve__session {
+  margin: 4px 0 0;
+  font: 400 12px/1.5 var(--police-texte);
+  color: var(--ink-400);
+}
+
+.ecran-reserve__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Les panneaux visés par un bouton d'en-tête ne se collent pas au bord haut. */
+.panneau[id] {
+  scroll-margin-top: 16px;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Recherche globale : le champ dans la page, en plus de celui de l'en-tête. */
+.recherche__formulaire {
+  display: flex;
+  gap: 8px;
+  max-width: 640px;
+}
+.recherche__champ {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Une liste dont l'option la plus longue est longue (« CSV : date, libellé, débit,
+   crédit… ») imposait sa largeur à la grille du formulaire, qui débordait du panneau.
+   Un contrôle ne dépasse jamais son conteneur ; le texte long se coupe dans la liste. */
+:where(.contenu, .coquille, .espace-adherent, [data-espace="adherent"])
+  :where(select, input:not([type="checkbox"], [type="radio"]), textarea) {
+  max-width: 100%;
+}
+
+/* Une source longue et sans espace (une adresse) élargissait la liste de faits au-delà
+   du panneau, au Référentiel. La valeur se coupe plutôt que de pousser la page. */
+.faits {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+.faits dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Aide repliée du panneau : la première phrase, puis « En savoir plus ». */
+.panneau__aide--repliee > summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  font-weight: inherit;
+  color: inherit;
+}
+.panneau__aide--repliee > summary::-webkit-details-marker {
+  display: none;
+}
+.panneau__aide--repliee > summary::before {
+  content: none;
+}
+.panneau__plus {
+  margin-left: 4px;
+  color: var(--brand-indigo-700);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.panneau__aide--repliee[open] .panneau__plus {
+  display: none;
+}
+.panneau__suite {
+  display: block;
+  margin-top: 4px;
+}
+
+/* ══ Vue de direction (tableau de bord, 9 novembre 2026) ═════════════════════
+   Une série, une teinte (magenta de la marque) ; la piste est le magenta pâle de la
+   même rampe. Les textes portent l'encre, jamais la couleur de la donnée. */
+.tdb-direction {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  flex: none;
+}
+@media (max-width: 1100px) {
+  .tdb-direction {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .tdb-direction__carte--large {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .tdb-direction {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.tdb-direction__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: var(--ombre-carte);
+}
+.tdb-direction__tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tdb-direction__tete h2 {
+  margin: 0;
+  font: 600 13px/1.3 var(--police-texte);
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tdb-direction__lien {
+  font: 500 12.5px/1 var(--police-texte);
+  white-space: nowrap;
+}
+.tdb-direction__chiffre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tdb-direction__valeur {
+  font: 600 26px/1.15 var(--police-titre);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.tdb-direction__sous,
+.tdb-direction__motif {
+  margin: 0;
+  font: 400 12.5px/1.45 var(--police-texte);
+  color: var(--ink-500);
+}
+.tdb-direction__liste {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.tdb-direction__liste > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 400 12.5px/1.4 var(--police-texte);
+}
+.tdb-direction__liste dt {
+  color: var(--ink-500);
+}
+.tdb-direction__liste dd {
+  margin: 0;
+  color: var(--ink-900);
+  text-align: right;
+}
+.tdb-direction__fort {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tdb-direction__creations {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+  font: 400 12.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.tdb-direction__creations strong {
+  font-weight: 600;
+}
+
+/* Colonnes mensuelles : ≤ 24 px, bout arrondi de 4 px, carré à la base. */
+.colonnes {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  height: 168px;
+}
+.colonnes__axe {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  font: 400 11px/1 var(--police-texte);
+  color: var(--ink-500);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.colonnes__trace {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 2px;
+  background:
+    linear-gradient(var(--line-100), var(--line-100)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(var(--line-100), var(--line-100)) 0 calc((100% - 20px) / 2) / 100% 1px no-repeat,
+    linear-gradient(var(--line-200), var(--line-200)) 0 calc(100% - 20px) / 100% 1px no-repeat;
+}
+.colonnes__mois {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  outline: none;
+  border-radius: 6px;
+}
+.colonnes__barre-zone {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+.colonnes__barre {
+  width: min(24px, 70%);
+  min-height: 0;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--brand-magenta-600) 55%, var(--surface));
+  transition: background var(--transition);
+}
+.colonnes__mois--courant .colonnes__barre {
+  background: var(--brand-magenta-600);
+}
+.colonnes__etiquette {
+  margin-bottom: 3px;
+  font: 600 11px/1 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.colonnes__libelle {
+  height: 20px;
+  padding-top: 5px;
+  font: 400 11px/1 var(--police-texte);
+  color: var(--ink-500);
+  white-space: nowrap;
+}
+.colonnes__mois:is(:hover, :focus-visible) {
+  background: var(--brand-magenta-100);
+}
+.colonnes__mois:is(:hover, :focus-visible) .colonnes__barre {
+  background: var(--brand-magenta-600);
+}
+
+/* Infobulle commune : colonnes et barres. */
+.colonnes__mois[data-info]:is(:hover, :focus-visible)::after,
+.barres__ligne[data-info]:is(:hover, :focus-visible)::after {
+  content: attr(data-info);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 10;
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--ink-900);
+  color: var(--surface);
+  font: 500 11.5px/1.3 var(--police-texte);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Barres horizontales par activité : triées, valeur au bout. */
+.barres {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.barres__ligne {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  font: 400 12.5px/1.3 var(--police-texte);
+}
+.barres__libelle {
+  overflow: hidden;
+  color: var(--ink-900);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.barres__piste {
+  height: 10px;
+}
+.barres__barre {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--brand-magenta-600);
+}
+.barres__valeur {
+  white-space: nowrap;
+  color: var(--ink-900);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Jauge d'une teinte : le plein porte la part à jour, la piste la même rampe, pâle. */
+.jauge {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--brand-magenta-100);
+}
+.jauge__plein {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-magenta-600);
+}
+
+/* Sous la vue de direction, la grille des listes ne se cale plus sur le reste de
+   l'écran (elle n'y aurait plus qu'une ligne par panneau) : hauteur propre, la page
+   défile, chaque panneau garde son défilement. */
+.tdb-direction + .grille-panneaux {
+  flex: none;
+  height: 640px;
+}
+/* Le cadre coupe tout débordement (.coquille { overflow: hidden }) et le tableau de
+   bord tenait dans l'écran : avec la vue de direction, sa zone de contenu défile. */
+.contenu:has(> .tdb-direction) {
+  overflow-y: auto;
+}
+@media (max-width: 1100px) {
+  .tdb-direction + .grille-panneaux {
+    height: auto;
+  }
+}
+
+/* ── Pagination : dix lignes à la fois ──────────────────────────────────── */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line-100);
+  font: 400 12.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+}
+.pagination__element {
+  list-style: none;
+}
+.pagination__position {
+  font-variant-numeric: tabular-nums;
+}
+.pagination__boutons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.pagination__boutons button {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line-200);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--brand-indigo-700);
+  font: 500 12.5px/1 var(--police-texte);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.pagination__boutons button:hover:not(:disabled) {
+  border-color: var(--brand-indigo-700);
+  background: var(--brand-indigo-100);
+}
+.pagination__boutons button[aria-current="page"] {
+  border-color: var(--brand-magenta-600);
+  background: var(--brand-magenta-600);
+  color: #fff;
+}
+.pagination__boutons button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pagination__ellipse {
+  padding: 0 4px;
+}
+
+/* Les indicateurs du tableau de bord sont des raccourcis : ils se soulèvent au survol. */
+.carte-indicateur {
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.carte-indicateur:hover,
+.carte-indicateur:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--brand-indigo-700) !important;
+  outline: none;
+}
+.carte-indicateur:hover h2,
+.carte-indicateur:focus-visible h2 {
+  color: var(--brand-indigo-700) !important;
+}
+.carte-indicateur__icone {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+.tdb-direction__bloc {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-100);
+}
+.tdb-direction__sous-titre {
+  margin: 0;
+  font: 600 11.5px/1.3 var(--police-texte);
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Bandeau du filtre par dossier : dit ce qui est retenu, ramène au tout. */
+.bandeau-filtre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--brand-indigo-100);
+  border-left: 3px solid var(--brand-indigo-700);
+  border-radius: var(--rayon);
+  background: var(--brand-indigo-100);
+  font: 400 13px/1.4 var(--police-texte);
+  color: var(--ink-900);
+  flex: none;
+}
+.bandeau-filtre a {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Panneau repliable : l'en-tête d'un panneau, un indicateur « Afficher / Masquer ». */
+.panneau--repliable > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+}
+.panneau--repliable > summary::-webkit-details-marker {
+  display: none;
+}
+.panneau--repliable > summary::before {
+  content: none !important;
+}
+.panneau--repliable > summary .panneau__titres {
+  display: flex;
+  flex-direction: column;
+}
+.panneau--repliable:not([open]) > summary {
+  border-bottom: 0;
+}
+.panneau__bascule {
+  margin-left: auto;
+  align-self: center;
+  font: 500 12.5px/1 var(--police-texte);
+  color: var(--brand-indigo-700);
+  white-space: nowrap;
+}
+.panneau__bascule::after {
+  content: "Afficher ▾";
+}
+.panneau--repliable[open] .panneau__bascule::after {
+  content: "Masquer ▴";
+}
+.panneau--repliable > summary:hover .panneau__titre {
+  color: var(--brand-indigo-700);
+}
+
+/* Annonce de la coquille : le résultat d'un geste dont le bloc a quitté l'écran. */
+.annonce-coquille {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  max-width: min(440px, calc(100vw - 40px));
+  pointer-events: none;
+}
+.annonce-coquille__texte {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--line-200);
+  border-left: 3px solid var(--success);
+  border-radius: var(--rayon-grand);
+  background: var(--surface);
+  box-shadow: 0 10px 30px -12px rgb(26 21 35 / 35%);
+  font: 500 13px/1.45 var(--police-texte);
+  color: var(--ink-900);
+  pointer-events: auto;
+  animation: annonce-coquille-entree 180ms ease-out;
+}
+.annonce-coquille__texte > span {
+  color: var(--success);
+  font-weight: 700;
+}
+.annonce-coquille__texte button {
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-500);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+@keyframes annonce-coquille-entree {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .annonce-coquille__texte { animation: none; }
+}
+
+/* Conformité du centre (CGI art. 118 et 119) : une ligne par obligation, l'état en pastille
+   libellée (jamais la couleur seule). */
+.conformite-centre__ligne {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-100);
+}
+.conformite-centre__etat {
+  justify-self: start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font: 600 11.5px/1.4 var(--police-texte);
+  white-space: nowrap;
+}
+.conformite-centre__etat--ok {
+  background: var(--success-100);
+  color: var(--success);
+}
+.conformite-centre__etat--info {
+  background: var(--brand-indigo-100);
+  color: var(--brand-indigo-700);
+}
+.conformite-centre__etat--alerte {
+  background: var(--danger-100);
+  color: var(--danger);
+}
+.conformite-centre__corps p {
+  margin: 0;
+}
+.conformite-centre__titre {
+  font: 600 13.5px/1.4 var(--police-texte);
+  color: var(--ink-900);
+}
+.conformite-centre__article {
+  margin-left: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.conformite-centre__valeur {
+  font: 500 13px/1.5 var(--police-texte);
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.conformite-centre__detail {
+  font: 400 12.5px/1.5 var(--police-texte);
+  color: var(--ink-500);
+}

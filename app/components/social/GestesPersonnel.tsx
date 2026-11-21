@@ -113,10 +113,33 @@ export function EmbaucheSalarie({ dossier, aujourdhui }: { dossier: string; aujo
         Enfants à charge
         <input name="enfants_a_charge" inputMode="numeric" defaultValue="0" style={champ} />
       </label>
+      {/* 9 novembre 2026 : ce que son immatriculation demande (liste du responsable juridique). */}
+      <label style={etiquette}>
+        Téléphone
+        <input name="telephone" type="tel" style={champ} />
+      </label>
+      <label style={etiquette}>
+        Quartier
+        <input name="quartier" style={champ} />
+      </label>
+      <label style={etiquette}>
+        Adresse mail
+        <input name="courriel" type="email" style={champ} />
+      </label>
+      <label style={etiquette}>
+        Arrondissement de naissance du père
+        <input name="arrondissement_naissance_pere" style={champ} />
+      </label>
+      <label style={etiquette}>
+        Arrondissement de naissance de la mère
+        <input name="arrondissement_naissance_mere" style={champ} />
+      </label>
       <ChampsDuContrat aujourdhui={aujourdhui} />
       <p style={{ ...note, gridColumn: "1 / -1" }}>
         Le numéro CNPS se déclare plus tard : c&rsquo;est la déclaration qui le fait attribuer. Le salarié entre dans la
-        déclaration de chaque mois où son contrat court au moins un jour.
+        déclaration de chaque mois où son contrat court au moins un jour. Pour son immatriculation, le cabinet
+        demande aussi : une copie certifiée non timbrée de sa CNI ou de son acte de naissance, une photocopie simple
+        de sa CNI et de son acte de naissance, et son plan de localisation.
       </p>
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" className="bouton-discret" disabled={enCours}>

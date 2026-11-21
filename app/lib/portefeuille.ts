@@ -23,6 +23,7 @@
 
 import { appeler } from "./api";
 import { jourADouala } from "./heure-douala";
+import type { EtatDeLInscription } from "./inscription-etats";
 
 export type RegimeFiscal = "REEL" | "IGS";
 export type CentreRattachement = "CIME" | "DGE" | "CDI";
@@ -139,4 +140,9 @@ export function lireLesAccesAdherents(niu: string) {
   return appeler<AccesDUnAdherent[]>(`/portefeuille/entreprises/${encodeURIComponent(niu)}/acces-adherents`, {
     authentifie: true,
   });
+}
+
+/** Les entreprises payées qui attendent leur inscription au portefeuille (16 octobre 2026). */
+export function lireInscriptionsEnAttente(): Promise<EtatDeLInscription[]> {
+  return appeler<EtatDeLInscription[]>("/acquisition/inscriptions/en-attente", { authentifie: true });
 }

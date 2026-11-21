@@ -7,6 +7,7 @@ import { dateCourte, montantFcfa } from "@/app/lib/formats";
 import { monEntrepriseChoisie } from "@/app/lib/entreprise-choisie";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { Paginer } from "@/app/components/Paginer";
 
 export const metadata: Metadata = {
   title: "Mes documents · CGA Broad Range Consulting Group",
@@ -67,7 +68,7 @@ export default async function MesDocuments({ searchParams }: { searchParams: Pro
             </p>
           ) : (
             <ul className="adherent__echeances">
-              {vue.documents.map((d) => (
+              <Paginer commeElementDeListe>{vue.documents.map((d) => (
                 <li key={d.numero}>
                   <Link href={`/mon-espace/documents?document=${encodeURIComponent(d.numero)}`}>
                     <strong>Reçu de dépôt · {d.titre}</strong>
@@ -78,7 +79,7 @@ export default async function MesDocuments({ searchParams }: { searchParams: Pro
                     </span>
                   </Link>
                 </li>
-              ))}
+              ))}</Paginer>
             </ul>
           )}
           <p className="adherent__mention">
@@ -124,6 +125,15 @@ function Recu({ denomination, niu, document: d }: { denomination: string; niu: s
         {d.verifiable ? ", dont le justificatif est archivé au dossier." : " ; aucun justificatif n'est encore archivé avec cet accusé."}
       </p>
       <p className="adherent__actions">
+        {/* 18 octobre 2026 : le reçu de dépôt en PDF, à la charte du cabinet. */}
+        <a
+          className="bouton-discret"
+          href={`/api/documents/${encodeURIComponent(niu)}/${encodeURIComponent(d.numero)}`}
+          target="_blank"
+          rel="noopener"
+        >
+          Le reçu en PDF
+        </a>{" "}
         <ImprimerLeRecu />
       </p>
     </section>

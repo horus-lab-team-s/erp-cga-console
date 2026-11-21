@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 
+import { useActionAnnoncee } from "@/app/components/coquille/annonce";
+
 import {
   activerUneSouscription,
   lancerLaReconciliation,
@@ -45,7 +47,9 @@ export function ActiverSouscription({
   courriel: string;
   niu: string | null;
 }) {
-  const [etat, activer, enCours] = useActionState(activerUneSouscription, ETAT_ACTE_INITIAL);
+  // L'annonce passe par la coquille : la ligne quitte la liste à l'ouverture de l'accès,
+  // et son message avec elle (constaté à la recette du 10 novembre 2026).
+  const [etat, activer, enCours] = useActionAnnoncee(activerUneSouscription, ETAT_ACTE_INITIAL);
   const [ouvert, setOuvert] = useState(false);
   if (etat.fait) return <span role="status" style={{ ...note, display: "block", color: "var(--success)" }}>{etat.fait}</span>;
   if (!ouvert) {

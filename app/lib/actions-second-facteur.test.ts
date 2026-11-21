@@ -6,6 +6,7 @@ vi.mock("next/headers", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 const {
+  activerLeSecondFacteur,
   confirmerEnrolement,
   enrolerSecondFacteur,
   reinitialiserSecondFacteur,
@@ -150,6 +151,31 @@ describe("Renforcer la session", () => {
     // Quinze minutes : sans le dire, le collaborateur croit être couvert pour
     // la journée et retombe sur une demande de code au pire moment.
     expect(etat.fait).toContain("quinze minutes");
+  });
+});
+
+describe("Activer la clé par le premier code (19 octobre 2026)", () => {
+  it("présente le code à l'activation, et non au renforcement", async () => {
+    const f = doublerFetch();
+    const etat = await activerLeSecondFacteur({ echec: null, fait: null }, formulaire({ code: "123 456" }));
+    expect(etat.echec).toBeNull();
+    expect(String(f.mock.calls[0][0])).toContain("/transverse/second-facteur/activation");
+    expect(JSON.parse((f.mock.calls[0][1] as RequestInit).body as string)).toEqual({ code: "123456" });
+    expect(etat.fait).toContain("activé");
+  });
+
+  it("refuse une saisie qui n'est pas un code, sans appeler", async () => {
+    const f = doublerFetch();
+    const etat = await activerLeSecondFacteur({ echec: null, fait: null }, formulaire({ code: "12a" }));
+    expect(etat.echec).toContain("six chiffres");
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("montre le refus du backend, pour qu'on ressaisisse", async () => {
+    doublerFetch({ detail: "Code refusé." }, 401);
+    const etat = await activerLeSecondFacteur({ echec: null, fait: null }, formulaire({ code: "000000" }));
+    expect(etat.fait).toBeNull();
+    expect(etat.echec).toBeTruthy();
   });
 });
 

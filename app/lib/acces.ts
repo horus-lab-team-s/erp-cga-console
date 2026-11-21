@@ -20,7 +20,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-export type Role =
+/** Les rôles livrés avec la plateforme. */
+export type RoleLivre =
   | "CHARGE_CLIENTELE"
   | "COMPTABLE"
   | "REVISEUR"
@@ -28,8 +29,19 @@ export type Role =
   | "CHARGE_FORMALITES"
   | "DIRECTION"
   | "ADMINISTRATEUR"
+  | "CAISSE"
   | "ADHERENT"
-  | "INSPECTEUR";
+  // La cliente qui a payé la création de sa société, avant qu'elle existe (14 octobre 2026).
+  | "CLIENT_CREATION"
+  | "INSPECTEUR"
+  // 18 octobre 2026 : il règle la matrice des rôles et accorde les faveurs.
+  | "SUPER_ADMIN";
+
+/**
+ * Un rôle livré, ou un rôle créé par le cabinet (18 octobre 2026) : son code, en
+ * majuscules. `string & {}` garde la complétion des rôles livrés.
+ */
+export type Role = RoleLivre | (string & {});
 
 export type Permission =
   | "LIRE_DOSSIER"
@@ -63,18 +75,46 @@ export type Permission =
   | "DECIDER_SUR_DOSSIER"
   // Pas 102 : la revue d'un mois transmis, réviseur seul.
   | "REVISER_DOSSIER"
+  // 14 octobre 2026 : figer la liasse d'un exercice clos en une version de DSF (comptable, réviseur).
+  | "PREPARER_DSF"
+  | "RENSEIGNER_FICHE_DSF"
+  | "VALIDER_FICHE_DSF"
+  // 15 octobre 2026 : instruire une mission de prestation ponctuelle, la valider (un autre).
+  | "TRAITER_MISSION"
+  | "VALIDER_MISSION"
   // Pas 111 : relancer un adhérent des pièces de son mois (comptable, chargé de clientèle, réviseur).
   | "RELANCER_PIECES"
   | "REPONDRE_AU_CABINET"
   | "SIGNALER_UN_CHANGEMENT"
   | "REGLER_SES_RAPPELS"
+  // Tenir la paie de SA PROPRE entreprise : le libre service. Elle n'ouvre que
+  // la paie, et jamais les livres du dossier.
+  | "TENIR_SA_PAIE"
+  // Suivre la création de SA société et y déposer ses pièces : la cliente, depuis son compte.
+  | "SUIVRE_MA_CREATION"
+  // 14 octobre 2026 : régler ses honoraires depuis son espace (l'adhérent).
+  | "REGLER_SES_HONORAIRES"
+  // 14 octobre 2026 : vérifier la quittance d'un adhérent (comptable, réviseur).
+  | "VERIFIER_UN_REGLEMENT"
   | "SUIVRE_FORMALITE"
   | "GERER_COMPTES"
+  // Constater un règlement : la responsable de caisse, et l'administrateur.
+  | "ENCAISSER"
   | "AFFECTER_DOSSIER"
   | "EDITER_VITRINE"
   // Arrêter le prix d'une prestation du catalogue : direction seule. Le prix est une
   // décision humaine ; tant qu'il n'est pas fixé, il ne se paie pas en ligne.
-  | "FIXER_LES_TARIFS";
+  | "FIXER_LES_TARIFS"
+  // 18 octobre 2026 : régler la matrice des rôles ; accorder une faveur à un adhérent nommé.
+  // Au super administrateur seul, avec le second facteur.
+  | "GERER_ROLES"
+  | "ACCORDER_FAVEURS"
+  // 18 octobre 2026 : ce que la caisse voit ; la matrice peut retirer une famille.
+  | "VOIR_VERSEMENTS_COMMERCE"
+  | "VOIR_VERSEMENTS_HONORAIRES"
+  | "VOIR_VERSEMENTS_FONDS_DE_TIERS"
+  // 18 octobre 2026 : lire les candidatures et leurs CV, décider, répondre.
+  | "GERER_RECRUTEMENT";
 
 /**
  * Ce que `GET /transverse/moi` rend.
@@ -132,7 +172,7 @@ export function voit(courant: Acces | null, niu: string): boolean {
  * De l'affichage, pas de la règle : la vérité des droits reste la liste
  * `permissions` rendue par le backend.
  */
-export const LIBELLES_ROLE: Record<Role, string> = {
+export const LIBELLES_ROLE: Record<RoleLivre, string> = {
   CHARGE_CLIENTELE: "Chargé de clientèle",
   COMPTABLE: "Comptable",
   REVISEUR: "Réviseur",
@@ -140,9 +180,22 @@ export const LIBELLES_ROLE: Record<Role, string> = {
   CHARGE_FORMALITES: "Chargé de formalités",
   DIRECTION: "Direction",
   ADMINISTRATEUR: "Administrateur",
+  CAISSE: "Responsable de caisse",
   ADHERENT: "Adhérent",
+  CLIENT_CREATION: "Client en création",
   INSPECTEUR: "Inspecteur assistant",
+  SUPER_ADMIN: "Super administrateur",
 };
+
+/**
+ * Le libellé d'un rôle, livré ou créé par le cabinet (18 octobre 2026). Un rôle du cabinet
+ * se nomme au catalogue `GET /transverse/roles` ; sans lui, son code se montre tel quel.
+ */
+export function libelleRole(role: Role, catalogue?: readonly { role: string; libelle: string }[]): string {
+  return (
+    (LIBELLES_ROLE as Record<string, string>)[role] ?? catalogue?.find((f) => f.role === role)?.libelle ?? role
+  );
+}
 
 /** Les initiales, pour la pastille d'identité. « Aïcha BOUBA » → « AB ». */
 export function initiales(nomComplet: string): string {

@@ -229,7 +229,16 @@ export async function choisirMonEntreprise(donnees: FormData): Promise<void> {
   const { cookies } = await import("next/headers");
   const niu = String(donnees.get("entreprise") ?? "").trim();
   if (/^[A-Z0-9]{8,20}$/.test(niu)) {
-    (await cookies()).set("cga_entreprise", niu, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
+    // 20 octobre 2026 (audit avant la production) : « Secure » comme le témoin de session.
+    // Le NIU choisi n'ouvre rien, mais il n'a pas à circuler en clair.
+    const secure = process.env.NODE_ENV === "production" && process.env.CGA_AUTORISER_HTTP !== "1";
+    (await cookies()).set("cga_entreprise", niu, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
   for (const page of ["", "/justificatifs", "/echeances", "/documents", "/entreprise", "/reglages"]) {
     revalidatePath(`/[locale]/mon-espace${page}`, "page");
@@ -262,4 +271,75 @@ export async function renvoyerUnLienDAcces(_precedent: EtatActe, donnees: FormDa
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
   }
+}
+
+/**
+ * Fixer la nature d'activité du dossier (15 octobre 2026). Elle fixe le seuil du régime du
+ * réel (CGI art. 93 quater) : elle se justifie, comme un changement de régime.
+ */
+export async function fixerLaNatureDActivite(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const dossier = String(donnees.get("dossier") ?? "").trim();
+  const nature = String(donnees.get("nature") ?? "");
+  const justification = String(donnees.get("justification") ?? "").trim();
+  const reelDOffice = String(donnees.get("reel_d_office") ?? "") || null;
+  if (!["COMMERCIALE", "LIBERALE"].includes(nature)) return { echec: "Choisissez une nature.", fait: null };
+  if (justification.length < 30) {
+    return {
+      echec: "La justification compte au moins trente caractères : elle nomme la pièce (statuts, RCCM) et part au journal.",
+      fait: null,
+    };
+  }
+  try {
+    await appeler(`/portefeuille/entreprises/${encodeURIComponent(dossier)}/nature-activite`, {
+      methode: "POST",
+      authentifie: true,
+      corps: { nature, justification, reel_d_office: reelDOffice },
+    });
+    revalidatePath("/[locale]/cloture", "page");
+    return { echec: null, fait: "Nature d'activité enregistrée : la revue des régimes en tient compte." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Inscrire au portefeuille l'entreprise d'un dossier commercial payé (16 octobre 2026). Le
+ * backend vérifie le paiement, l'unicité du NIU et la cohérence des dates.
+ */
+export async function inscrireAuPortefeuille(_precedent: EtatActe, donnees: FormData): Promise<EtatActe> {
+  const champ = (nom: string) => String(donnees.get(nom) ?? "").trim() || null;
+  const reference = champ("reference");
+  const justification = champ("justification") ?? "";
+  if (!reference) return { echec: "Dossier commercial introuvable.", fait: null };
+  if (justification.length < 30) {
+    return { echec: "Dites quelles pièces vous avez vues (30 caractères au moins) : cela part au journal.", fait: null };
+  }
+  const groupe = champ("groupe_risque_cnps");
+  try {
+    await appeler(`/acquisition/dossiers/${encodeURIComponent(reference)}/inscription`, {
+      methode: "POST",
+      authentifie: true,
+      corps: {
+        niu: champ("niu"),
+        denomination: champ("denomination"),
+        forme_juridique: champ("forme_juridique"),
+        date_creation: champ("date_creation"),
+        regime: champ("regime"),
+        centre: champ("centre"),
+        cloture_exercice_en_cours: champ("cloture_exercice_en_cours"),
+        rccm: champ("rccm"),
+        telephone: champ("telephone"),
+        numero_cnps_employeur: champ("numero_cnps_employeur"),
+        groupe_risque_cnps: groupe,
+        groupe_risque_notifie_le: groupe ? champ("groupe_risque_notifie_le") : null,
+        justification,
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+  revalidatePath(CHEMIN_PORTEFEUILLE, "page");
+  return { echec: null, fait: `Inscrite au portefeuille sous le NIU ${champ("niu")}. Admettez-la au Centre si elle adhère.` };
 }

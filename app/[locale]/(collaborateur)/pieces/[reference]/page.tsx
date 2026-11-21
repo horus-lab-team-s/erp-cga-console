@@ -29,6 +29,7 @@ import { detient } from "@/app/lib/acces";
 import { montantFcfa } from "@/app/lib/formats";
 import { exigerAcces } from "@/app/lib/session";
 import { Link } from "@/i18n/navigation";
+import { jourDuFait } from "@/app/lib/heure-douala";
 
 /**
  * E02 · Détail d'une pièce et rapport de conformité — fiche au § 8.2.
@@ -224,12 +225,12 @@ export default async function DetailPiece({
             {/* Pas 88 : le document tel qu'il a été reçu. La visionneuse dessine la facture à
                 partir des données extraites ; comparer les deux est le contrôle de la lecture. */}
             {piecesDeLaFacture.length > 0 && (
-              <p style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", font: "400 12.5px/1.5 var(--police-texte)" }}>
+              <div style={{ margin: 0, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", font: "400 12.5px/1.5 var(--police-texte)" }}>
                 <span style={{ color: "var(--ink-500)" }}>Document reçu :</span>
                 {piecesDeLaFacture.map((p) => (
                   <DocumentDeLaPiece key={p.identifiant} identifiant={p.identifiant} nom={p.nom_fichier} />
                 ))}
-              </p>
+              </div>
             )}
 
             {/* 2 · Données extraites, avec indice de confiance. */}
@@ -448,7 +449,7 @@ function PanneauDesEcarts({
             <span style={{ color: "var(--ink-500)", fontWeight: 400 }}> · {ecart.identifiant}</span>
           </p>
           <p style={petit}>
-            Proposé par {ecart.propose_par} le {ecart.propose_le.slice(0, 10).split("-").reverse().join("/")} : « {ecart.motif} »
+            Proposé par {ecart.propose_par} le {jourDuFait(ecart.propose_le).split("-").reverse().join("/")} : « {ecart.motif} »
           </p>
           {ecart.tranche_par && (
             <p style={petit}>

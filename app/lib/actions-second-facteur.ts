@@ -30,6 +30,8 @@ export type EtatEnrolement = {
   echec: string | null;
   secret: string | null;
   uri: string | null;
+  /** 17 novembre 2026 : le code QR de `uri`, en SVG, à scanner avec l'application. */
+  qr_svg?: string | null;
   consigne: string | null;
   /** Vrai quand un lien est parti par courriel : aucun secret n'est rendu (pas 62). */
   confirmation_par_courriel: boolean;
@@ -38,6 +40,7 @@ export type EtatEnrolement = {
 type Enrolement = {
   secret: string | null;
   uri: string | null;
+  qr_svg?: string | null;
   consigne: string;
   confirmation_par_courriel: boolean;
 };
@@ -112,6 +115,37 @@ export async function renforcerLaSession(
     // écrans, et chacun relit `facteur_fort` depuis le serveur.
     revalidatePath("/", "layout");
     return { echec: null, fait: "Session renforcée pour quinze minutes." };
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
+    throw erreur;
+  }
+}
+
+/**
+ * Le premier code de l'application active la clé affichée (19 octobre 2026).
+ *
+ * ⚠️ La clé ne sert à rien avant ce code : une page fermée trop tôt ne bloque plus
+ * le compte, il suffit de redemander l'association.
+ */
+export async function activerLeSecondFacteur(
+  _precedent: EtatActe,
+  donnees: FormData,
+): Promise<EtatActe> {
+  const code = String(donnees.get("code") ?? "").replace(/\s/g, "");
+  if (!/^\d{6,8}$/.test(code)) {
+    return { echec: "Saisissez les six chiffres affichés par l'application.", fait: null };
+  }
+  try {
+    await appeler("/transverse/second-facteur/activation", {
+      methode: "POST",
+      authentifie: true,
+      corps: { code },
+    });
+    revalidatePath("/", "layout");
+    return {
+      echec: null,
+      fait: "Second facteur activé. La session est renforcée pour quinze minutes.",
+    };
   } catch (erreur) {
     if (erreur instanceof ErreurApi) return { echec: erreur.message, fait: null };
     throw erreur;
