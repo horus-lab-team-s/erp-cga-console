@@ -7,6 +7,7 @@ import { connexion, type EtatConnexion } from "@/app/lib/actions-session";
 import { Link } from "@/i18n/navigation";
 import { ChampMotDePasse } from "./ChampMotDePasse";
 import { IconeVitrine } from "./IconeVitrine";
+import { ADRESSE_VITRINE } from "@/app/lib/adresse-vitrine";
 
 /**
  * Formulaire de connexion à l'espace client.
@@ -167,18 +168,21 @@ export function FormulaireConnexion({ suite = "" }: { suite?: string } = {}) {
         >
           {t("oubli")}
         </Link>
-        <Link
-          href="/devenir-adherent"
+        {/* 21 novembre 2026 : « /devenir-adherent » est une page du SITE PUBLIC. Écrit en
+            chemin relatif, le lien restait sur la console et tombait en 404 ; de même, « / »
+            ramenait à la console au lieu du site. */}
+        <a
+          href={`${ADRESSE_VITRINE}/devenir-adherent`}
           style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "#d9a3d6" }}
         >
           {t("creer")}
-        </Link>
-        <Link
-          href="/"
+        </a>
+        <a
+          href={ADRESSE_VITRINE}
           style={{ font: "600 12.5px/1.4 var(--police-texte)", color: "rgb(255 255 255 / 72%)" }}
         >
           {t("retour")}
-        </Link>
+        </a>
       </div>
 
       <p
