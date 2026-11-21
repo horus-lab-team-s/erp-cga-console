@@ -205,20 +205,26 @@ export function RecevoirPiece({
 
 export function Identifiants({ reference }: { reference: string }) {
   const [etat, porter, enCours] = useActionState(porterLesIdentifiants, ETAT_ACTE_INITIAL);
-  const ligne = (nom: string, libelle: string, cleDate: string) => (
+  // 21 novembre 2026 : un NIU à treize chiffres passait la saisie, puis le portefeuille le
+  // marquait bloquant. Le serveur refuse désormais un format faux ; l'exemple le montre avant.
+  const ligne = (nom: string, libelle: string, cleDate: string, exemple?: string) => (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 150px", gap: 8 }}>
-      <label style={etiquette}>{libelle}<input name={nom} style={champ} /></label>
+      <label style={etiquette}>{libelle}<input name={nom} style={champ} placeholder={exemple} autoCapitalize="characters" /></label>
       <label style={etiquette}>Obtenu le<input type="date" name={cleDate} style={champ} /></label>
     </div>
   );
   return (
     <form action={porter} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <input type="hidden" name="reference" value={reference} />
-      {ligne("rccm", "RCCM", "rccm_obtenu_le")}
-      {ligne("niu", "NIU", "niu_obtenu_le")}
+      {ligne("rccm", "RCCM", "rccm_obtenu_le", "RC/DLA/2026/B/9001")}
+      {ligne("niu", "NIU", "niu_obtenu_le", "M112600090017R")}
       {ligne("patente", "Patente", "patente_obtenue_le")}
       {ligne("cnps", "N° CNPS", "cnps_obtenue_le")}
-      <p style={note}>Chaque identifiant va avec sa date : elle mesure le délai tenu par le guichet.</p>
+      <p style={note}>
+        Chaque identifiant va avec sa date : elle mesure le délai tenu par le guichet. Le NIU (une lettre, douze
+        chiffres, une lettre) et le RCCM se recopient tels qu&rsquo;ils figurent sur le document délivré : un format
+        faux est refusé, car le NIU devient la clé du dossier au portefeuille.
+      </p>
       <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" className="bouton-discret" disabled={enCours}>
           {enCours ? "…" : "Enregistrer les identifiants"}
